@@ -17,6 +17,7 @@ const UserQuery = () => {
   const fileInputRef = useRef();
   const { user, tokens } = useAuth();
 
+  const [profileName, setProfileName] = useState("");
   const [query, setQuery] = useState({
     name: "",
     unique_id: user?.uniqueId || "",
@@ -52,17 +53,20 @@ const UserQuery = () => {
       .then((res) => res.json())
       .then((data) => {
         if (data.status && data.data) {
+          setProfileName(data.data.username || "");
           setQuery((prev) => ({
             ...prev,
             name: data.data.username || "",
             unique_id: user.uniqueId,
           }));
         } else {
+          setProfileName("");
           setError("Failed to load user profile.");
         }
         setProfileLoading(false);
       })
       .catch(() => {
+        setProfileName("");
         setError("Error fetching user profile.");
         setProfileLoading(false);
       });
@@ -121,7 +125,7 @@ const UserQuery = () => {
       if (query.issue_image) {
         // Send as multipart/form-data if image is present
         const formData = new FormData();
-        formData.append("name", query.name);
+        formData.append("name", profileName || user?.name || "");
         formData.append("unique_id", query.unique_id);
         formData.append("title", query.title);
         formData.append("issue", query.issue);
@@ -137,7 +141,7 @@ const UserQuery = () => {
       } else {
         // Send as JSON if no image
         const payload = {
-          name: query.name,
+          name: profileName || user?.name || "",
           unique_id: query.unique_id,
           title: query.title,
           issue: query.issue,
@@ -164,7 +168,7 @@ const UserQuery = () => {
       if (response.ok && data.status) {
         setSuccess("Your query has been submitted successfully! We'll get back to you soon.");
         setQuery({
-          name: user?.name || "",
+          name: profileName || user?.name || "",
           unique_id: user?.uniqueId || "",
           title: "",
           issue: "",
@@ -235,6 +239,8 @@ const UserQuery = () => {
                       <p className="mt-2" style={{ color: "#6c757d" }}>Loading your profile...</p>
                     </div>
                   )}
+
+
 
                   {error && (
                     <Alert variant="danger" onClose={() => setError("")} dismissible>

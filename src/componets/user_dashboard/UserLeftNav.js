@@ -52,23 +52,32 @@ const UserLeftNav = ({ sidebarOpen, setSidebarOpen, isMobile, isTablet }) => {
 const menuItems = [
     {
       icon: <FaTachometerAlt />,
-      label: "Dashboard",
+      label: "DASHBOARD",
       path: "/UserDashBoard",
       active: true,
     },
     {
-      icon: <FaUserCircle />,
-      label: "User Profile",
-      path: "/UserProfile",
-      active: true,
+      icon: <FaQuestionCircle />,
+      label: "SERVICE REQUEST",
+      submenu: [
+        {
+          label: "Request Service",
+          path: "/RequestService",
+          icon: <FaPlusSquare />,
+        },
+        {
+          label: "View Service Requests",
+          path: "/ViewRequestService",
+          icon: <FaBook />,
+        },
+      ],
     },
     {
       icon: <FaQuestionCircle />,
-      label: "Query",
+      label: "CONTACT WITH ADMIN ",
       submenu: [
         {
           label: "Generate Query",
-// ...existing code...
           path: "/UserQuery",
           icon: <FaPlusSquare />,
         },
@@ -79,6 +88,13 @@ const menuItems = [
         },
       ],
     },
+    {
+      icon: <FaUserCircle />,
+      label: "PROFILE",
+      path: "/UserProfile",
+      active: true,
+    },
+    
 
    
     

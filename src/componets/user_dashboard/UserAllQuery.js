@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Container, Row, Col, Card, Spinner, Alert, Table, Button, Modal } from "react-bootstrap";
 import UserLeftNav from "./UserLeftNav";
 import UserHeader from "./UserHeader";
@@ -14,9 +15,20 @@ const UserAllQuery = () => {
   const [queries, setQueries] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedQuery, setSelectedQuery] = useState(null);
+  const location = useLocation();
+  // Initialize filter from navigation state if present
+  const initialFilter = location.state && location.state.filter && location.state.filter !== 'all' ? location.state.filter : 'all';
+  const [filter, setFilter] = useState(initialFilter);
+  const [currentPage, setCurrentPage] = useState(1);
+  const queriesPerPage = 10;
   const { user, tokens } = useAuth();
 
   useEffect(() => {
+    // If navigation state changes (e.g., user clicks a dashboard card), update filter
+    if (location.state && location.state.filter && location.state.filter !== filter) {
+      setFilter(location.state.filter);
+      setCurrentPage(1);
+    }
     const checkDevice = () => {
       const width = window.innerWidth;
       setIsMobile(width < 768);
@@ -67,6 +79,22 @@ const UserAllQuery = () => {
     setSelectedQuery(null);
   };
 
+  // Filtered and paginated queries
+  const filteredQueries = filter === 'all' ? queries : queries.filter(q => (q.status || 'Pending').toLowerCase() === filter.toLowerCase());
+  const totalPages = Math.ceil(filteredQueries.length / queriesPerPage);
+  const paginatedQueries = filteredQueries.slice((currentPage - 1) * queriesPerPage, currentPage * queriesPerPage);
+
+  // Handle filter change
+  const handleFilterChange = (e) => {
+    setFilter(e.target.value);
+    setCurrentPage(1);
+  };
+
+  // Handle page change
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   return (
     <div className="dashboard-container">
       <UserLeftNav
@@ -96,44 +124,76 @@ const UserAllQuery = () => {
                     <Alert variant="danger">{error}</Alert>
                   )}
                   {!loading && !error && (
-                    <Table responsive bordered hover className="rounded-4 shadow-sm">
-                      <thead style={{ background: "linear-gradient(90deg, #2b6777 0%, #52ab98 100%)", color: "#fff" }}>
-                        <tr>
-                          <th>#</th>
-                          <th>Title</th>
-                          <th>Issue</th>
-                          <th>Status</th>
-                          <th>Date</th>
-                          <th>View</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {queries.length === 0 ? (
+                    <>
+                      {/* Filter Dropdown */}
+                      <div className="d-flex justify-content-end mb-3">
+                        <label className="me-2 fw-semibold" htmlFor="query-filter">Filter by Status:</label>
+                        <select id="query-filter" className="form-select w-auto" value={filter} onChange={handleFilterChange}>
+                          <option value="all">All</option>
+                          <option value="Pending">Pending</option>
+                          <option value="Approved">Approved</option>
+                          <option value="Rejected">Rejected</option>
+                        </select>
+                      </div>
+                      <Table responsive bordered hover className="rounded-4 shadow-sm">
+                        <thead style={{ background: "linear-gradient(90deg, #2b6777 0%, #52ab98 100%)", color: "#fff" }}>
                           <tr>
-                            <td colSpan={6} className="text-center">No queries found.</td>
+                            <th>#</th>
+                            <th>Title</th>
+                            <th>Issue</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>View</th>
                           </tr>
-                        ) : (
-                          queries.map((q, idx) => (
-                            <tr key={q.id || idx}>
-                              <td>{idx + 1}</td>
-                              <td>{q.title}</td>
-                              <td style={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{q.issue}</td>
-                              <td>
-                                <span style={{ fontWeight: 600, color: q.status === 'resolved' ? '#52ab98' : '#2b6777' }}>
-                                  {q.status || 'Pending'}
-                                </span>
-                              </td>
-                              <td>{q.created_at ? new Date(q.created_at).toLocaleString() : '-'}</td>
-                              <td>
-                                <Button variant="outline-primary" size="sm" onClick={() => handleView(q)}>
-                                  <i className="bi bi-eye"></i> View
-                                </Button>
-                              </td>
+                        </thead>
+                        <tbody>
+                          {paginatedQueries.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="text-center">No queries found.</td>
                             </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </Table>
+                          ) : (
+                            paginatedQueries.map((q, idx) => (
+                              <tr key={q.id || idx}>
+                                <td>{(currentPage - 1) * queriesPerPage + idx + 1}</td>
+                                <td>{q.title}</td>
+                                <td style={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{q.issue}</td>
+                                <td>
+                                  <span style={{ fontWeight: 600, color: q.status === 'Approved' ? '#52ab98' : q.status === 'Rejected' ? '#e53935' : '#2b6777' }}>
+                                    {q.status || 'Pending'}
+                                  </span>
+                                </td>
+                                <td>{q.created_at ? new Date(q.created_at).toLocaleString() : '-'}</td>
+                                <td>
+                                  <Button variant="outline-primary" size="sm" onClick={() => handleView(q)}>
+                                    <i className="bi bi-eye"></i> View
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </Table>
+                      {/* Pagination */}
+                      {totalPages > 1 && (
+                        <div className="d-flex justify-content-center align-items-center mt-3">
+                          <nav>
+                            <ul className="pagination mb-0">
+                              <li className={`page-item${currentPage === 1 ? ' disabled' : ''}`}>
+                                <button className="page-link" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>&laquo;</button>
+                              </li>
+                              {Array.from({ length: totalPages }, (_, i) => (
+                                <li key={i + 1} className={`page-item${currentPage === i + 1 ? ' active' : ''}`}>
+                                  <button className="page-link" onClick={() => handlePageChange(i + 1)}>{i + 1}</button>
+                                </li>
+                              ))}
+                              <li className={`page-item${currentPage === totalPages ? ' disabled' : ''}`}>
+                                <button className="page-link" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>&raquo;</button>
+                              </li>
+                            </ul>
+                          </nav>
+                        </div>
+                      )}
+                    </>
                   )}
                   {/* Modal for query details */}
                   <Modal show={showModal} onHide={handleCloseModal} centered>
