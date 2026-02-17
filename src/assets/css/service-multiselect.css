@@ -1,0 +1,25 @@
+// Minimal CSS for tag-style multi-select
+.selected-services {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.selected-service-tag {
+  background: #e0f7fa;
+  color: #00796b;
+  border-radius: 16px;
+  padding: 0.25rem 0.75rem 0.25rem 0.75rem;
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+}
+.selected-service-tag .remove-btn {
+  background: none;
+  border: none;
+  color: #00796b;
+  margin-left: 0.5rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0;
+}

@@ -117,6 +117,7 @@ const ViewRequestService = () => {
                             <th style={{ borderRight: '1px solid #fff' }}>Name</th>
                             <th style={{ borderRight: '1px solid #fff' }}>Email</th>
                             <th style={{ borderRight: '1px solid #fff' }}>Contact</th>
+                            <th style={{ borderRight: '1px solid #fff' }}>Alternate Contact</th>
                             <th style={{ borderRight: '1px solid #fff' }}>Address</th>
                             <th style={{ borderRight: '1px solid #fff' }}>Service(s)</th>
                             <th style={{ borderRight: '1px solid #fff' }}>Schedule</th>
@@ -135,6 +136,7 @@ const ViewRequestService = () => {
                                 <td>{req.username}</td>
                                 <td>{req.email}</td>
                                 <td>{req.contact_number}</td>
+                                <td>{req.alternate_contact_number || '-'}</td>
                                 <td>{req.address}</td>
                                 <td>
                                   {Array.isArray(req.request_for_services) ? req.request_for_services.map((s, i) => (

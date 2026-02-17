@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Container, Card, Form, Button, Row, Col, Spinner, Alert, InputGroup } from "react-bootstrap";
+import { Container, Card, Form, Button, Row, Col, Spinner, Alert, InputGroup, Dropdown } from "react-bootstrap";
 import UserLeftNav from "../user_dashboard/UserLeftNav";
 import UserHeader from "../user_dashboard/UserHeader";
 import Footer from "../footer/Footer";
 import { useAuth } from "../context/AuthContext";
 import "../../assets/css/admindashboard.css";
+import "../../assets/css/service-multiselect.css";
 
 const RequestService = () => {
   const { user, tokens } = useAuth();
@@ -14,10 +15,33 @@ const RequestService = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [serviceOptions, setServiceOptions] = useState([]);
+  // Fetch service categories/subcategories for dropdown
+  useEffect(() => {
+    fetch("https://mahadevaaya.com/spindo/spindobackend/api/get-service/categories/")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status && Array.isArray(data.data)) {
+          // Flatten all subcategories under their category
+          const options = [];
+          data.data.forEach(cat => {
+            if (Array.isArray(cat.subcategories) && cat.subcategories.length > 0) {
+              cat.subcategories.forEach(sub => {
+                options.push({ label: `${cat.category} - ${sub}`, value: `${cat.category} - ${sub}` });
+              });
+            } else {
+              options.push({ label: cat.category, value: cat.category });
+            }
+          });
+          setServiceOptions(options);
+        }
+      });
+  }, []);
   const [form, setForm] = useState({
     username: "",
     unique_id: user?.uniqueId || "",
     contact_number: "",
+    alternate_contact_number: "",
     email: "",
     state: "",
     district: "",
@@ -57,6 +81,7 @@ const RequestService = () => {
             username: data.data.username || "",
             unique_id: user.uniqueId,
             contact_number: data.data.mobile_number || "",
+            alternate_contact_number: data.data.alternate_contact_number || "",
             email: data.data.email || "",
             state: data.data.state || "",
             district: data.data.district || "",
@@ -102,11 +127,22 @@ const RequestService = () => {
     setSuccess("");
     const payload = { ...form };
     if (!payload.email) delete payload.email;
-    payload.request_for_services = payload.request_for_services.filter((s) => s.trim() !== "");
+    if (!payload.alternate_contact_number) delete payload.alternate_contact_number;
+    // Remove empty service tags
+    payload.request_for_services = payload.request_for_services.filter((s) => s && s.trim() !== "");
+    // Format schedule_time as HH:mm:ss
+    if (payload.schedule_time && !payload.schedule_time.match(/^\d{2}:\d{2}:\d{2}$/)) {
+      // If value is HH:mm, add :00 seconds
+      payload.schedule_time = payload.schedule_time + ":00";
+    }
     try {
+      const headers = { "Content-Type": "application/json" };
+      if (tokens?.access) {
+        headers["Authorization"] = `Bearer ${tokens.access}`;
+      }
       const response = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/customer/requestservices/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(payload)
       });
       const data = await response.json();
@@ -114,9 +150,12 @@ const RequestService = () => {
         setSuccess("Service request submitted successfully!");
         setForm((prev) => ({ ...prev, request_for_services: [""], schedule_date: "", schedule_time: "", description: "" }));
       } else {
+        // Log the error response for debugging
+        console.error("API Error Response:", data);
         setError(data.message || "Failed to submit request.");
       }
     } catch (err) {
+      console.error("API Exception:", err);
       setError("Error submitting request.");
     } finally {
       setLoading(false);
@@ -148,6 +187,10 @@ const RequestService = () => {
                           <Form.Control type="text" name="contact_number" value={form.contact_number} disabled />
                         </Form.Group>
                         <Form.Group className="mb-3">
+                          <Form.Label>Alternate Contact Number</Form.Label>
+                          <Form.Control type="text" name="alternate_contact_number" value={form.alternate_contact_number} onChange={handleChange} placeholder="Enter alternate contact number (optional)" />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
                           <Form.Label>Email</Form.Label>
                           <Form.Control type="email" name="email" value={form.email} onChange={handleChange} placeholder="Enter your email (optional)" />
                         </Form.Group>
@@ -170,30 +213,96 @@ const RequestService = () => {
                       </Col>
                       <Col md={6}>
                         <Form.Label>Request For Services</Form.Label>
-                        {form.request_for_services.map((service, idx) => (
-                          <InputGroup className="mb-2" key={idx}>
-                            <Form.Control
-                              type="text"
-                              value={service}
-                              onChange={(e) => handleServiceChange(idx, e.target.value)}
-                              placeholder="Service (e.g. AC Repair)"
-                              required
-                            />
-                            {form.request_for_services.length > 1 && (
-                              <Button variant="outline-danger" onClick={() => removeServiceField(idx)}>-</Button>
-                            )}
-                            {idx === form.request_for_services.length - 1 && (
-                              <Button variant="outline-primary" onClick={addServiceField}>+</Button>
-                            )}
-                          </InputGroup>
-                        ))}
+                        <Form.Group className="mb-3">
+                          <Form.Label>Select Service(s)</Form.Label>
+                          <div className="selected-services">
+                            {form.request_for_services.map((service, idx) => {
+                              const label = serviceOptions.find(opt => opt.value === service)?.label || service;
+                              return (
+                                <span className="selected-service-tag" key={service}>
+                                  {label}
+                                  <button
+                                    type="button"
+                                    className="remove-btn"
+                                    aria-label="Remove"
+                                    onClick={() => {
+                                      setForm(prev => ({
+                                        ...prev,
+                                        request_for_services: prev.request_for_services.filter((_, i) => i !== idx)
+                                      }));
+                                    }}
+                                  >
+                                    ×
+                                  </button>
+                                </span>
+                              );
+                            })}
+                          </div>
+                          <Dropdown>
+                            <Dropdown.Toggle variant="outline-primary" id="dropdown-basic">
+                              {serviceOptions.length === 0 ? "Loading..." : "Add Service"}
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu style={{ maxHeight: 250, overflowY: 'auto' }}>
+                              {serviceOptions
+                                .filter(opt => !form.request_for_services.includes(opt.value))
+                                .map(opt => (
+                                  <Dropdown.Item
+                                    key={opt.value}
+                                    onClick={() => {
+                                      setForm(prev => ({
+                                        ...prev,
+                                        request_for_services: [...prev.request_for_services, opt.value]
+                                      }));
+                                    }}
+                                  >
+                                    {opt.label}
+                                  </Dropdown.Item>
+                                ))}
+                              {serviceOptions.filter(opt => !form.request_for_services.includes(opt.value)).length === 0 && (
+                                <Dropdown.Item disabled>No more services</Dropdown.Item>
+                              )}
+                            </Dropdown.Menu>
+                          </Dropdown>
+                        </Form.Group>
                         <Form.Group className="mb-3 mt-3">
                           <Form.Label>Schedule Date</Form.Label>
                           <Form.Control type="date" name="schedule_date" value={form.schedule_date} onChange={handleChange} required />
                         </Form.Group>
                         <Form.Group className="mb-3">
                           <Form.Label>Schedule Time</Form.Label>
-                          <Form.Control type="time" name="schedule_time" value={form.schedule_time} onChange={handleChange} required />
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <Form.Select
+                              name="schedule_time"
+                              value={form.schedule_time}
+                              onChange={handleChange}
+                              required
+                              style={{ maxWidth: 140 }}
+                            >
+                              <option value="">Select time</option>
+                              {Array.from({ length: 14 }, (_, i) => {
+                                // 6:00 to 19:00 (7 PM)
+                                const hour = 6 + i;
+                                const hourStr = hour.toString().padStart(2, '0');
+                                return [
+                                  <option key={hourStr + ':00'} value={hourStr + ':00'}>{`${hour <= 12 ? hour : hour - 12}:00 ${hour < 12 ? 'AM' : 'PM'}`}</option>,
+                                  <option key={hourStr + ':30'} value={hourStr + ':30'}>{`${hour <= 12 ? hour : hour - 12}:30 ${hour < 12 ? 'AM' : 'PM'}`}</option>
+                                ];
+                              })}
+                            </Form.Select>
+                            {form.schedule_time && (
+                              <span style={{ fontWeight: 500 }}>
+                                {(() => {
+                                  const [h, m] = form.schedule_time.split(":");
+                                  let hour = parseInt(h, 10);
+                                  const ampm = hour >= 12 ? "PM" : "AM";
+                                  hour = hour % 12;
+                                  if (hour === 0) hour = 12;
+                                  return `${hour}:${m} ${ampm}`;
+                                })()}
+                              </span>
+                            )}
+                          </div>
+                          <Form.Text className="text-muted">Allowed time: 06:00 AM to 07:00 PM</Form.Text>
                         </Form.Group>
                         <Form.Group className="mb-3">
                           <Form.Label>Description</Form.Label>
