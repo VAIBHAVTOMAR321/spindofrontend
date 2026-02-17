@@ -5,8 +5,6 @@ import UserHeader from "./UserHeader";
 import "../../assets/css/admindashboard.css";
 import { useAuth } from "../context/AuthContext";
 
-
-
 const UserProfile = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
