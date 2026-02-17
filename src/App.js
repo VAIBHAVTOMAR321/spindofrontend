@@ -19,6 +19,8 @@ import UserDashBoard from "./componets/user_dashboard/UserDashBoard";
 import UserProfile from "./componets/user_dashboard/UserProfile";
 import UserQuery from "./componets/user_dashboard/UserQuery";
 import UserAllQuery from "./componets/user_dashboard/UserAllQuery";
+import RequestService from "./componets/user_dashboard/RequestService";
+import ViewRequestService from "./componets/user_dashboard/ViewRequestService";
 import VendorDashBoard from "./componets/vendor_dashboard/VendorDashBoard";
 import StaffDashBoard from "./componets/staff_dashboard/StaffDashBoard";
 import AboutUs from "./componets/pages/AboutUs";
@@ -43,6 +45,8 @@ function App() {
     "/UserProfile",
     "/UserQuery",
     "/UserAllQuery",
+    "/RequestService",
+    "/ViewRequestService",
   ]);
 
   const shouldHideNavbar = hiddenPaths.has(location.pathname);
@@ -97,6 +101,22 @@ function App() {
             element={
               <Protected allowedRoles={['customer']}>
                 <UserAllQuery />
+              </Protected>
+            } 
+          />
+          <Route
+            path="/RequestService"
+            element={
+              <Protected allowedRoles={['customer']}>
+                <RequestService />
+              </Protected>
+            } 
+          />
+          <Route
+            path="/ViewRequestService"
+            element={
+              <Protected allowedRoles={['customer']}>
+                <ViewRequestService />
               </Protected>
             } 
           />
