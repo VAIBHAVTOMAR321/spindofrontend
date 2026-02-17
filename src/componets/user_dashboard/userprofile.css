@@ -1,0 +1,72 @@
+/* UserProfile custom styles for enhanced visualization */
+.user-profile-card {
+  background: linear-gradient(135deg, #e0f7fa 0%, #ffffff 100%);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.12);
+  padding: 2rem 2.5rem;
+  margin-bottom: 2rem;
+  transition: box-shadow 0.3s;
+}
+.user-profile-card:hover {
+  box-shadow: 0 12px 40px rgba(44, 62, 80, 0.18);
+}
+.user-profile-avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 5px solid #52ab98;
+  box-shadow: 0 4px 16px rgba(44, 62, 80, 0.10);
+  margin-bottom: 1rem;
+  background: #f0f0f0;
+}
+.user-profile-label {
+  font-weight: 600;
+  color: #2b6777;
+  letter-spacing: 0.5px;
+}
+.user-profile-value {
+  font-size: 1.1rem;
+  color: #222;
+  margin-bottom: 0.75rem;
+}
+.user-profile-edit-btn {
+  background: linear-gradient(90deg, #2b6777 0%, #52ab98 100%);
+  border: none;
+  font-weight: 600;
+  border-radius: 30px;
+  padding: 0.5rem 2.5rem;
+  margin-top: 1.5rem;
+  transition: background 0.2s;
+}
+.user-profile-edit-btn:hover {
+  background: linear-gradient(90deg, #52ab98 0%, #2b6777 100%);
+}
+.user-profile-form .form-label {
+  color: #2b6777;
+  font-weight: 500;
+}
+.user-profile-form .form-control {
+  border-radius: 18px;
+  border: 1.5px solid #b2dfdb;
+  box-shadow: none;
+  margin-bottom: 1rem;
+}
+.user-profile-form .form-control:focus {
+  border-color: #52ab98;
+  box-shadow: 0 0 0 2px #b2dfdb44;
+}
+.user-profile-avatar-edit-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: #fff;
+  border-radius: 50%;
+  padding: 8px;
+  box-shadow: 0 0 6px #aaa;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

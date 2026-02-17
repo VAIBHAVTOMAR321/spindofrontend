@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Container, Form, Button, Row, Col, Card, Spinner, Alert } from "react-bootstrap";
+import "./userprofile.css";
 import UserLeftNav from "./UserLeftNav";
 import UserHeader from "./UserHeader";
 import "../../assets/css/admindashboard.css";
@@ -231,28 +232,64 @@ const UserProfile = () => {
         <Container fluid className="dashboard-body dashboard-main-container">
           <Row className="justify-content-center mt-4">
             <Col xs={12}>
-              <Card className="shadow-lg border-0 rounded-4 p-3 animate__animated animate__fadeIn">
+              <Card className="user-profile-card animate__animated animate__fadeIn">
                 <Card.Body>
-                  <h3 className="mb-4 text-center" style={{ color: '#2b6777', fontWeight: 700 }}>User Profile</h3>
+                  <h3 className="mb-4 text-center" style={{ color: '#2b6777', fontWeight: 700, letterSpacing: 1 }}>User Profile</h3>
                   {loading && <div className="text-center"><Spinner animation="border" variant="primary" /></div>}
                   {error && <Alert variant="danger">{error}</Alert>}
-                  {success && <Alert variant="success">{success}</Alert>}
                   <Row>
+                    {/* Image Right */}
+                    <Col md={8} className="d-flex flex-column align-items-center justify-content-center">
+                      <div
+                        className="position-relative"
+                        style={{ cursor: 'pointer', marginBottom: 16 }}
+                        onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                        title="Change Profile Image"
+                      >
+                        {imagePreview ? (
+                          <img src={imagePreview} alt="Profile" className="user-profile-avatar" />
+                        ) : (
+                          <span className="d-flex align-items-center justify-content-center user-profile-avatar" style={{ color: '#aaa', fontSize: 64 }}>
+                            <i className="bi bi-person-circle"></i>
+                          </span>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          ref={fileInputRef}
+                          style={{ display: 'none' }}
+                          onChange={handleImageChange}
+                        />
+                        {/* Show edit image button only when editing */}
+                        {isEditing && (
+                          <button
+                            type="button"
+                            className="user-profile-avatar-edit-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              fileInputRef.current && fileInputRef.current.click();
+                            }}
+                            title="Change Profile Image"
+                          >
+                            <i className="bi bi-pencil" style={{ color: '#2b6777', fontSize: 20 }}></i>
+                          </button>
+                        )}
+                      </div>
+                    </Col>
                     {/* Details Left */}
-                    <Col md={8} className="d-flex flex-column justify-content-center">
+                    <Col md={4} className="d-flex flex-column justify-content-center">
                       {!loading && !error && !isEditing && (
                         <div>
-                          <div className="mb-3"><strong>Full Name:</strong> {profile.username}</div>
-                          <div className="mb-3"><strong>Mobile Number:</strong> {profile.mobile_number}</div>
-                          <div className="mb-3"><strong>Email:</strong> {profile.email}</div>
-                          <div className="mb-3"><strong>State:</strong> {profile.state}</div>
-                          <div className="mb-3"><strong>District:</strong> {profile.district}</div>
-                          <div className="mb-3"><strong>Block:</strong> {profile.block}</div>
-                          
+                          <div className="user-profile-value"><span className="user-profile-label">Full Name:</span> {profile.username}</div>
+                          <div className="user-profile-value"><span className="user-profile-label">Mobile Number:</span> {profile.mobile_number}</div>
+                          <div className="user-profile-value"><span className="user-profile-label">Email:</span> {profile.email}</div>
+                          <div className="user-profile-value"><span className="user-profile-label">State:</span> {profile.state}</div>
+                          <div className="user-profile-value"><span className="user-profile-label">District:</span> {profile.district}</div>
+                          <div className="user-profile-value"><span className="user-profile-label">Block:</span> {profile.block}</div>
                         </div>
                       )}
                       {!loading && !error && isEditing && (
-                        <Form onSubmit={handleSubmit} autoComplete="off">
+                        <Form onSubmit={handleSubmit} autoComplete="off" className="user-profile-form">
                           <Form.Group className="mb-3" controlId="username">
                             <Form.Label>Full Name</Form.Label>
                             <Form.Control
@@ -321,15 +358,15 @@ const UserProfile = () => {
                             <Button
                               variant="primary"
                               type="submit"
-                              className="px-5 py-2 rounded-pill"
-                              style={{ background: "linear-gradient(90deg, #2b6777 0%, #52ab98 100%)", border: "none", fontWeight: 600 }}
+                              className="user-profile-edit-btn"
                               disabled={loading}
                             >
                               {loading ? <Spinner size="sm" animation="border" /> : "Save"}
                             </Button>
                             <Button
                               variant="outline-secondary"
-                              className="px-5 py-2 rounded-pill"
+                              className="user-profile-edit-btn"
+                              style={{ background: '#fff', color: '#2b6777', border: '1.5px solid #52ab98' }}
                               onClick={handleCancel}
                               disabled={loading}
                             >
@@ -338,62 +375,16 @@ const UserProfile = () => {
                           </div>
                         </Form>
                       )}
+                   
                     </Col>
-                    {/* Image Right */}
-                    <Col md={4} className="d-flex flex-column align-items-center">
-                      <div
-                        style={{ width: 140, height: 140, borderRadius: '50%', overflow: 'hidden', border: '4px solid #2b6777', background: '#f0f0f0', position: 'relative', marginTop: 0, cursor: 'pointer' }}
-                        onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                        title="Change Profile Image"
-                      >
-                        {imagePreview ? (
-                          <img src={imagePreview} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        ) : (
-                          <span className="d-flex align-items-center justify-content-center h-100 w-100" style={{ color: '#aaa', fontSize: 64 }}>
-                            <i className="bi bi-person-circle"></i>
-                          </span>
-                        )}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          ref={fileInputRef}
-                          style={{ display: 'none' }}
-                          onChange={handleImageChange}
-                        />
-                        {/* Show edit image button only when editing */}
-                        {isEditing && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              fileInputRef.current && fileInputRef.current.click();
-                            }}
-                            style={{
-                              position: 'absolute',
-                              bottom: 8,
-                              right: 8,
-                              background: '#fff',
-                              borderRadius: '50%',
-                              padding: 6,
-                              boxShadow: '0 0 4px #aaa',
-                              border: 'none',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                            title="Change Profile Image"
-                          >
-                            <i className="bi bi-pencil" style={{ color: '#2b6777', fontSize: 20 }}></i>
-                          </button>
-                        )}
-                      </div>
-                    </Col>
-                    <div className="d-flex justify-content-center mt-4">
-                            <Button variant="primary" className="px-5 py-2 rounded-pill" style={{ background: "linear-gradient(90deg, #2b6777 0%, #52ab98 100%)", border: "none", fontWeight: 600 }} onClick={handleEdit}>
-                              Edit Profile
-                            </Button>
-                          </div>
+                    {!isEditing && (
+                        <div className="d-flex justify-content-center mt-4">
+                          <Button variant="primary" className="user-profile-edit-btn" onClick={handleEdit}>
+                            Edit Profile
+                          </Button>
+                        </div>
+                      )}
+                  {/* End of profile row */}
                   </Row>
                 </Card.Body>
               </Card>
