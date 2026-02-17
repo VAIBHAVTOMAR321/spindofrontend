@@ -1,0 +1,32 @@
+/* Box Container with Shadow */
+.box-container {
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08);
+  padding: 30px;
+  margin: 20px auto;
+  
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.box-container:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+.spi-label{
+    font-size: 14px;
+    font-weight: 600;
+}
+.spi-control{
+    font-size: 10px;
+    height: 40px;
+}
+.register-btn {
+  background-color: #212529 ;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+}

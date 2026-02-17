@@ -1,0 +1,18 @@
+.table-thead tr th{
+    font-size: 14px;
+    background-color: #1d85e9;
+    color: #fff;
+    font-weight: 500;
+}
+td{
+    font-size: 10px;
+}
+ .modal-header{
+    background-color: #1d85e9 !important;
+    color: #fff;
+}
+.form-label{
+    color: #000;
+    font-weight: 600;
+    
+}
