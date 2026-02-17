@@ -23,7 +23,8 @@ import {
   FaMusic,
   FaGlassCheers,
   FaChalkboardTeacher,
-  FaIndustry
+  FaIndustry,
+  FaQuestionCircle
 } from "react-icons/fa";
 import axios from "axios";
 import UserProfile from "./UserProfile";
@@ -61,7 +62,23 @@ const menuItems = [
       path: "/UserProfile",
       active: true,
     },
-   
+    {
+      icon: <FaQuestionCircle />,
+      label: "Query",
+      submenu: [
+        {
+          label: "Generate Query",
+// ...existing code...
+          path: "/UserQuery",
+          icon: <FaPlusSquare />,
+        },
+        {
+          label: "All Queries",
+          path: "/UserAllQuery",
+          icon: <FaBook />,
+        },
+      ],
+    },
 
    
     
@@ -98,7 +115,7 @@ const menuItems = [
         <div className="sidebar-header">
           <div className="logo-container">
             <div className="logo">
-             Admin DashBoard
+             User DashBoard
               {/* <span className="logo-text"><img src={BRLogo} alt="text"></img></span> */}
             </div>
           </div>

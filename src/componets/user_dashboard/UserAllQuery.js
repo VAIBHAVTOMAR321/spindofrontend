@@ -1,0 +1,179 @@
+import React, { useState, useEffect } from "react";
+import { Container, Row, Col, Card, Spinner, Alert, Table, Button, Modal } from "react-bootstrap";
+import UserLeftNav from "./UserLeftNav";
+import UserHeader from "./UserHeader";
+import "../../assets/css/admindashboard.css";
+import { useAuth } from "../context/AuthContext";
+
+const UserAllQuery = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [queries, setQueries] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedQuery, setSelectedQuery] = useState(null);
+  const { user, tokens } = useAuth();
+
+  useEffect(() => {
+    const checkDevice = () => {
+      const width = window.innerWidth;
+      setIsMobile(width < 768);
+      setIsTablet(width >= 768 && width < 1024);
+      setSidebarOpen(width >= 1024);
+    };
+    checkDevice();
+    window.addEventListener("resize", checkDevice);
+    return () => window.removeEventListener("resize", checkDevice);
+  }, []);
+
+  useEffect(() => {
+    if (!user?.uniqueId) {
+      setError("User not logged in or missing unique ID.");
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    // Fetch all queries for this user
+    const apiUrl = `https://mahadevaaya.com/spindo/spindobackend/api/customer/issue/?unique_id=${user.uniqueId}`;
+    fetch(apiUrl, {
+      headers: tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status && Array.isArray(data.data)) {
+          setQueries(data.data);
+        } else {
+          setError("Failed to load user queries.");
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("Error fetching user queries.");
+        setLoading(false);
+      });
+  }, [user, tokens]);
+
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
+  const handleView = (query) => {
+    setSelectedQuery(query);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedQuery(null);
+  };
+
+  return (
+    <div className="dashboard-container">
+      <UserLeftNav
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        isMobile={isMobile}
+        isTablet={isTablet}
+      />
+      <div className="main-content-dash">
+        <UserHeader toggleSidebar={toggleSidebar} />
+        <Container fluid className="dashboard-body dashboard-main-container">
+          <Row className="justify-content-center mt-4">
+            <Col xs={12} lg={12}>
+              <Card className="shadow-lg border-0 rounded-4 p-3 animate__animated animate__fadeIn" style={{ backgroundColor: "#f8f9fa" }}>
+                <Card.Body>
+                  <div className="text-center mb-4">
+                    <h3 style={{ color: "#2b6777", fontWeight: 700, marginBottom: "0.5rem" }}>
+                      <i className="bi bi-list-task" style={{ marginRight: "10px" }}></i>
+                      All Your Queries
+                    </h3>
+                    <p style={{ color: "#6c757d", fontSize: "14px" }}>View all your submitted queries and their status.</p>
+                  </div>
+                  {loading && (
+                    <div className="text-center"><Spinner animation="border" variant="primary" /></div>
+                  )}
+                  {error && (
+                    <Alert variant="danger">{error}</Alert>
+                  )}
+                  {!loading && !error && (
+                    <Table responsive bordered hover className="rounded-4 shadow-sm">
+                      <thead style={{ background: "linear-gradient(90deg, #2b6777 0%, #52ab98 100%)", color: "#fff" }}>
+                        <tr>
+                          <th>#</th>
+                          <th>Title</th>
+                          <th>Issue</th>
+                          <th>Status</th>
+                          <th>Date</th>
+                          <th>View</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {queries.length === 0 ? (
+                          <tr>
+                            <td colSpan={6} className="text-center">No queries found.</td>
+                          </tr>
+                        ) : (
+                          queries.map((q, idx) => (
+                            <tr key={q.id || idx}>
+                              <td>{idx + 1}</td>
+                              <td>{q.title}</td>
+                              <td style={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{q.issue}</td>
+                              <td>
+                                <span style={{ fontWeight: 600, color: q.status === 'resolved' ? '#52ab98' : '#2b6777' }}>
+                                  {q.status || 'Pending'}
+                                </span>
+                              </td>
+                              <td>{q.created_at ? new Date(q.created_at).toLocaleString() : '-'}</td>
+                              <td>
+                                <Button variant="outline-primary" size="sm" onClick={() => handleView(q)}>
+                                  <i className="bi bi-eye"></i> View
+                                </Button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </Table>
+                  )}
+                  {/* Modal for query details */}
+                  <Modal show={showModal} onHide={handleCloseModal} centered>
+                    <Modal.Header closeButton>
+                      <Modal.Title>Query Details</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                      {selectedQuery && (
+                        <div>
+                          <p><strong>Title:</strong> {selectedQuery.title}</p>
+                          <p><strong>Issue:</strong> {selectedQuery.issue}</p>
+                          <p><strong>Status:</strong> <span style={{ fontWeight: 600, color: selectedQuery.status === 'resolved' ? '#52ab98' : '#2b6777' }}>{selectedQuery.status || 'Pending'}</span></p>
+                          <p><strong>Date:</strong> {selectedQuery.created_at ? new Date(selectedQuery.created_at).toLocaleString() : '-'}</p>
+                          {selectedQuery.extra_remark && <p><strong>Remark:</strong> {selectedQuery.extra_remark}</p>}
+                          {selectedQuery.issue_image && (
+                            <div className="mb-2">
+                              <strong>Image:</strong><br />
+                              <img
+                                src={
+                                  selectedQuery.issue_image.startsWith("http")
+                                    ? selectedQuery.issue_image
+                                    : `https://mahadevaaya.com/spindo/spindobackend${selectedQuery.issue_image}`
+                                }
+                                alt="Query"
+                                style={{ maxWidth: 200, borderRadius: 6 }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </Modal.Body>
+                  </Modal>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </Container>
+      </div>
+    </div>
+  );
+};
+
+export default UserAllQuery;

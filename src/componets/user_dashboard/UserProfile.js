@@ -24,6 +24,7 @@ const UserProfile = () => {
   const [editProfile, setEditProfile] = useState(profile);
   const [isEditing, setIsEditing] = useState(false);
   const [imagePreview, setImagePreview] = useState("");
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
   const fileInputRef = useRef();
   const { user, tokens } = useAuth();
 
@@ -55,7 +56,18 @@ const UserProfile = () => {
         if (data.status && data.data) {
           setProfile(data.data);
           setEditProfile(data.data);
-          setImagePreview(data.data.image || "");
+          // Always use the full backend URL for image preview
+          let imageUrl = "";
+          if (data.data.image) {
+            if (data.data.image.startsWith("http")) {
+              imageUrl = data.data.image;
+            } else if (data.data.image.startsWith("/media/customer_images/")) {
+              imageUrl = `https://mahadevaaya.com/spindo/spindobackend${data.data.image}`;
+            } else {
+              imageUrl = `https://mahadevaaya.com/spindo/spindobackend/media/customer_images/${data.data.image}`;
+            }
+          }
+          setImagePreview(imageUrl);
         } else {
           setError("Failed to load user profile.");
         }
@@ -72,22 +84,51 @@ const UserProfile = () => {
     setEditProfile((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
+      setSelectedImageFile(file);
+      setEditProfile((prev) => ({ ...prev, image: file.name }));
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
-        setEditProfile((prev) => ({ ...prev, image: reader.result }));
       };
       reader.readAsDataURL(file);
+      // Immediately upload the image
+      setLoading(true);
+      setError("");
+      setSuccess("");
+      try {
+        const formData = new FormData();
+        formData.append('unique_id', user.uniqueId);
+        formData.append('image', file);
+        const response = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/customer/register/", {
+          method: "PUT",
+          headers: {
+            ...(tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {})
+          },
+          body: formData
+        });
+        const data = await response.json();
+        if (response.ok && data.status) {
+          setProfile((prev) => ({ ...prev, image: file.name }));
+          setEditProfile((prev) => ({ ...prev, image: file.name }));
+          setSuccess("Profile image updated successfully!");
+        } else {
+          setError(data.message || "Failed to update profile image.");
+        }
+      } catch (err) {
+        setError("Error updating profile image.");
+      } finally {
+        setLoading(false);
+        setSelectedImageFile(null);
+      }
     }
   };
 
-
   const handleEdit = () => {
-    setEditProfile(profile);
-    setImagePreview(profile.image || "");
+    // Always use the latest image from imagePreview for edit form
+    setEditProfile((prev) => ({ ...profile, image: profile.image || editProfile.image }));
     setIsEditing(true);
     setSuccess("");
     setError("");
@@ -95,7 +136,18 @@ const UserProfile = () => {
 
   const handleCancel = () => {
     setEditProfile(profile);
-    setImagePreview(profile.image || "");
+    // Always use the full backend URL for image preview
+    let imageUrl = "";
+    if (profile.image) {
+      if (profile.image.startsWith("http")) {
+        imageUrl = profile.image;
+      } else if (profile.image.startsWith("/media/customer_images/")) {
+        imageUrl = `https://mahadevaaya.com/spindo/spindobackend${profile.image}`;
+      } else {
+        imageUrl = `https://mahadevaaya.com/spindo/spindobackend/media/customer_images/${profile.image}`;
+      }
+    }
+    setImagePreview(imageUrl);
     setIsEditing(false);
     setSuccess("");
     setError("");
@@ -110,23 +162,50 @@ const UserProfile = () => {
     const payload = { unique_id: user.uniqueId };
     Object.keys(editProfile).forEach((key) => {
       if (editProfile[key] !== profile[key]) {
-        payload[key] = editProfile[key];
+        // Only send the image filename, not the preview URL or path
+        if (key === 'image' && editProfile[key]) {
+          payload[key] = editProfile[key].replace(/^\/media\/customer_images\//, "");
+        } else if (key !== 'image') {
+          payload[key] = editProfile[key];
+        }
       }
     });
+    console.log("[UserProfile] Update payload:", payload);
     try {
-      const response = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/customer/register/", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {})
-        },
-        body: JSON.stringify(payload)
-      });
-      const data = await response.json();
+      let response, data;
+      if (selectedImageFile) {
+        // Use FormData for file upload
+        const formData = new FormData();
+        Object.keys(payload).forEach((key) => {
+          formData.append(key, payload[key]);
+        });
+        formData.append('image', selectedImageFile); // Attach file
+        response = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/customer/register/", {
+          method: "PUT",
+          headers: {
+            ...(tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {})
+            // Do not set Content-Type, browser will set it for FormData
+          },
+          body: formData
+        });
+      } else {
+        // Use JSON if no new image
+        response = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/customer/register/", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            ...(tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {})
+          },
+          body: JSON.stringify(payload)
+        });
+      }
+      data = await response.json();
+      console.log("[UserProfile] Update response:", data);
       if (response.ok && data.status) {
         setProfile((prev) => ({ ...prev, ...payload }));
         setIsEditing(false);
         setSuccess("Profile updated successfully!");
+        setSelectedImageFile(null); // Reset file
       } else {
         setError(data.message || "Failed to update profile.");
       }
@@ -169,11 +248,7 @@ const UserProfile = () => {
                           <div className="mb-3"><strong>State:</strong> {profile.state}</div>
                           <div className="mb-3"><strong>District:</strong> {profile.district}</div>
                           <div className="mb-3"><strong>Block:</strong> {profile.block}</div>
-                          <div className="d-flex justify-content-center mt-4">
-                            <Button variant="primary" className="px-5 py-2 rounded-pill" style={{ background: "linear-gradient(90deg, #2b6777 0%, #52ab98 100%)", border: "none", fontWeight: 600 }} onClick={handleEdit}>
-                              Edit Profile
-                            </Button>
-                          </div>
+                          
                         </div>
                       )}
                       {!loading && !error && isEditing && (
@@ -285,30 +360,40 @@ const UserProfile = () => {
                           style={{ display: 'none' }}
                           onChange={handleImageChange}
                         />
-                        {/* Always show edit image button */}
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                          style={{
-                            position: 'absolute',
-                            bottom: 8,
-                            right: 8,
-                            background: '#fff',
-                            borderRadius: '50%',
-                            padding: 6,
-                            boxShadow: '0 0 4px #aaa',
-                            border: 'none',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                          title="Change Profile Image"
-                        >
-                          <i className="bi bi-pencil" style={{ color: '#2b6777', fontSize: 20 }}></i>
-                        </button>
+                        {/* Show edit image button only when editing */}
+                        {isEditing && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              fileInputRef.current && fileInputRef.current.click();
+                            }}
+                            style={{
+                              position: 'absolute',
+                              bottom: 8,
+                              right: 8,
+                              background: '#fff',
+                              borderRadius: '50%',
+                              padding: 6,
+                              boxShadow: '0 0 4px #aaa',
+                              border: 'none',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                            title="Change Profile Image"
+                          >
+                            <i className="bi bi-pencil" style={{ color: '#2b6777', fontSize: 20 }}></i>
+                          </button>
+                        )}
                       </div>
                     </Col>
+                    <div className="d-flex justify-content-center mt-4">
+                            <Button variant="primary" className="px-5 py-2 rounded-pill" style={{ background: "linear-gradient(90deg, #2b6777 0%, #52ab98 100%)", border: "none", fontWeight: 600 }} onClick={handleEdit}>
+                              Edit Profile
+                            </Button>
+                          </div>
                   </Row>
                 </Card.Body>
               </Card>

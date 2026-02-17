@@ -75,7 +75,7 @@ function UserHeader({ toggleSidebar, searchTerm, setSearchTerm }) {
     } else if (userDetails.first_name) {
       return userDetails.first_name;
     } else {
-      return "Admin";
+      return "User";
     }
   };
 
@@ -188,7 +188,7 @@ function UserHeader({ toggleSidebar, searchTerm, setSearchTerm }) {
       className="user-avatar"
       onError={handleImageError}
     /> */}
-    Admin
+    User
   </Dropdown.Toggle>
   <Dropdown.Menu>
     <Dropdown.Item onClick={handleLogout}>
