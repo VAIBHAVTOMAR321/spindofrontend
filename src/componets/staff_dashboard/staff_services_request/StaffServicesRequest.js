@@ -76,8 +76,10 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
       const res = await axios.get(VENDOR_LIST_API, {
         headers: { Authorization: `Bearer ${tokens.access}` },
       });
-      setVendorData(res.data.data || []);
-      setVendorCount(res.data.data?.length || 0);
+      console.log("Vendor Data Response:", res.data);
+      const vendorList = Array.isArray(res.data.data) ? res.data.data : (res.data.data ? [res.data.data] : []);
+      setVendorData(vendorList);
+      setVendorCount(vendorList.length);
     } catch (error) {
       setVendorData([]);
       setVendorCount(0);
@@ -93,7 +95,9 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
       const res = await axios.get(VENDOR_LIST_API, {
         headers: { Authorization: `Bearer ${tokens.access}` },
       });
-      setVendorList(res.data.data || []);
+      console.log("Vendor List Modal Response:", res.data);
+      const vendorList = Array.isArray(res.data.data) ? res.data.data : (res.data.data ? [res.data.data] : []);
+      setVendorList(vendorList);
     } catch (error) {
       setVendorList([]);
       console.error("GET VENDOR LIST ERROR:", error.response?.data || error.message);
@@ -344,12 +348,12 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                         <tr style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
                           <th>Vendor ID</th>
                           <th>Username</th>
-                          <th>Contact Number</th>
+                          <th>Mobile Number</th>
                           <th>Email</th>
-                          <th>Category</th>
                           <th>State</th>
                           <th>District</th>
-                          <th>City</th>
+                          <th>Block</th>
+                          <th>Category</th>
                           <th>Status</th>
                           <th>Created</th>
                         </tr>
@@ -359,14 +363,14 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                           .slice((vendorCurrentPage - 1) * itemsPerPage, vendorCurrentPage * itemsPerPage)
                           .map((vendor) => (
                             <tr key={vendor.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                              <td style={{ fontWeight: 600, color: '#6366f1' }}>{vendor.vendor_unique_id}</td>
+                              <td style={{ fontWeight: 600, color: '#6366f1' }}>{vendor.unique_id}</td>
                               <td>{vendor.username}</td>
-                              <td>{vendor.contact_number}</td>
+                              <td>{vendor.mobile_number}</td>
                               <td>{vendor.email}</td>
-                              <td>{vendor.category?.type || 'N/A'}</td>
                               <td>{vendor.state}</td>
                               <td>{vendor.district}</td>
-                              <td>{vendor.city}</td>
+                              <td>{vendor.block}</td>
+                              <td>{vendor.category || 'N/A'}</td>
                               <td>
                                 <span
                                   style={{
@@ -374,11 +378,11 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                                     borderRadius: 6,
                                     fontSize: 13,
                                     fontWeight: 600,
-                                    backgroundColor: vendor.status === 'active' ? '#d1fae5' : '#fef3c7',
-                                    color: vendor.status === 'active' ? '#065f46' : '#92400e',
+                                    backgroundColor: vendor.is_active ? '#d1fae5' : '#fef3c7',
+                                    color: vendor.is_active ? '#065f46' : '#92400e',
                                   }}
                                 >
-                                  {vendor.status?.charAt(0).toUpperCase() + vendor.status?.slice(1)}
+                                  {vendor.is_active ? 'Active' : 'Inactive'}
                                 </span>
                               </td>
                               <td>{new Date(vendor.created_at).toLocaleDateString()}</td>
@@ -490,8 +494,8 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                     >
                       <option value="">Select a vendor</option>
                       {vendorList.map((vendor) => (
-                        <option key={vendor.vendor_unique_id} value={vendor.vendor_unique_id}>
-                          {vendor.username} ({vendor.vendor_unique_id}) - {vendor.category?.type || 'N/A'}
+                        <option key={vendor.unique_id} value={vendor.unique_id}>
+                          {vendor.username} ({vendor.unique_id}) - {vendor.category || 'N/A'}
                         </option>
                       ))}
                     </Form.Select>
