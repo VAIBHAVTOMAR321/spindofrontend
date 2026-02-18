@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Form, Button, Alert, Row, Col, InputGroup } from 'react-bootstrap';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
@@ -6,12 +6,13 @@ import "../assets/css/registration.css";
 
 // API base URL - updated to the production endpoint
 const API_BASE_URL = 'https://mahadevaaya.com/spindo/spindobackend';
+const DISTRICT_BLOCKS_API = `${API_BASE_URL}/api/district-blocks/`;
 
 function Registration() {
   const [formData, setFormData] = useState({
     username: '',
     mobile_number: '',
-    state: '',
+    state: 'Uttarakhand',
     district: '',
     block: '',
     password: '',
@@ -31,6 +32,58 @@ function Registration() {
     number: false,
     valid: false
   });
+  
+  // State for districts and blocks
+  const [districts, setDistricts] = useState([]);
+  const [blocks, setBlocks] = useState([]);
+  const [districtLoading, setDistrictLoading] = useState(false);
+  const [blockLoading, setBlockLoading] = useState(false);
+  const [districtBlocksData, setDistrictBlocksData] = useState({});
+
+  // Fetch all districts on component mount
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      setDistrictLoading(true);
+      try {
+        const response = await axios.get(DISTRICT_BLOCKS_API);
+        
+        // Extract districts from the response
+        if (response.data.data && response.data.data.districts && Array.isArray(response.data.data.districts)) {
+          const districtList = response.data.data.districts.map(item => item.district);
+          setDistricts(districtList.sort());
+          
+          // Store the full district-blocks data for later use
+          const dataMap = {};
+          response.data.data.districts.forEach(item => {
+            dataMap[item.district] = item.blocks || [];
+          });
+          setDistrictBlocksData(dataMap);
+        }
+      } catch (error) {
+        console.error('Error fetching districts:', error);
+        setDistricts([]);
+      } finally {
+        setDistrictLoading(false);
+      }
+    };
+    
+    fetchDistricts();
+  }, []);
+
+  // Fetch blocks when district changes
+  useEffect(() => {
+    if (formData.district && districtBlocksData[formData.district]) {
+      // Use the stored blocks data
+      setBlocks(districtBlocksData[formData.district].sort());
+      // Clear block selection when district changes
+      setFormData(prev => ({
+        ...prev,
+        block: ''
+      }));
+    } else {
+      setBlocks([]);
+    }
+  }, [formData.district, districtBlocksData]);
 
   // Custom handler for username to prevent numbers
   const handleUsernameChange = (e) => {
@@ -218,25 +271,17 @@ function Registration() {
       newErrors.mobile_number = 'Mobile number must be exactly 10 digits';
     }
     
-    // State validation
-    if (!formData.state.trim()) {
-      newErrors.state = 'State is required';
-    } else if (!/^[a-zA-Z\s]+$/.test(formData.state)) {
-      newErrors.state = 'State should only contain letters';
-    }
+    // State validation - already set to Uttarakhand, no need to validate
+    // State is pre-filled and read-only
     
     // District validation
     if (!formData.district.trim()) {
       newErrors.district = 'District is required';
-    } else if (!/^[a-zA-Z\s]+$/.test(formData.district)) {
-      newErrors.district = 'District should only contain letters';
     }
     
     // Block validation
     if (!formData.block.trim()) {
       newErrors.block = 'Block is required';
-    } else if (!/^[a-zA-Z\s]+$/.test(formData.block)) {
-      newErrors.block = 'Block should only contain letters';
     }
     
     // Password validation
@@ -284,9 +329,6 @@ function Registration() {
       setServerResponse(response.data);
       setRegistrationSuccess(true);
       setIsLoading(false);
-      
-      console.log('Payload sent:', payload);
-      console.log('Server response:', response.data);
     } catch (error) {
       console.error('Registration error:', error);
       // Handle different types of errors
@@ -318,7 +360,7 @@ function Registration() {
     setFormData({
       username: '',
       mobile_number: '',
-      state: '',
+      state: 'Uttarakhand',
       district: '',
       block: '',
       password: '',
@@ -334,6 +376,7 @@ function Registration() {
       number: false,
       valid: false
     });
+    setBlocks([]);
   };
 
   return (
@@ -446,14 +489,13 @@ function Registration() {
                      type="text"
                      name="state"
                      value={formData.state}
-                     onChange={handleChange}
-                     isInvalid={!!errors.state}
-                     placeholder="State"
+                     disabled
+                     readOnly
                      className='spi-control'
                    />
-                   <Form.Control.Feedback type="invalid">
-                     {errors.state}
-                   </Form.Control.Feedback>
+                   <Form.Text className="text-muted">
+                     Uttarakhand (Fixed)
+                   </Form.Text>
                  </Form.Group>
                </Col>
                
@@ -461,17 +503,23 @@ function Registration() {
                  <Form.Group className="mb-3" controlId="formDistrict">
                    <Form.Label className='spi-label'>District <span className='api-star'>*</span></Form.Label>
                    <Form.Control
-                     type="text"
+                     as="select"
                      name="district"
                      value={formData.district}
                      onChange={handleChange}
                      isInvalid={!!errors.district}
-                     placeholder="District"
+                     disabled={districtLoading}
                      className='spi-control'
-                   />
+                   >
+                     <option value="">Select District</option>
+                     {districts.map((dist, index) => (
+                       <option key={index} value={dist}>{dist}</option>
+                     ))}
+                   </Form.Control>
                    <Form.Control.Feedback type="invalid">
                      {errors.district}
                    </Form.Control.Feedback>
+                   {districtLoading && <Form.Text className="text-muted">Loading districts...</Form.Text>}
                  </Form.Group>
                </Col>
                
@@ -479,17 +527,25 @@ function Registration() {
                  <Form.Group className="mb-3" controlId="formBlock">
                    <Form.Label className='spi-label'>Block <span className='api-star'>*</span></Form.Label>
                    <Form.Control
-                     type="text"
+                     as="select"
                      name="block"
                      value={formData.block}
                      onChange={handleChange}
                      isInvalid={!!errors.block}
-                     placeholder="Block"
+                     disabled={!formData.district || blockLoading || blocks.length === 0}
                      className='spi-control'
-                   />
+                   >
+                     <option value="">Select Block</option>
+                     {blocks.map((blk, index) => (
+                       <option key={index} value={blk}>{blk}</option>
+                     ))}
+                   </Form.Control>
                    <Form.Control.Feedback type="invalid">
                      {errors.block}
                    </Form.Control.Feedback>
+                   {!formData.district && <Form.Text className="text-muted">Please select district first</Form.Text>}
+                   {blockLoading && <Form.Text className="text-muted">Loading blocks...</Form.Text>}
+                   {formData.district && blocks.length === 0 && !blockLoading && <Form.Text className="text-muted">No blocks available for this district</Form.Text>}
                  </Form.Group>
                </Col>
             

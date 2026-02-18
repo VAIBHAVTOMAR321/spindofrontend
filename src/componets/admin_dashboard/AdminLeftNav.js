@@ -80,14 +80,14 @@ const menuItems = [
     path: "/RequestServices",
   },
   {
+    icon: <FaBook />,
+    label: "Generated Bills",
+    path: "/AllBills",
+  },
+  {
     icon: <FaComments />,
     label: "Online Query (feedback/Suggestion)",
     path: "/OnlineQuery",
-  },
-  {
-    icon: <FaBook />,
-    label: "Generated Bills",
-    path: "/GeneratedBills",
   },
 ];
 
