@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Table, Button, Form, Modal, Nav, Tab } from "react-bootstrap";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import AdminHeader from "../AdminHeader";
@@ -12,6 +13,10 @@ const STAFF_QUERIES_API = `${BASE_URL}/api/staffadmin/issue/`;
 const VENDOR_QUERIES_API = `${BASE_URL}/api/vendor/request/`;
 
 const AllQueries = ({ showCardOnly = false }) => {
+  // Get location state for tab routing
+  const location = useLocation();
+  const initialTab = location.state?.tab || "user";
+
   // Sidebar and device state
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -33,7 +38,7 @@ const AllQueries = ({ showCardOnly = false }) => {
   const { tokens } = useAuth();
 
   // Tab state
-  const [activeTab, setActiveTab] = useState("user");
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   // Data state for User Queries
   const [userQueries, setUserQueries] = useState([]);
@@ -84,7 +89,7 @@ const AllQueries = ({ showCardOnly = false }) => {
     }
     
     // Show remark modal for accepted or rejected status
-    if (newStatus === 'approved' || newStatus === 'rejected') {
+    if (newStatus === 'accepted' || newStatus === 'rejected') {
       setRemarkQueryId(id);
       setRemarkQueryType('user');
       setRemarkStatus(newStatus);
@@ -105,7 +110,7 @@ const AllQueries = ({ showCardOnly = false }) => {
     }
     
     // Show remark modal for accepted or rejected status
-    if (newStatus === 'approved' || newStatus === 'rejected') {
+    if (newStatus === 'accepted' || newStatus === 'rejected') {
       setRemarkQueryId(id);
       setRemarkQueryType('staff');
       setRemarkStatus(newStatus);
@@ -126,7 +131,7 @@ const AllQueries = ({ showCardOnly = false }) => {
     }
     
     // Show remark modal for accepted or rejected status
-    if (newStatus === 'approved' || newStatus === 'rejected') {
+    if (newStatus === 'accepted' || newStatus === 'rejected') {
       setRemarkQueryId(id);
       setRemarkQueryType('vendor');
       setRemarkStatus(newStatus);
@@ -157,16 +162,10 @@ const AllQueries = ({ showCardOnly = false }) => {
         extra_remark: remark || ''
       };
 
-      console.log('=== SENDING UPDATE ===');
-      console.log('Payload:', JSON.stringify(payload, null, 2));
-      console.log('Query Type:', queryType);
-
       let apiEndpoint = '';
       if (queryType === 'user') apiEndpoint = USER_QUERIES_API;
       else if (queryType === 'staff') apiEndpoint = STAFF_QUERIES_API;
       else if (queryType === 'vendor') apiEndpoint = VENDOR_QUERIES_API;
-
-      console.log('API Endpoint:', apiEndpoint);
 
       const response = await axios.put(apiEndpoint, payload, {
         headers: { 
@@ -174,11 +173,6 @@ const AllQueries = ({ showCardOnly = false }) => {
           'Content-Type': 'application/json'
         },
       });
-
-      console.log('=== BACKEND RESPONSE ===');
-      console.log('Status Code:', response.status);
-      console.log('Response Data:', JSON.stringify(response.data, null, 2));
-      console.log('Updated Fields in Response:', response.data.data || response.data);
 
       // Update local state with both status and remark
       const updatePayload = { 
@@ -194,13 +188,11 @@ const AllQueries = ({ showCardOnly = false }) => {
         setVendorQueries(vendorQueries.map(q => q.id === id ? { ...q, ...updatePayload } : q));
       }
 
-      console.log('Local state updated with:', updatePayload);
       alert('Status and remarks updated successfully');
       setShowRemarkModal(false);
       setRemarkText('');
 
       // Refetch all queries to verify backend saved the changes
-      console.log('Refetching data to verify backend changes...');
       setTimeout(() => {
         if (queryType === 'user') fetchUserQueries();
         else if (queryType === 'staff') fetchStaffQueries();
@@ -208,10 +200,6 @@ const AllQueries = ({ showCardOnly = false }) => {
       }, 500);
 
     } catch (error) {
-      console.error('=== UPDATE ERROR ===');
-      console.error('Error Status:', error.response?.status);
-      console.error('Error Data:', error.response?.data);
-      console.error('Error Message:', error.message);
       alert('Failed to update status: ' + (error.response?.data?.message || error.message));
     } finally {
       setUpdatingId(null);
@@ -231,7 +219,6 @@ const AllQueries = ({ showCardOnly = false }) => {
     } catch (error) {
       setUserQueries([]);
       setUserCount(0);
-      console.error("GET USER QUERIES ERROR:", error.response?.data || error.message);
     }
   };
 
@@ -247,7 +234,6 @@ const AllQueries = ({ showCardOnly = false }) => {
     } catch (error) {
       setStaffQueries([]);
       setStaffCount(0);
-      console.error("GET STAFF QUERIES ERROR:", error.response?.data || error.message);
     }
   };
 
@@ -263,7 +249,6 @@ const AllQueries = ({ showCardOnly = false }) => {
     } catch (error) {
       setVendorQueries([]);
       setVendorCount(0);
-      console.error("GET VENDOR QUERIES ERROR:", error.response?.data || error.message);
     }
   };
 
@@ -311,9 +296,9 @@ const AllQueries = ({ showCardOnly = false }) => {
               <div
                 className="mb-4 d-flex align-items-center justify-content-between gap-3 flex-wrap totalreg-header-row"
                 style={{
-                  background: 'linear-gradient(90deg, #f8fafc 60%, #e0e7ff 100%)',
+                  background: 'linear-gradient(90deg, #cffafe 60%, #a5f3fc 100%)',
                   borderRadius: 18,
-                  boxShadow: '0 2px 12px 0 rgba(60, 72, 88, 0.10)',
+                  boxShadow: '0 2px 12px 0 rgba(8, 145, 178, 0.10)',
                   padding: '18px 12px',
                   minHeight: 90,
                 }}
@@ -325,13 +310,13 @@ const AllQueries = ({ showCardOnly = false }) => {
                       minWidth: 180,
                       maxWidth: 260,
                       borderRadius: 16,
-                      boxShadow: '0 2px 12px 0 rgba(99,102,241,0.10)',
+                      boxShadow: '0 2px 12px 0 rgba(6,182,212,0.10)',
                       border: '1px solid #e5e7eb',
                       background: '#fff',
                     }}
                   >
-                    <h6 style={{ color: '#6366f1', fontWeight: 700, marginTop: 10 }}>Total Queries</h6>
-                    <h2 style={{ color: '#1e293b', fontWeight: 800, marginBottom: 10 }}>{totalCount}</h2>
+                    <h6 style={{ color: '#0891b2', fontWeight: 700, marginTop: 10 }}>Total Queries</h6>
+                    <h2 style={{ color: '#164e63', fontWeight: 800, marginBottom: 10 }}>{totalCount}</h2>
                   </Card>
                 </div>
               </div>
@@ -452,17 +437,17 @@ const AllQueries = ({ showCardOnly = false }) => {
                                       fontWeight: 600,
                                       backgroundColor: 
                                         query.status === 'pending' ? '#fef3c7' : 
-                                        query.status === 'approved' ? '#d1fae5' : 
+                                        query.status === 'accepted' ? '#d1fae5' : 
                                         query.status === 'rejected' ? '#fee2e2' : '#fff',
                                       color: 
                                         query.status === 'pending' ? '#92400e' : 
-                                        query.status === 'approved' ? '#065f46' : 
+                                        query.status === 'accepted' ? '#065f46' : 
                                         query.status === 'rejected' ? '#991b1b' : '#000',
                                       cursor: updatingId === query.id ? 'not-allowed' : 'pointer'
                                     }}
                                   >
                                     <option value="pending">Pending</option>
-                                    <option value="approved">Accepted</option>
+                                    <option value="accepted">Accepted</option>
                                     <option value="rejected">Rejected</option>
                                   </Form.Select>
                                 </td>
@@ -552,17 +537,17 @@ const AllQueries = ({ showCardOnly = false }) => {
                                       fontWeight: 600,
                                       backgroundColor: 
                                         query.status === 'pending' ? '#fef3c7' : 
-                                        query.status === 'approved' ? '#d1fae5' : 
+                                        query.status === 'accepted' ? '#d1fae5' : 
                                         query.status === 'rejected' ? '#fee2e2' : '#fff',
                                       color: 
                                         query.status === 'pending' ? '#92400e' : 
-                                        query.status === 'approved' ? '#065f46' : 
+                                        query.status === 'accepted' ? '#065f46' : 
                                         query.status === 'rejected' ? '#991b1b' : '#000',
                                       cursor: updatingId === query.id ? 'not-allowed' : 'pointer'
                                     }}
                                   >
                                     <option value="pending">Pending</option>
-                                    <option value="approved">Accepted</option>
+                                    <option value="accepted">Accepted</option>
                                     <option value="rejected">Rejected</option>
                                   </Form.Select>
                                 </td>
@@ -647,17 +632,17 @@ const AllQueries = ({ showCardOnly = false }) => {
                                       fontWeight: 600,
                                       backgroundColor: 
                                         query.status === 'pending' ? '#fef3c7' : 
-                                        query.status === 'approved' ? '#d1fae5' : 
+                                        query.status === 'accepted' ? '#d1fae5' : 
                                         query.status === 'rejected' ? '#fee2e2' : '#fff',
                                       color: 
                                         query.status === 'pending' ? '#92400e' : 
-                                        query.status === 'approved' ? '#065f46' : 
+                                        query.status === 'accepted' ? '#065f46' : 
                                         query.status === 'rejected' ? '#991b1b' : '#000',
                                       cursor: updatingId === query.id ? 'not-allowed' : 'pointer'
                                     }}
                                   >
                                     <option value="pending">Pending</option>
-                                    <option value="approved">Accepted</option>
+                                    <option value="accepted">Accepted</option>
                                     <option value="rejected">Rejected</option>
                                   </Form.Select>
                                 </td>
@@ -699,7 +684,7 @@ const AllQueries = ({ showCardOnly = false }) => {
               <Modal show={showRemarkModal} onHide={() => setShowRemarkModal(false)} centered>
                 <Modal.Header closeButton style={{ background: '#f1f5f9', borderBottom: '1px solid #e5e7eb' }}>
                   <Modal.Title style={{ fontWeight: 700, color: '#1e293b' }}>
-                    Add Remark for {remarkStatus === 'approved' ? 'Accepted' : 'Rejected'} Status
+                    Add Remark for {remarkStatus === 'accepted' ? 'Accepted' : 'Rejected'} Status
                   </Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{ background: '#f8fafc', padding: '20px' }}>

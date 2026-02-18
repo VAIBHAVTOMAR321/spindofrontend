@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Table, Button, Form, Modal } from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 // Import the common layout components
 import AdminHeader from "../AdminHeader";
@@ -46,6 +48,81 @@ const TotalRegistration = () => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  // Filter state
+  const [filters, setFilters] = useState({
+    unique_id: '',
+    can_name: '',
+    mobile_number: ''
+  });
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+    setCurrentPage(1);
+  };
+
+  // Filtered data
+  const filteredData = staffData.filter(staff =>
+    (!filters.unique_id || staff.unique_id?.toString().toLowerCase().includes(filters.unique_id.toLowerCase())) &&
+    (!filters.can_name || staff.can_name?.toLowerCase().includes(filters.can_name.toLowerCase())) &&
+    (!filters.mobile_number || staff.mobile_number?.toString().toLowerCase().includes(filters.mobile_number.toLowerCase()))
+  );
+
+  // PDF preview and download
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null);
+  const [showPdfModal, setShowPdfModal] = useState(false);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [showImageModal, setShowImageModal] = useState(false);
+
+    const handleViewPDF = async () => {
+      const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+      const headers = [["Unique ID", "Name", "Mobile", "Email", "Address", "Status", "Created"]];
+      const rows = filteredData.map(staff => [
+        staff.unique_id,
+        staff.can_name,
+        staff.mobile_number,
+        staff.email_id,
+        staff.address,
+        Number(staff.is_active) === 1 ? "Active" : "Inactive",
+        new Date(staff.created_at).toLocaleDateString()
+      ]);
+      autoTable(pdf, {
+        head: headers,
+        body: rows,
+        startY: 10,
+        margin: { top: 10, right: 10, left: 10, bottom: 10 },
+        theme: "grid",
+        headStyles: { fillColor: [99, 102, 241], textColor: [255, 255, 255], fontStyle: "bold" },
+        bodyStyles: { textColor: [30, 41, 59] },
+        alternateRowStyles: { fillColor: [248, 250, 252] }
+      });
+      const pdfBlob = pdf.output("blob");
+      const url = URL.createObjectURL(pdfBlob);
+      setPdfPreviewUrl(url);
+      setShowPdfModal(true);
+    };
+
+  const handleDownloadPDF = () => {
+    if (pdfPreviewUrl) {
+      const link = document.createElement("a");
+      link.href = pdfPreviewUrl;
+      link.download = "TotalRegistration.pdf";
+      link.click();
+    }
+    setShowPdfModal(false);
+    setPdfPreviewUrl(null);
+  };
+
+  const handleClosePdfModal = () => {
+    setShowPdfModal(false);
+    setPdfPreviewUrl(null);
+  };
+
+  const handleImagePreview = (imageUrl) => {
+    setImagePreviewUrl(imageUrl);
+    setShowImageModal(true);
+  };
 
   const [formData, setFormData] = useState({
   unique_id: "", // Add unique_id to the initial state
@@ -259,8 +336,8 @@ const resetForm = () => {
                       background: '#fff',
                     }}
                   >
-                    <h6 style={{ color: '#6366f1', fontWeight: 700, marginTop: 10 }}>Total Staff</h6>
-                    <h2 style={{ color: '#1e293b', fontWeight: 800, marginBottom: 10 }}>{count}</h2>
+                    <h6 style={{ color: '#059669', fontWeight: 700, marginTop: 10 }}>Total Staff</h6>
+                    <h2 style={{ color: '#065f46', fontWeight: 800, marginBottom: 10 }}>{count}</h2>
                   </Card>
                 </div>
                 <Button
@@ -274,11 +351,85 @@ const resetForm = () => {
               </div>
 
 
+              {/* Filter Inputs */}
+              <div className="mb-3">
+                <Form className="d-flex flex-wrap gap-2">
+                  <Form.Control
+                    name="unique_id"
+                    value={filters.unique_id}
+                    onChange={handleFilterChange}
+                    placeholder="Filter Unique ID"
+                    style={{ maxWidth: 140, borderRadius: 8 }}
+                  />
+                  <Form.Control
+                    name="can_name"
+                    value={filters.can_name}
+                    onChange={handleFilterChange}
+                    placeholder="Filter Name"
+                    style={{ maxWidth: 140, borderRadius: 8 }}
+                  />
+                  <Form.Control
+                    name="mobile_number"
+                    value={filters.mobile_number}
+                    onChange={handleFilterChange}
+                    placeholder="Filter Mobile"
+                    style={{ maxWidth: 140, borderRadius: 8 }}
+                  />
+                </Form>
+              </div>
+              {/* PDF Download Button */}
+              <div className="mb-3 d-flex justify-content-end">
+                <Button style={{ borderRadius: 10, fontWeight: 600, background: '#059669', borderColor: '#059669' }} onClick={handleViewPDF}>
+                  View Table as PDF
+                </Button>
+              </div>
+              {/* PDF Preview Modal */}
+              <Modal show={showPdfModal} onHide={handleClosePdfModal} size="lg" centered>
+                <Modal.Header closeButton>
+                  <Modal.Title>PDF Preview</Modal.Title>
+                </Modal.Header>
+                <Modal.Body style={{ minHeight: 500 }}>
+                  {pdfPreviewUrl ? (
+                    <iframe
+                      src={pdfPreviewUrl}
+                      title="PDF Preview"
+                      width="100%"
+                      height="500px"
+                      style={{ border: "none" }}
+                    />
+                  ) : (
+                    <div>Loading PDF...</div>
+                  )}
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button variant="primary" onClick={handleDownloadPDF}>
+                    Download PDF
+                  </Button>
+                  <Button variant="secondary" onClick={handleClosePdfModal}>
+                    Close
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+              {/* Image Preview Modal */}
+              <Modal show={showImageModal} onHide={() => setShowImageModal(false)} centered>
+                <Modal.Header closeButton>
+                  <Modal.Title>Aadhar Card Preview</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center">
+                  {imagePreviewUrl && (
+                    <img
+                      src={imagePreviewUrl}
+                      alt="Aadhar Card"
+                      style={{ maxWidth: '100%', maxHeight: '500px', borderRadius: 8 }}
+                    />
+                  )}
+                </Modal.Body>
+              </Modal>
               {/* Modern Table */}
-              <div className="table-responsive rounded-4 shadow-sm" style={{ background: '#fff', padding: '0.5rem 0.5rem 1rem 0.5rem' }}>
+              <div className="table-responsive rounded-4 shadow-sm" style={{ background: '#fff', padding: '0.5rem 0.5rem 1rem 0.5rem' }} id="staff-table-pdf">
                 <Table className="align-middle mb-0" style={{ minWidth: 700 }}>
-                  <thead style={{ background: '#f1f5f9' }}>
-                    <tr style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
+                  <thead style={{ background: '#d1fae5' }}>
+                    <tr style={{ fontWeight: 700, color: '#059669', fontSize: 15 }}>
                       <th>Unique ID</th>
                       <th>Name</th>
                       <th>Mobile</th>
@@ -291,7 +442,7 @@ const resetForm = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {staffData
+                    {filteredData
                       .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                       .map((staff) => (
                         <tr key={staff.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
@@ -306,7 +457,8 @@ const resetForm = () => {
                                 src={`${BASE_URL}${staff.can_aadharcard}`}
                                 alt="Aadhar"
                                 width="48"
-                                style={{ borderRadius: 6, border: '1px solid #e5e7eb' }}
+                                style={{ borderRadius: 6, border: '1px solid #e5e7eb', cursor: 'pointer' }}
+                                onClick={() => handleImagePreview(`${BASE_URL}${staff.can_aadharcard}`)}
                               />
                             )}
                           </td>
@@ -343,12 +495,12 @@ const resetForm = () => {
                                     Previous
                                   </Button>
                                   <span style={{ fontWeight: 600, fontSize: 15 }}>
-                                    Page {currentPage} of {Math.ceil(staffData.length / itemsPerPage) || 1}
+                                    Page {currentPage} of {Math.ceil(filteredData.length / itemsPerPage) || 1}
                                   </span>
                                   <Button
                                     variant="outline-primary"
                                     size="sm"
-                                    disabled={currentPage === Math.ceil(staffData.length / itemsPerPage) || staffData.length === 0}
+                                    disabled={currentPage === Math.ceil(filteredData.length / itemsPerPage) || filteredData.length === 0}
                                     onClick={() => setCurrentPage((prev) => prev + 1)}
                                     style={{ minWidth: 80 }}
                                   >

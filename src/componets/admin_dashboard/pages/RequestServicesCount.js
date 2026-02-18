@@ -33,12 +33,12 @@ const RequestServicesCount = ({ showCardOnly = false }) => {
 
   if (showCardOnly) {
     return (
-      <div className="dashboard-card">
+      <div className="dashboard-card" style={{ background: 'linear-gradient(135deg, #ffe4e6 60%, #ffcdd2 100%)', boxShadow: '0 2px 12px 0 rgba(244, 63, 94, 0.10)' }}>
         <div className="dashboard-card-icon request-icon" title="Request for services">
-          <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M12 20v-6m0 0l-3 3m3-3l3 3M4 8V6a2 2 0 012-2h12a2 2 0 012 2v2" stroke="#6366f1" strokeWidth="2"/></svg>
+          <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M12 20v-6m0 0l-3 3m3-3l3 3M4 8V6a2 2 0 012-2h12a2 2 0 012 2v2" stroke="#f43f5e" strokeWidth="2"/></svg>
         </div>
         <div className="dashboard-card-title">Request for services</div>
-        <div className="dashboard-card-value">{count}</div>
+        <div className="dashboard-card-value" style={{ color: '#f43f5e' }}>{count}</div>
       </div>
     );
   }

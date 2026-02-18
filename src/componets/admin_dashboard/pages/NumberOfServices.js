@@ -33,12 +33,12 @@ const NumberOfServices = ({ showCardOnly = false }) => {
 
   if (showCardOnly) {
     return (
-      <div className="dashboard-card">
+      <div className="dashboard-card" style={{ background: 'linear-gradient(135deg, #fef3c7 60%, #fde047 100%)', boxShadow: '0 2px 12px 0 rgba(180, 83, 9, 0.10)' }}>
         <div className="dashboard-card-icon service-icon" title="Number Of Services">
-          <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" stroke="#6366f1" strokeWidth="2"/></svg>
+          <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" stroke="#b45309" strokeWidth="2"/></svg>
         </div>
         <div className="dashboard-card-title">Number Of Services</div>
-        <div className="dashboard-card-value">{count}</div>
+        <div className="dashboard-card-value" style={{ color: '#b45309' }}>{count}</div>
       </div>
     );
   }

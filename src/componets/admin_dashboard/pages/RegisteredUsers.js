@@ -5,6 +5,8 @@ import { useAuth } from "../../context/AuthContext";
 import AdminHeader from "../AdminHeader";
 import AdminLeftNav from "../AdminLeftNav";
 import "../../../assets/css/admindashboard.css";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const BASE_URL = "https://mahadevaaya.com/spindo/spindobackend";
 const API_URL = `${BASE_URL}/api/customer/register/`;
@@ -44,6 +46,32 @@ const RegisteredUsers = ({ showCardOnly = false }) => {
     password: ''
   });
   const [formError, setFormError] = useState("");
+
+  // Filter state
+  const [filters, setFilters] = useState({
+    unique_id: '',
+    username: '',
+    mobile_number: '',
+    state: '',
+    district: '',
+    block: ''
+  });
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+    setCurrentPage(1);
+  };
+
+  // Filtered data
+  const filteredData = userData.filter(user =>
+    (!filters.unique_id || user.unique_id?.toString().toLowerCase().includes(filters.unique_id.toLowerCase())) &&
+    (!filters.username || user.username?.toLowerCase().includes(filters.username.toLowerCase())) &&
+    (!filters.mobile_number || user.mobile_number?.toString().toLowerCase().includes(filters.mobile_number.toLowerCase())) &&
+    (!filters.state || user.state?.toLowerCase().includes(filters.state.toLowerCase())) &&
+    (!filters.district || user.district?.toLowerCase().includes(filters.district.toLowerCase())) &&
+    (!filters.block || user.block?.toLowerCase().includes(filters.block.toLowerCase()))
+  );
   // Handle edit button click
   const handleEdit = (user) => {
     setEditingUser(user);
@@ -56,6 +84,54 @@ const RegisteredUsers = ({ showCardOnly = false }) => {
     setFormError("");
   };
 
+    // PDF preview and download
+    const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null);
+    const [showPdfModal, setShowPdfModal] = useState(false);
+
+    const handleViewPDF = async () => {
+      const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+      const headers = [["Unique ID", "Name", "Mobile", "Email", "State", "District", "Block", "Created"]];
+      const rows = filteredData.map(user => [
+        user.unique_id,
+        user.username,
+        user.mobile_number,
+        user.email,
+        user.state,
+        user.district,
+        user.block,
+        new Date(user.created_at).toLocaleDateString()
+      ]);
+      autoTable(pdf, {
+        head: headers,
+        body: rows,
+        startY: 10,
+        margin: { top: 10, right: 10, left: 10, bottom: 10 },
+        theme: "grid",
+        headStyles: { fillColor: [99, 102, 241], textColor: [255, 255, 255], fontStyle: "bold" },
+        bodyStyles: { textColor: [30, 41, 59] },
+        alternateRowStyles: { fillColor: [248, 250, 252] }
+      });
+      const pdfBlob = pdf.output("blob");
+      const url = URL.createObjectURL(pdfBlob);
+      setPdfPreviewUrl(url);
+      setShowPdfModal(true);
+    };
+
+    const handleDownloadPDF = () => {
+      if (pdfPreviewUrl) {
+        const link = document.createElement("a");
+        link.href = pdfPreviewUrl;
+        link.download = "RegisteredUsers.pdf";
+        link.click();
+      }
+      setShowPdfModal(false);
+      setPdfPreviewUrl(null);
+    };
+
+    const handleClosePdfModal = () => {
+      setShowPdfModal(false);
+      setPdfPreviewUrl(null);
+    };
   // Handle form change
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -188,8 +264,88 @@ const RegisteredUsers = ({ showCardOnly = false }) => {
                   {manageMode ? "Close Manage" : "Manage"}
                 </Button>
               </div>
+              {/* Filter Inputs */}
+              <div className="mb-3">
+                <Form className="d-flex flex-wrap gap-2">
+                  <Form.Control
+                    name="unique_id"
+                    value={filters.unique_id}
+                    onChange={handleFilterChange}
+                    placeholder="Filter Unique ID"
+                    style={{ maxWidth: 140, borderRadius: 8 }}
+                  />
+                  <Form.Control
+                    name="username"
+                    value={filters.username}
+                    onChange={handleFilterChange}
+                    placeholder="Filter Name"
+                    style={{ maxWidth: 140, borderRadius: 8 }}
+                  />
+                  <Form.Control
+                    name="mobile_number"
+                    value={filters.mobile_number}
+                    onChange={handleFilterChange}
+                    placeholder="Filter Mobile"
+                    style={{ maxWidth: 140, borderRadius: 8 }}
+                  />
+                  <Form.Control
+                    name="state"
+                    value={filters.state}
+                    onChange={handleFilterChange}
+                    placeholder="Filter State"
+                    style={{ maxWidth: 140, borderRadius: 8 }}
+                  />
+                  <Form.Control
+                    name="district"
+                    value={filters.district}
+                    onChange={handleFilterChange}
+                    placeholder="Filter District"
+                    style={{ maxWidth: 140, borderRadius: 8 }}
+                  />
+                  <Form.Control
+                    name="block"
+                    value={filters.block}
+                    onChange={handleFilterChange}
+                    placeholder="Filter Block"
+                    style={{ maxWidth: 140, borderRadius: 8 }}
+                  />
+                </Form>
+              </div>
+              {/* PDF Download Button */}
+              <div className="mb-3 d-flex justify-content-end">
+                <Button variant="success" onClick={handleViewPDF} style={{ borderRadius: 10, fontWeight: 600 }}>
+                  View Table as PDF
+                </Button>
+              </div>
+                            {/* PDF Preview Modal */}
+                            <Modal show={showPdfModal} onHide={handleClosePdfModal} size="lg" centered>
+                              <Modal.Header closeButton>
+                                <Modal.Title>PDF Preview</Modal.Title>
+                              </Modal.Header>
+                              <Modal.Body style={{ minHeight: 500 }}>
+                                {pdfPreviewUrl ? (
+                                  <iframe
+                                    src={pdfPreviewUrl}
+                                    title="PDF Preview"
+                                    width="100%"
+                                    height="500px"
+                                    style={{ border: "none" }}
+                                  />
+                                ) : (
+                                  <div>Loading PDF...</div>
+                                )}
+                              </Modal.Body>
+                              <Modal.Footer>
+                                <Button variant="primary" onClick={handleDownloadPDF}>
+                                  Download PDF
+                                </Button>
+                                <Button variant="secondary" onClick={handleClosePdfModal}>
+                                  Close
+                                </Button>
+                              </Modal.Footer>
+                            </Modal>
               {/* Modern Table */}
-              <div className="table-responsive rounded-4 shadow-sm" style={{ background: '#fff', padding: '0.5rem 0.5rem 1rem 0.5rem' }}>
+              <div className="table-responsive rounded-4 shadow-sm" style={{ background: '#fff', padding: '0.5rem 0.5rem 1rem 0.5rem' }} id="user-table-pdf">
                 <Table className="align-middle mb-0" style={{ minWidth: 700 }}>
                   <thead style={{ background: '#f1f5f9' }}>
                     <tr style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
@@ -206,7 +362,7 @@ const RegisteredUsers = ({ showCardOnly = false }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {userData
+                    {filteredData
                       .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                       .map((user) => (
                         <tr key={user.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
@@ -256,12 +412,12 @@ const RegisteredUsers = ({ showCardOnly = false }) => {
                     Previous
                   </Button>
                   <span style={{ fontWeight: 600, fontSize: 15 }}>
-                    Page {currentPage} of {Math.ceil(userData.length / itemsPerPage) || 1}
+                    Page {currentPage} of {Math.ceil(filteredData.length / itemsPerPage) || 1}
                   </span>
                   <Button
                     variant="outline-primary"
                     size="sm"
-                    disabled={currentPage === Math.ceil(userData.length / itemsPerPage) || userData.length === 0}
+                    disabled={currentPage === Math.ceil(filteredData.length / itemsPerPage) || filteredData.length === 0}
                     onClick={() => setCurrentPage((prev) => prev + 1)}
                     style={{ minWidth: 80 }}
                   >

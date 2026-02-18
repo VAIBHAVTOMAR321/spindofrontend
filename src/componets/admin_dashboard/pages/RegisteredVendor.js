@@ -5,6 +5,8 @@ import { useAuth } from "../../context/AuthContext";
 import AdminHeader from "../AdminHeader";
 import AdminLeftNav from "../AdminLeftNav";
 import "../../../assets/css/admindashboard.css";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const BASE_URL = "https://mahadevaaya.com/spindo/spindobackend";
 const API_URL = `${BASE_URL}/api/vendor/register/`;
@@ -41,6 +43,90 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
   });
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
+
+  // Filter state
+  const [filters, setFilters] = useState({
+    unique_id: '',
+    username: '',
+    mobile_number: '',
+    state: '',
+    district: '',
+    block: '',
+    category: ''
+  });
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+    setCurrentPage(1);
+  };
+
+  // Filtered data
+  const filteredData = vendorData.filter(vendor =>
+    (!filters.unique_id || vendor.unique_id?.toString().toLowerCase().includes(filters.unique_id.toLowerCase())) &&
+    (!filters.username || vendor.username?.toLowerCase().includes(filters.username.toLowerCase())) &&
+    (!filters.mobile_number || vendor.mobile_number?.toString().toLowerCase().includes(filters.mobile_number.toLowerCase())) &&
+    (!filters.state || vendor.state?.toLowerCase().includes(filters.state.toLowerCase())) &&
+    (!filters.district || vendor.district?.toLowerCase().includes(filters.district.toLowerCase())) &&
+    (!filters.block || vendor.block?.toLowerCase().includes(filters.block.toLowerCase())) &&
+    (!filters.category || vendor.category?.toLowerCase().includes(filters.category.toLowerCase()))
+  );
+
+  // PDF preview and download
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null);
+  const [showPdfModal, setShowPdfModal] = useState(false);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [showImageModal, setShowImageModal] = useState(false);
+
+  const handleViewPDF = async () => {
+    const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    const headers = [["Unique ID", "Name", "Mobile", "State", "District", "Block", "Category", "Created"]];
+    const rows = filteredData.map(vendor => [
+      vendor.unique_id,
+      vendor.username,
+      vendor.mobile_number,
+      vendor.state,
+      vendor.district,
+      vendor.block,
+      vendor.category,
+      new Date(vendor.created_at).toLocaleDateString()
+    ]);
+    autoTable(pdf, {
+      head: headers,
+      body: rows,
+      startY: 10,
+      margin: { top: 10, right: 10, left: 10, bottom: 10 },
+      theme: "grid",
+      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255], fontStyle: "bold" },
+      bodyStyles: { textColor: [30, 41, 59] },
+      alternateRowStyles: { fillColor: [248, 250, 252] }
+    });
+    const pdfBlob = pdf.output("blob");
+    const url = URL.createObjectURL(pdfBlob);
+    setPdfPreviewUrl(url);
+    setShowPdfModal(true);
+  };
+
+  const handleImagePreview = (imageUrl) => {
+    setImagePreviewUrl(imageUrl);
+    setShowImageModal(true);
+  };
+
+  const handleDownloadPDF = () => {
+    if (pdfPreviewUrl) {
+      const link = document.createElement("a");
+      link.href = pdfPreviewUrl;
+      link.download = "RegisteredVendor.pdf";
+      link.click();
+    }
+    setShowPdfModal(false);
+    setPdfPreviewUrl(null);
+  };
+
+  const handleClosePdfModal = () => {
+    setShowPdfModal(false);
+    setPdfPreviewUrl(null);
+  };
 
   const handleEdit = (vendor) => {
     setEditingVendor(vendor);
@@ -201,6 +287,108 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
                   {manageMode ? "Close Manage" : "Manage"}
                 </Button>
               </div>
+              {/* Filter Inputs */}
+              <div className="mb-3">
+                <Form className="d-flex flex-wrap gap-2">
+                  <Form.Control
+                    name="unique_id"
+                    value={filters.unique_id}
+                    onChange={handleFilterChange}
+                    placeholder="Filter Unique ID"
+                    style={{ maxWidth: 140, borderRadius: 8 }}
+                  />
+                  <Form.Control
+                    name="username"
+                    value={filters.username}
+                    onChange={handleFilterChange}
+                    placeholder="Filter Name"
+                    style={{ maxWidth: 140, borderRadius: 8 }}
+                  />
+                  <Form.Control
+                    name="mobile_number"
+                    value={filters.mobile_number}
+                    onChange={handleFilterChange}
+                    placeholder="Filter Mobile"
+                    style={{ maxWidth: 140, borderRadius: 8 }}
+                  />
+                  <Form.Control
+                    name="state"
+                    value={filters.state}
+                    onChange={handleFilterChange}
+                    placeholder="Filter State"
+                    style={{ maxWidth: 140, borderRadius: 8 }}
+                  />
+                  <Form.Control
+                    name="district"
+                    value={filters.district}
+                    onChange={handleFilterChange}
+                    placeholder="Filter District"
+                    style={{ maxWidth: 140, borderRadius: 8 }}
+                  />
+                  <Form.Control
+                    name="block"
+                    value={filters.block}
+                    onChange={handleFilterChange}
+                    placeholder="Filter Block"
+                    style={{ maxWidth: 140, borderRadius: 8 }}
+                  />
+                  <Form.Control
+                    name="category"
+                    value={filters.category}
+                    onChange={handleFilterChange}
+                    placeholder="Filter Category"
+                    style={{ maxWidth: 140, borderRadius: 8 }}
+                  />
+                </Form>
+              </div>
+              {/* PDF Download Button */}
+              <div className="mb-3 d-flex justify-content-end">
+                <Button variant="success" onClick={handleViewPDF} style={{ borderRadius: 10, fontWeight: 600 }}>
+                  View Table as PDF
+                </Button>
+              </div>
+              {/* PDF Preview Modal */}
+              <Modal show={showPdfModal} onHide={handleClosePdfModal} size="lg" centered>
+                <Modal.Header closeButton>
+                  <Modal.Title>PDF Preview</Modal.Title>
+                </Modal.Header>
+                <Modal.Body style={{ minHeight: 500 }}>
+                  {pdfPreviewUrl ? (
+                    <iframe
+                      src={pdfPreviewUrl}
+                      title="PDF Preview"
+                      width="100%"
+                      height="500px"
+                      style={{ border: "none" }}
+                    />
+                  ) : (
+                    <div>Loading PDF...</div>
+                  )}
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button variant="success" onClick={handleDownloadPDF}>
+                    Download PDF
+                  </Button>
+                  <Button variant="secondary" onClick={handleClosePdfModal}>
+                    Close
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+              {/* Image Preview Modal */}
+              <Modal show={showImageModal} onHide={() => setShowImageModal(false)} centered>
+                <Modal.Header closeButton>
+                  <Modal.Title>Aadhar Card Preview</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center">
+                  {imagePreviewUrl && (
+                    <img
+                      src={imagePreviewUrl}
+                      alt="Aadhar Card"
+                      style={{ maxWidth: '100%', maxHeight: '500px', borderRadius: 8 }}
+                    />
+                  )}
+                </Modal.Body>
+              </Modal>
               <div className="table-responsive rounded-4 shadow-sm" style={{ background: '#fff', padding: '0.5rem 0.5rem 1rem 0.5rem' }}>
                 <Table className="align-middle mb-0" style={{ minWidth: 700 }}>
                   <thead style={{ background: '#f1f5f9' }}>
@@ -213,12 +401,13 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
                       <th>District</th>
                       <th>Block</th>
                       <th>Category</th>
+                      <th>Aadhar Card</th>
                       <th>Created</th>
                       {manageMode && <th>Action</th>}
                     </tr>
                   </thead>
                   <tbody>
-                    {vendorData
+                    {filteredData
                       .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                       .map((vendor) => (
                         <tr key={vendor.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
@@ -230,6 +419,17 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
                           <td>{vendor.district}</td>
                           <td>{vendor.block}</td>
                           <td>{vendor.category}</td>
+                          <td>
+                            {vendor.aadhar_card && (
+                              <img
+                                src={`${BASE_URL}${vendor.aadhar_card}`}
+                                alt="Aadhar"
+                                width="48"
+                                style={{ borderRadius: 6, border: '1px solid #e5e7eb', cursor: 'pointer' }}
+                                onClick={() => handleImagePreview(`${BASE_URL}${vendor.aadhar_card}`)}
+                              />
+                            )}
+                          </td>
                           <td>{new Date(vendor.created_at).toLocaleDateString()}</td>
                           {manageMode && (
                             <td>
@@ -258,12 +458,12 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
                     Previous
                   </Button>
                   <span style={{ fontWeight: 600, fontSize: 15 }}>
-                    Page {currentPage} of {Math.ceil(vendorData.length / itemsPerPage) || 1}
+                    Page {currentPage} of {Math.ceil(filteredData.length / itemsPerPage) || 1}
                   </span>
                   <Button
                     variant="outline-success"
                     size="sm"
-                    disabled={currentPage === Math.ceil(vendorData.length / itemsPerPage) || vendorData.length === 0}
+                    disabled={currentPage === Math.ceil(filteredData.length / itemsPerPage) || filteredData.length === 0}
                     onClick={() => setCurrentPage((prev) => prev + 1)}
                     style={{ minWidth: 80 }}
                   >

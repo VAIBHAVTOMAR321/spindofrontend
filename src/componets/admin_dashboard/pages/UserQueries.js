@@ -59,12 +59,12 @@ const UserQueries = ({ showCardOnly = false }) => {
 
   if (showCardOnly) {
     return (
-      <div className="dashboard-card">
+      <div className="dashboard-card" style={{ background: 'linear-gradient(135deg, #ede9fe 60%, #ddd6fe 100%)', boxShadow: '0 2px 12px 0 rgba(139, 92, 246, 0.10)' }}>
         <div className="dashboard-card-icon query-icon" title="Online Query">
-          <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" stroke="#6366f1" strokeWidth="2"/></svg>
+          <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" stroke="#8b5cf6" strokeWidth="2"/></svg>
         </div>
         <div className="dashboard-card-title">Online Query<br/>(feedback/Suggestion)</div>
-        <div className="dashboard-card-value">{count}</div>
+        <div className="dashboard-card-value" style={{ color: '#8b5cf6' }}>{count}</div>
       </div>
     );
   }
@@ -89,9 +89,9 @@ const UserQueries = ({ showCardOnly = false }) => {
               <div
                 className="mb-4 d-flex align-items-center justify-content-between gap-3 flex-wrap totalreg-header-row"
                 style={{
-                  background: 'linear-gradient(90deg, #f8fafc 60%, #e0e7ff 100%)',
+                  background: 'linear-gradient(90deg, #ede9fe 60%, #ddd6fe 100%)',
                   borderRadius: 18,
-                  boxShadow: '0 2px 12px 0 rgba(60, 72, 88, 0.10)',
+                  boxShadow: '0 2px 12px 0 rgba(139, 92, 246, 0.10)',
                   padding: '18px 12px',
                   minHeight: 90,
                 }}
@@ -103,21 +103,21 @@ const UserQueries = ({ showCardOnly = false }) => {
                       minWidth: 180,
                       maxWidth: 260,
                       borderRadius: 16,
-                      boxShadow: '0 2px 12px 0 rgba(99,102,241,0.10)',
+                      boxShadow: '0 2px 12px 0 rgba(139,92,246,0.10)',
                       border: '1px solid #e5e7eb',
                       background: '#fff',
                     }}
                   >
-                    <h6 style={{ color: '#6366f1', fontWeight: 700, marginTop: 10 }}>Total Queries</h6>
-                    <h2 style={{ color: '#1e293b', fontWeight: 800, marginBottom: 10 }}>{count}</h2>
+                    <h6 style={{ color: '#8b5cf6', fontWeight: 700, marginTop: 10 }}>Total Queries</h6>
+                    <h2 style={{ color: '#581c87', fontWeight: 800, marginBottom: 10 }}>{count}</h2>
                   </Card>
                 </div>
               </div>
               {/* Modern Table */}
               <div className="table-responsive rounded-4 shadow-sm" style={{ background: '#fff', padding: '0.5rem 0.5rem 1rem 0.5rem' }}>
                 <Table className="align-middle mb-0" style={{ minWidth: 700 }}>
-                  <thead style={{ background: '#f1f5f9' }}>
-                    <tr style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
+                  <thead style={{ background: '#ede9fe' }}>
+                    <tr style={{ fontWeight: 700, color: '#8b5cf6', fontSize: 15 }}>
                       <th>Query ID</th>
                       <th>Name</th>
                       <th>Unique ID</th>
