@@ -19,6 +19,10 @@ const StaffBill = () => {
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
 
+  // State for vendors
+  const [vendors, setVendors] = useState([]);
+  const [vendorsLoading, setVendorsLoading] = useState(true);
+
   // State for the bill form
   const [billData, setBillData] = useState({
     vendor_id: "",
@@ -74,6 +78,32 @@ const StaffBill = () => {
     fetchCategories();
   }, [tokens]);
 
+  // Effect to fetch vendors
+  useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        setVendorsLoading(true);
+        const response = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/vendor/list/", {
+          headers: {
+            ...(tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}),
+          },
+        });
+        const data = await response.json();
+        if (data.status && data.data) {
+          setVendors(data.data);
+        } else {
+          setError("Failed to load vendor list.");
+        }
+      } catch (err) {
+        console.error("Error fetching vendors:", err);
+        setError("Error fetching vendor list.");
+      } finally {
+        setVendorsLoading(false);
+      }
+    };
+    fetchVendors();
+  }, [tokens]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setBillData((prev) => ({ ...prev, [name]: value }));
@@ -114,6 +144,10 @@ const StaffBill = () => {
     }
     if (!billData.amount || parseFloat(billData.amount) <= 0) {
       setError("Please enter a valid amount.");
+      return false;
+    }
+    if (!billData.vendor_id) {
+      setError("Please select a vendor.");
       return false;
     }
     setError("");
@@ -218,8 +252,8 @@ const StaffBill = () => {
                   {error && <Alert variant="danger" onClose={() => setError("")} dismissible><i className="bi bi-exclamation-circle me-2"></i>{error}</Alert>}
                   {success && <Alert variant="success" onClose={() => setSuccess("")} dismissible><i className="bi bi-check-circle me-2"></i>{success}</Alert>}
 
-                  {categoriesLoading ? (
-                    <div className="text-center"><Spinner animation="border" variant="primary" /><p className="mt-2">Loading service types...</p></div>
+                  {categoriesLoading || vendorsLoading ? (
+                    <div className="text-center"><Spinner animation="border" variant="primary" /><p className="mt-2">Loading form data...</p></div>
                   ) : (
                     <Form onSubmit={handleSubmit} autoComplete="off">
                       <Row>
@@ -239,8 +273,15 @@ const StaffBill = () => {
                       <Row>
                         <Col md={6}>
                           <Form.Group className="mb-3" controlId="vendor_id">
-                            <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}><i className="bi bi-shop me-2"></i>Vendor ID</Form.Label>
-                            <Form.Control type="text" name="vendor_id" value={billData.vendor_id} onChange={handleChange} required style={{ backgroundColor: "#e8f4f8", borderColor: "#52ab98" }} placeholder="e.g., VEND-001" />
+                            <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}><i className="bi bi-shop me-2"></i>Vendor</Form.Label>
+                            <Form.Select name="vendor_id" value={billData.vendor_id} onChange={handleChange} required disabled={vendorsLoading} style={{ backgroundColor: "#e8f4f8", borderColor: "#52ab98" }}>
+                              <option value="" disabled>-- Select Vendor --</option>
+                              {vendors.map((vendor) => (
+                                <option key={vendor.unique_id} value={vendor.unique_id}>
+                                  {vendor.username} ({vendor.unique_id})
+                                </option>
+                              ))}
+                            </Form.Select>
                           </Form.Group>
                         </Col>
                         <Col md={6}>
@@ -313,6 +354,7 @@ const StaffBill = () => {
                           </Form.Group>
                         </Col>
                       </Row>
+
                       <div className="d-flex justify-content-center gap-3 mt-5">
                         <Button variant="primary" type="submit" className="px-5 py-2 rounded-pill" disabled={loading} style={{ background: "linear-gradient(90deg, #2b6777 0%, #52ab98 100%)", border: "none", fontWeight: 600, boxShadow: "0 4px 8px rgba(43, 103, 119, 0.2)" }}>
                           {loading ? <><Spinner size="sm" animation="border" className="me-2" />Creating...</> : <><i className="bi bi-check-circle me-2"></i>Create Bill</>}

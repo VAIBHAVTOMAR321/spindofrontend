@@ -109,13 +109,13 @@ const menuItems = [
       submenu: [
          {
       icon: <FaTachometerAlt />,
-      label: "Staff Bill",
+      label: "Add Bill",
       path: "/StaffBill",
       active: true,
     },
         {
-          label: "Staff Query View",
-          path: "/StaffQueryView",
+          label: " View Bill ",
+          path: "/StaffBillView",
           icon: <FaListUl />,
         },
       ],
