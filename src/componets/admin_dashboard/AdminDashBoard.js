@@ -24,6 +24,7 @@ const VENDOR_API_URL = `${BASE_URL}/api/vendor/register/`;
 const SERVICE_API_URL = `${BASE_URL}/api/service-category/`;
 const REQUEST_SERVICES_API = `${BASE_URL}/api/customer/requestservices/`;
 const VENDOR_QUERIES_API = `${BASE_URL}/api/vendor/request/`;
+const BILLS_API = `${BASE_URL}/api/bills/`;
 
 const AdminDashBoard = () => {
   // Check device width
@@ -41,6 +42,7 @@ const AdminDashBoard = () => {
   const [staffQueriesCount, setStaffQueriesCount] = useState('--');
   const [vendorQueriesCount, setVendorQueriesCount] = useState('--');
   const [totalQueriesCount, setTotalQueriesCount] = useState('--');
+  const [billCount, setBillCount] = useState('--');
   
   const { tokens } = useAuth();
   const navigate = useNavigate();
@@ -101,6 +103,13 @@ const AdminDashBoard = () => {
         });
         const vendorQueriesData = vendorQueriesRes.data.data?.length || 0;
         setVendorQueriesCount(vendorQueriesData);
+
+        // Fetch Bills Count
+        const billsRes = await axios.get(BILLS_API, {
+          headers: { Authorization: `Bearer ${tokens.access}` }
+        });
+        const billsData = billsRes.data.data?.length || 0;
+        setBillCount(billsData);
 
         // Set total queries
         setTotalQueriesCount(userQueriesData + staffQueriesData + vendorQueriesData);
@@ -204,39 +213,61 @@ const AdminDashBoard = () => {
 
             {/* Services Section */}
             <div className="dashboard-section">
-              <h2 className="section-title">Service Management</h2>
-              <div className="dashboard-cards-grid">
-                {/* Services Card */}
-                <div className="card-wrapper" onClick={() => navigate('/ServiceCategory')}>
-                  <div className="dashboard-card card-services">
-                    <div className="dashboard-card-icon services-icon">
-                      <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
-                        <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
-                        <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
-                        <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
-                        <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
-                      </svg>
+              <Row className="g-4">
+                {/* Left Column - 8 cols */}
+                <Col lg={8} md={12}>
+                  <h2 className="section-title">Service Management</h2>
+                  <div className="dashboard-cards-grid">
+                    {/* Services Card */}
+                    <div className="card-wrapper" onClick={() => navigate('/ServiceCategory')}>
+                      <div className="dashboard-card card-services">
+                        <div className="dashboard-card-icon services-icon">
+                          <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
+                            <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
+                            <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
+                            <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
+                          </svg>
+                        </div>
+                        <div className="dashboard-card-title">Service Categories</div>
+                        <div className="dashboard-card-value">{serviceCount}</div>
+                        <div className="card-footer-text">Total Services Available</div>
+                      </div>
                     </div>
-                    <div className="dashboard-card-title">Service Categories</div>
-                    <div className="dashboard-card-value">{serviceCount}</div>
-                    <div className="card-footer-text">Total Services Available</div>
-                  </div>
-                </div>
 
-                {/* Service Requests Card */}
-                <div className="card-wrapper" onClick={() => navigate('/RequestServices')}>
-                  <div className="dashboard-card card-requests">
-                    <div className="dashboard-card-icon requests-icon">
-                      <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
-                        <path d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2"/>
-                      </svg>
+                    {/* Service Requests Card */}
+                    <div className="card-wrapper" onClick={() => navigate('/RequestServices')}>
+                      <div className="dashboard-card card-requests">
+                        <div className="dashboard-card-icon requests-icon">
+                          <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
+                            <path d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2"/>
+                          </svg>
+                        </div>
+                        <div className="dashboard-card-title">Service Requests</div>
+                        <div className="dashboard-card-value">{requestServicesCount}</div>
+                        <div className="card-footer-text">Pending & Active Requests</div>
+                      </div>
                     </div>
-                    <div className="dashboard-card-title">Service Requests</div>
-                    <div className="dashboard-card-value">{requestServicesCount}</div>
-                    <div className="card-footer-text">Pending & Active Requests</div>
                   </div>
-                </div>
-              </div>
+                </Col>
+
+                {/* Right Column - 4 cols - Bills Card */}
+                <Col lg={4} md={12}>
+                  <h2 className="section-title">Bills</h2>
+                  <div className="card-wrapper" onClick={() => navigate('/Bills')}>
+                    <div className="dashboard-card card-bills">
+                      <div className="dashboard-card-icon bills-icon">
+                        <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
+                          <path d="M9 12h6m-6 4h6m2-13H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2z" stroke="currentColor" strokeWidth="2"/>
+                        </svg>
+                      </div>
+                      <div className="dashboard-card-title">Bills</div>
+                      <div className="dashboard-card-value">{billCount}</div>
+                      <div className="card-footer-text">Total Bills</div>
+                    </div>
+                  </div>
+                </Col>
+              </Row>
             </div>
 
             {/* Queries & Support Section */}
