@@ -24,7 +24,7 @@ const VENDOR_API_URL = `${BASE_URL}/api/vendor/register/`;
 const SERVICE_API_URL = `${BASE_URL}/api/service-category/`;
 const REQUEST_SERVICES_API = `${BASE_URL}/api/customer/requestservices/`;
 const VENDOR_QUERIES_API = `${BASE_URL}/api/vendor/request/`;
-const BILLS_API = `${BASE_URL}/api/bills/`;
+const BILLS_API = `${BASE_URL}/api/billing/`;
 
 const AdminDashBoard = () => {
   // Check device width
@@ -254,7 +254,7 @@ const AdminDashBoard = () => {
                 {/* Right Column - 4 cols - Bills Card */}
                 <Col lg={4} md={12}>
                   <h2 className="section-title">Bills</h2>
-                  <div className="card-wrapper" onClick={() => navigate('/Bills')}>
+                  <div className="card-wrapper" onClick={() => navigate('/AllBills')}>
                     <div className="dashboard-card card-bills">
                       <div className="dashboard-card-icon bills-icon">
                         <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
