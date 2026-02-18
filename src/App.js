@@ -39,6 +39,7 @@ import StaffQuery from "./componets/staff_dashboard/vendor_reg/StaffQuery";
 import StaffQueryView from "./componets/staff_dashboard/vendor_reg/StaffQueryView";
 import StaffServicesRequest from "./componets/staff_dashboard/staff_services_request/StaffServicesRequest";
 import StaffCompleteRequest from "./componets/staff_dashboard/staff_services_request/StaffCompleteRequest";
+import StaffBill from "./componets/staff_dashboard/staff_services_request/StaffBill";
 
 
 function App() {
@@ -65,7 +66,8 @@ function App() {
     "/StaffQuery",
     "/StaffQueryView",
     "/StaffCompleteRequest",
-    "/StaffServicesRequest"
+    "/StaffServicesRequest",
+    "/StaffBill"
   ]);
 
   const shouldHideNavbar = hiddenPaths.has(location.pathname);
@@ -253,6 +255,23 @@ function App() {
               </Protected>
             } 
           />
+           <Route 
+            path="/StaffCompleteRequest" 
+            element={
+              <Protected allowedRoles={['staffadmin']}>
+                <StaffCompleteRequest />
+              </Protected>
+            } 
+          />
+           <Route 
+            path="/StaffBill" 
+            element={
+              <Protected allowedRoles={['staffadmin']}>
+                <StaffBill />
+              </Protected>
+            } 
+          />
+          
         </Routes>
       </main>
     </div>

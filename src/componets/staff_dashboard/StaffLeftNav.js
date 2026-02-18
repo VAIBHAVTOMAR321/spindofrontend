@@ -103,6 +103,23 @@ const menuItems = [
         },
       ],
     },
+      {
+      icon: <FaCalendarAlt />,
+      label: "Bills",
+      submenu: [
+         {
+      icon: <FaTachometerAlt />,
+      label: "Staff Bill",
+      path: "/StaffBill",
+      active: true,
+    },
+        {
+          label: "Staff Query View",
+          path: "/StaffQueryView",
+          icon: <FaListUl />,
+        },
+      ],
+    },
 
     
   ];
