@@ -514,6 +514,7 @@ const StaffDashBoard = () => {
                               <>
                                 <th>Email</th>
                                 <th>Category</th>
+                                <th>Aadhar Card</th>
                                 <th>Actions</th>
                               </>
                             )}
@@ -530,11 +531,27 @@ const StaffDashBoard = () => {
                               <td>{item.state}</td>
                               <td>{item.district}</td>
                               <td>{item.block}</td>
-                              {activeTable === "vendors" && (
-                                <>
-                                  <td>{item.email}</td>
-                                  <td>{item.category?.type || 'N/A'}</td>
-                                  <td>
+                                 {activeTable === "vendors" && (
+                                  <>
+                                    <td>{item.email}</td>
+                                    <td>{item.category?.type || 'N/A'}</td>
+                                    <td>
+                                      {item.aadhar_card ? (
+                                        <img 
+                                          src={item.aadhar_card} 
+                                          alt="Aadhar Card" 
+                                          style={{ 
+                                            width: '80px', 
+                                            height: 'auto', 
+                                            borderRadius: '4px',
+                                            objectFit: 'cover'
+                                          }} 
+                                        />
+                                      ) : (
+                                        <span className="text-muted">No Image</span>
+                                      )}
+                                    </td>
+                                    <td>
                                     <Button 
                                       variant="primary" 
                                       size="sm" 

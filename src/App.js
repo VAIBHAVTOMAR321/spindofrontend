@@ -34,6 +34,12 @@ import RegisteredUsers from "./componets/admin_dashboard/pages/RegisteredUsers";
 import RegisteredVendor from "./componets/admin_dashboard/pages/RegisteredVendor";
 import RequestServices from "./componets/admin_dashboard/pages/RequestServices";
 import AllQueries from "./componets/admin_dashboard/pages/AllQueries";
+import VendorList from "./componets/pages/services/VendorList";
+import StaffQuery from "./componets/staff_dashboard/vendor_reg/StaffQuery";
+import StaffQueryView from "./componets/staff_dashboard/vendor_reg/StaffQueryView";
+import StaffServicesRequest from "./componets/staff_dashboard/staff_services_request/StaffServicesRequest";
+import StaffCompleteRequest from "./componets/staff_dashboard/staff_services_request/StaffCompleteRequest";
+
 
 function App() {
   const location = useLocation();
@@ -55,7 +61,11 @@ function App() {
     "/RegisteredUsers",
     "/RegisteredVendor",
     "/RequestServices",
-    "/OnlineQuery"
+    "/OnlineQuery",
+    "/StaffQuery",
+    "/StaffQueryView",
+    "/StaffCompleteRequest",
+    "/StaffServicesRequest"
   ]);
 
   const shouldHideNavbar = hiddenPaths.has(location.pathname);
@@ -208,6 +218,38 @@ function App() {
             element={
               <Protected allowedRoles={['admin']}>
                 <AllQueries />
+              </Protected>
+            } 
+          />
+           <Route 
+            path="/StaffQuery" 
+            element={
+              <Protected allowedRoles={['staffadmin']}>
+                <StaffQuery />
+              </Protected>
+            } 
+          />
+            <Route 
+            path="/StaffQueryView" 
+            element={
+              <Protected allowedRoles={['staffadmin']}>
+                <StaffQueryView />
+              </Protected>
+            } 
+          />
+           <Route 
+            path="/StaffServicesRequest" 
+            element={
+              <Protected allowedRoles={['staffadmin']}>
+                <StaffServicesRequest />
+              </Protected>
+            } 
+          />
+           <Route 
+            path="/StaffCompleteRequest" 
+            element={
+              <Protected allowedRoles={['staffadmin']}>
+                <StaffCompleteRequest />
               </Protected>
             } 
           />

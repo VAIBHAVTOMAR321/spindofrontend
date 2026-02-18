@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Container, Form, Button, Row, Col, Alert, Spinner } from "react-bootstrap";
 import "../../../assets/css/admindashboard.css";
 import StaffLeftNav from "../StaffLeftNav";
@@ -7,6 +7,8 @@ import { useAuth } from "../../context/AuthContext";
 
 const VendorRegistration = () => {
   const { tokens, refreshAccessToken } = useAuth();
+  // File input ref
+  const fileInputRef = useRef(null);
   // Check device width
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -26,7 +28,8 @@ const VendorRegistration = () => {
       type: "",
       subtype: ""
     },
-    description: ""
+    description: "",
+    aadhar_card: ""
   });
   
   // UI state
@@ -67,6 +70,36 @@ const VendorRegistration = () => {
       }));
     }
   };
+
+  // Handle file input change
+  const handleFileChange = (e) => {
+    const { name, files } = e.target;
+    console.log("File input event target:", e.target);
+    console.log("Files selected:", files);
+    if (files && files.length > 0) {
+      const file = files[0];
+      console.log("Selected file details:", {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.lastModified
+      });
+      setFormData(prev => {
+        const newData = {
+          ...prev,
+          [name]: file
+        };
+        console.log("Updated formData.aadhar_card:", newData.aadhar_card);
+        return newData;
+      });
+    } else {
+      console.log("No files selected");
+      setFormData(prev => ({
+        ...prev,
+        [name]: null
+      }));
+    }
+  };
   
   // Handle form submission
   const handleSubmit = async (e) => {
@@ -76,13 +109,68 @@ const VendorRegistration = () => {
     setSuccess(false);
     
     try {
+      // Debug: Check formData state
+      console.log("formData before submission:", formData);
+      console.log("aadhar_card in formData:", formData.aadhar_card);
+      
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
+      
+      // Append all fields to FormData
+      formDataToSend.append("username", formData.username);
+      formDataToSend.append("mobile_number", formData.mobile_number);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("state", formData.state);
+      formDataToSend.append("district", formData.district);
+      formDataToSend.append("block", formData.block);
+      formDataToSend.append("password", formData.password);
+      formDataToSend.append("address", formData.address);
+      formDataToSend.append("category[type]", formData.category.type);
+      formDataToSend.append("category[subtype]", formData.category.subtype);
+      formDataToSend.append("description", formData.description);
+      
+      // Get file directly from input ref for reliability
+      let aadharFile = null;
+      if (fileInputRef.current && fileInputRef.current.files && fileInputRef.current.files.length > 0) {
+        aadharFile = fileInputRef.current.files[0];
+        console.log("Appending aadhar_card file from ref:", aadharFile);
+        formDataToSend.append("aadhar_card", aadharFile);
+      } else if (formData.aadhar_card) {
+        // Fallback to state if ref is not available
+        console.log("Appending aadhar_card file from state:", formData.aadhar_card);
+        formDataToSend.append("aadhar_card", formData.aadhar_card);
+      } else {
+        console.error("No aadhar_card file selected");
+        setError("Please select an Aadhar card file to upload");
+        setLoading(false);
+        return;
+      }
+      
+      // Debug log to verify FormData contents
+      console.log("Sending FormData entries:");
+      for (let [key, value] of formDataToSend.entries()) {
+        console.log(`${key}:`, value);
+        if (key === "aadhar_card" && (value === null || value === undefined || value === "")) {
+          console.error("aadhar_card field is null or empty in FormData");
+        }
+      }
+      
+      // Verify aadhar_card is present and valid
+      if (!formDataToSend.get("aadhar_card")) {
+        console.error("aadhar_card field not found in FormData");
+        setError("Please select an Aadhar card file to upload");
+        setLoading(false);
+        return;
+      }
+      
       const response = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/vendor/register/", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           "Authorization": `Bearer ${tokens.access}`,
+          // Don't set Content-Type header when using FormData
+          // The browser will set it automatically with the correct boundary
         },
-        body: JSON.stringify(formData),
+        body: formDataToSend,
       });
       
       if (response.status === 401) {
@@ -93,10 +181,9 @@ const VendorRegistration = () => {
           const retryResponse = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/vendor/register/", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
               "Authorization": `Bearer ${newAccessToken}`,
             },
-            body: JSON.stringify(formData),
+            body: formDataToSend,
           });
           
           const retryData = await retryResponse.json();
@@ -117,8 +204,17 @@ const VendorRegistration = () => {
                 type: "",
                 subtype: ""
               },
-              description: ""
+              description: "",
+              aadhar_card: null
             });
+            // Clear file input
+            if (fileInputRef.current) {
+              fileInputRef.current.value = "";
+            }
+            // Clear file input
+            if (fileInputRef.current) {
+              fileInputRef.current.value = "";
+            }
           } else {
             setError(retryData.message || "Registration failed. Please try again.");
           }
@@ -127,6 +223,7 @@ const VendorRegistration = () => {
         }
       } else {
         const data = await response.json();
+        console.log("Backend response:", data);
         
         if (response.ok) {
           setSuccess(true);
@@ -144,14 +241,25 @@ const VendorRegistration = () => {
               type: "",
               subtype: ""
             },
-            description: ""
+            description: "",
+            aadhar_card: null
           });
         } else {
-          setError(data.message || "Registration failed. Please try again.");
+          // Display more detailed error information
+          if (data.errors) {
+            const errorMessages = Object.entries(data.errors)
+              .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+              .join('; ');
+            setError(errorMessages || "Registration failed. Please try again.");
+          } else {
+            setError(data.message || "Registration failed. Please try again.");
+          }
+          console.error("Backend error:", data);
         }
       }
     } catch (err) {
       setError("Network error. Please check your connection and try again.");
+      console.error("Network error:", err);
     } finally {
       setLoading(false);
     }
@@ -346,6 +454,21 @@ const VendorRegistration = () => {
                   value={formData.description}
                   onChange={handleChange}
                 />
+              </Form.Group>
+
+              <Form.Group className="mb-4" controlId="aadhar_card">
+                <Form.Label>Aadhar Card</Form.Label>
+                <Form.Control
+                  type="file"
+                  accept="image/*"
+                  name="aadhar_card"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  required
+                />
+                <Form.Text className="text-muted">
+                  Please upload a clear image of your Aadhar card (PNG, JPG, or JPEG format)
+                </Form.Text>
               </Form.Group>
               
               <Button variant="primary" type="submit" disabled={loading}>

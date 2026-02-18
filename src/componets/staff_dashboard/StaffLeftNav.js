@@ -63,26 +63,46 @@ const menuItems = [
     },
    
 
+    
+     {
+      icon: <FaCalendarAlt />,
+      label: "Services Request",
+      submenu: [
+         {
+      icon: <FaTachometerAlt />,
+      label: "Staff Services Request",
+      path: "/StaffServicesRequest",
+      active: true,
+    },
+        {
+          label: "Staff Complete Request",
+          path: "/StaffCompleteRequest",
+          icon: <FaListUl />,
+        },
+      ],
+    },
+
    
     
    
 
-    // {
-    //   icon: <FaCalendarAlt />,
-    //   label: "Event",
-    //   submenu: [
-    //     {
-    //       label: "Add Event",
-    //       path: "/AddEvent",
-    //       icon: <FaPlusSquare />,
-    //     },
-    //     {
-    //       label: "Manage Event",
-    //       path: "/ManageEvent",
-    //       icon: <FaListUl />,
-    //     },
-    //   ],
-    // },
+    {
+      icon: <FaCalendarAlt />,
+      label: "Contact with Admin",
+      submenu: [
+         {
+      icon: <FaTachometerAlt />,
+      label: "Staff Query",
+      path: "/StaffQuery",
+      active: true,
+    },
+        {
+          label: "Staff Query View",
+          path: "/StaffQueryView",
+          icon: <FaListUl />,
+        },
+      ],
+    },
 
     
   ];
