@@ -1,0 +1,198 @@
+/* Service Cards Styles */
+.home-content {
+  padding: 40px 0;
+}
+
+.home-title {
+  text-align: center;
+  margin-bottom: 40px;
+  color: #2c3e50;
+  font-weight: 700;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.home-title:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, #3498db, #2ecc71);
+  border-radius: 2px;
+}
+
+.service-card {
+  border: none;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  background: #fff;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.service-card:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #3498db, #2ecc71);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.service-card:hover:before {
+  transform: scaleX(1);
+}
+
+.service-card:hover .service-name {
+  color: #3498db;
+}
+
+.service-card:hover .service-description {
+  color: #333;
+}
+
+.service-card:hover .btn-book {
+  background: linear-gradient(90deg, #3498db, #2ecc71);
+  transform: scale(1.05);
+}
+
+/* Service Image Styles */
+.service-image-container {
+  height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+
+.service-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.service-card:hover .service-image {
+  transform: scale(1.05);
+}
+
+.service-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+/* Card Body Styles */
+.service-card .card-body {
+  padding: 25px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.service-name {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 15px;
+  transition: color 0.3s ease;
+}
+
+.service-description {
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  flex: 1;
+  transition: color 0.3s ease;
+}
+
+/* Card Footer Styles */
+.service-card .card-footer {
+  background: #f8f9fa;
+  border: none;
+  padding: 20px 25px;
+}
+
+.btn-book {
+  background: linear-gradient(90deg, #2ecc71, #27ae60);
+  color: white;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
+  width: 100%;
+}
+
+.btn-book:hover {
+  background: linear-gradient(90deg, #27ae60, #229954);
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(46, 204, 113, 0.4);
+}
+
+.btn-book:active {
+  transform: scale(0.98);
+}
+
+/* Loading Spinner Styles */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Alert Styles */
+.alert {
+  border-radius: 10px;
+  border: none;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .service-card {
+    margin-bottom: 20px;
+  }
+  
+  .service-name {
+    font-size: 1.2rem;
+  }
+  
+  .home-title {
+    font-size: 2rem;
+  }
+}
+
+/* Card Animation on Load */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

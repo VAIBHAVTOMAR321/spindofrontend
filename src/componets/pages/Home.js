@@ -1,6 +1,7 @@
 import React from 'react'
 import { Container } from 'react-bootstrap'
 import "../../assets/css/home.css"
+import ServicesPage from './services/ServicesPage'
 
 function Home() {
   return (
@@ -33,7 +34,9 @@ function Home() {
           
          
         </div>
+   
       </Container>
+           <ServicesPage />
     </div>
   )
 }
