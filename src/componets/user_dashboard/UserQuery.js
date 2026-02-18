@@ -23,7 +23,6 @@ const UserQuery = () => {
     unique_id: user?.uniqueId || "",
     title: "",
     issue: "",
-    extra_remark: "",
     issue_image: null,
   });
 
@@ -129,7 +128,6 @@ const UserQuery = () => {
         formData.append("unique_id", query.unique_id);
         formData.append("title", query.title);
         formData.append("issue", query.issue);
-        formData.append("extra_remark", query.extra_remark);
         formData.append("issue_image", query.issue_image);
         response = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/customer/issue/", {
           method: "POST",
@@ -145,7 +143,6 @@ const UserQuery = () => {
           unique_id: query.unique_id,
           title: query.title,
           issue: query.issue,
-          extra_remark: query.extra_remark,
           issue_image: null,
         };
         response = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/customer/issue/", {
@@ -172,7 +169,6 @@ const UserQuery = () => {
           unique_id: user?.uniqueId || "",
           title: "",
           issue: "",
-          extra_remark: "",
           issue_image: null,
         });
         setImagePreview("");
@@ -197,7 +193,6 @@ const UserQuery = () => {
       unique_id: user?.uniqueId || "",
       title: "",
       issue: "",
-      extra_remark: "",
       issue_image: null,
     });
     setImagePreview("");
@@ -334,24 +329,6 @@ const UserQuery = () => {
                       <Form.Text className="text-muted">
                         {query.issue.length}/1000 characters (minimum 10 required)
                       </Form.Text>
-                    </Form.Group>
-
-                    <Form.Group className="mb-3" controlId="extra_remark">
-                      <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}>
-                        <i className="bi bi-chat-left-text me-2"></i>Additional Remarks (Optional)
-                      </Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={3}
-                        name="extra_remark"
-                        value={query.extra_remark}
-                        onChange={handleChange}
-                        placeholder="Any additional information that might help us resolve your issue..."
-                        className="border-2"
-                        style={{ borderColor: "#52ab98", resize: "none" }}
-                        maxLength="500"
-                      />
-                      <Form.Text className="text-muted">{query.extra_remark.length}/500 characters</Form.Text>
                     </Form.Group>
 
                     <Form.Group className="mb-4" controlId="issue_image">

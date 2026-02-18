@@ -48,40 +48,48 @@ const AdminLeftNav = ({ sidebarOpen, setSidebarOpen, isMobile, isTablet }) => {
   };
 
 const menuItems = [
-    {
-      icon: <FaTachometerAlt />,
-      label: "Dashboard",
-      path: "/AdminDashBoard",
-      active: true,
-    },
-    {
-  icon: <FaUsers />,
-  label: "Total Registration",
-  path: "/TotalRegistration",
-},
-
-
-   
-
-    {
-      icon: <FaCalendarAlt />,
-      label: "Service Category",
-      submenu: [
-        {
-          label: "Add Service Category",
-          path: "/ServiceCategory",
-          icon: <FaPlusSquare />,
-        },
-        {
-          label: "Manage Service Category",
-          path: "/ManageServiceCategory",
-          icon: <FaListUl />,
-        },
-      ],
-    },
-
-    
-  ];
+  {
+    icon: <FaTachometerAlt />,
+    label: "Dashboard",
+    path: "/AdminDashBoard",
+    active: true,
+  },
+  {
+    icon: <FaUsers />,
+    label: "Number Of User",
+    path: "/RegisteredUsers",
+  },
+  {
+    icon: <FaUserCircle />,
+    label: "Registered Staff",
+    path: "/TotalRegistration",
+  },
+  {
+    icon: <FaIndustry />,
+    label: "Registered Vendor",
+    path: "/RegisteredVendor",
+  },
+  {
+    icon: <FaCube />,
+    label: "Number Of Services",
+    path: "/ServiceCategory",
+  },
+  {
+    icon: <FaServer />,
+    label: "Request for services",
+    path: "/RequestServices",
+  },
+  {
+    icon: <FaComments />,
+    label: "Online Query (feedback/Suggestion)",
+    path: "/OnlineQuery",
+  },
+  {
+    icon: <FaBook />,
+    label: "Generated Bills",
+    path: "/GeneratedBills",
+  },
+];
 
   //  Auto-close sidebar when switching to mobile or tablet
 

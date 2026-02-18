@@ -23,6 +23,35 @@ const UserAllQuery = () => {
   const queriesPerPage = 10;
   const { user, tokens } = useAuth();
 
+  // Fetch queries function - can be called multiple times
+  const fetchQueries = () => {
+    if (!user?.uniqueId) {
+      setError("User not logged in or missing unique ID.");
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    // Fetch all queries for this user
+    const apiUrl = `https://mahadevaaya.com/spindo/spindobackend/api/customer/issue/?unique_id=${user.uniqueId}`;
+    fetch(apiUrl, {
+      headers: tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status && Array.isArray(data.data)) {
+          setQueries(data.data);
+          setError("");
+        } else {
+          setError("Failed to load user queries.");
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("Error fetching user queries.");
+        setLoading(false);
+      });
+  };
+
   useEffect(() => {
     // If navigation state changes (e.g., user clicks a dashboard card), update filter
     if (location.state && location.state.filter && location.state.filter !== filter) {
@@ -41,30 +70,7 @@ const UserAllQuery = () => {
   }, []);
 
   useEffect(() => {
-    if (!user?.uniqueId) {
-      setError("User not logged in or missing unique ID.");
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    // Fetch all queries for this user
-    const apiUrl = `https://mahadevaaya.com/spindo/spindobackend/api/customer/issue/?unique_id=${user.uniqueId}`;
-    fetch(apiUrl, {
-      headers: tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status && Array.isArray(data.data)) {
-          setQueries(data.data);
-        } else {
-          setError("Failed to load user queries.");
-        }
-        setLoading(false);
-      })
-      .catch(() => {
-        setError("Error fetching user queries.");
-        setLoading(false);
-      });
+    fetchQueries();
   }, [user, tokens]);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
@@ -126,14 +132,24 @@ const UserAllQuery = () => {
                   {!loading && !error && (
                     <>
                       {/* Filter Dropdown */}
-                      <div className="d-flex justify-content-end mb-3">
-                        <label className="me-2 fw-semibold" htmlFor="query-filter">Filter by Status:</label>
-                        <select id="query-filter" className="form-select w-auto" value={filter} onChange={handleFilterChange}>
-                          <option value="all">All</option>
-                          <option value="Pending">Pending</option>
-                          <option value="Approved">Approved</option>
-                          <option value="Rejected">Rejected</option>
-                        </select>
+                      <div className="d-flex justify-content-between align-items-center mb-3">
+                        <div className="d-flex align-items-center">
+                          <label className="me-2 fw-semibold" htmlFor="query-filter">Filter by Status:</label>
+                          <select id="query-filter" className="form-select w-auto" value={filter} onChange={handleFilterChange}>
+                            <option value="all">All</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Accepted</option>
+                            <option value="rejected">Rejected</option>
+                          </select>
+                        </div>
+                        <Button 
+                          variant="outline-primary" 
+                          size="sm" 
+                          onClick={fetchQueries}
+                          style={{ fontWeight: 600 }}
+                        >
+                          <i className="bi bi-arrow-clockwise me-2"></i>Refresh
+                        </Button>
                       </div>
                       <Table responsive bordered hover className="rounded-4 shadow-sm">
                         <thead style={{ background: "linear-gradient(90deg, #2b6777 0%, #52ab98 100%)", color: "#fff" }}>
@@ -141,6 +157,7 @@ const UserAllQuery = () => {
                             <th>#</th>
                             <th>Title</th>
                             <th>Issue</th>
+                            <th>Remarks</th>
                             <th>Status</th>
                             <th>Date</th>
                             <th>View</th>
@@ -149,7 +166,7 @@ const UserAllQuery = () => {
                         <tbody>
                           {paginatedQueries.length === 0 ? (
                             <tr>
-                              <td colSpan={6} className="text-center">No queries found.</td>
+                              <td colSpan={7} className="text-center">No queries found.</td>
                             </tr>
                           ) : (
                             paginatedQueries.map((q, idx) => (
@@ -157,9 +174,10 @@ const UserAllQuery = () => {
                                 <td>{(currentPage - 1) * queriesPerPage + idx + 1}</td>
                                 <td>{q.title}</td>
                                 <td style={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{q.issue}</td>
+                                <td style={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{q.extra_remark || '--'}</td>
                                 <td>
-                                  <span style={{ fontWeight: 600, color: q.status === 'Approved' ? '#52ab98' : q.status === 'Rejected' ? '#e53935' : '#2b6777' }}>
-                                    {q.status || 'Pending'}
+                                  <span style={{ fontWeight: 600, color: q.status === 'approved' ? '#52ab98' : q.status === 'rejected' ? '#e53935' : '#2b6777' }}>
+                                    {q.status ? q.status.charAt(0).toUpperCase() + q.status.slice(1) : 'Pending'}
                                   </span>
                                 </td>
                                 <td>{q.created_at ? new Date(q.created_at).toLocaleString() : '-'}</td>
@@ -205,9 +223,9 @@ const UserAllQuery = () => {
                         <div>
                           <p><strong>Title:</strong> {selectedQuery.title}</p>
                           <p><strong>Issue:</strong> {selectedQuery.issue}</p>
-                          <p><strong>Status:</strong> <span style={{ fontWeight: 600, color: selectedQuery.status === 'resolved' ? '#52ab98' : '#2b6777' }}>{selectedQuery.status || 'Pending'}</span></p>
+                          <p><strong>Remarks:</strong> {selectedQuery.extra_remark || '--'}</p>
+                          <p><strong>Status:</strong> <span style={{ fontWeight: 600, color: selectedQuery.status === 'approved' ? '#52ab98' : selectedQuery.status === 'rejected' ? '#e53935' : '#2b6777' }}>{selectedQuery.status ? selectedQuery.status.charAt(0).toUpperCase() + selectedQuery.status.slice(1) : 'Pending'}</span></p>
                           <p><strong>Date:</strong> {selectedQuery.created_at ? new Date(selectedQuery.created_at).toLocaleString() : '-'}</p>
-                          {selectedQuery.extra_remark && <p><strong>Remark:</strong> {selectedQuery.extra_remark}</p>}
                           {selectedQuery.issue_image && (
                             <div className="mb-2">
                               <strong>Image:</strong><br />
