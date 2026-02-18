@@ -46,7 +46,7 @@ function NavBar() {
               <Nav.Link href="/">HOME</Nav.Link>
               <Nav.Link href="/AboutUs">ABOUT</Nav.Link>
               <NavDropdown title="SERVICES" id="basic-nav-dropdown">
-                <NavDropdown.Item href="#plumber">PLUMBER</NavDropdown.Item>
+                <NavDropdown.Item href="/VendorList">PLUMBER</NavDropdown.Item>
                 <NavDropdown.Item href="#electrician">ELECTRICIAN</NavDropdown.Item>
                 <NavDropdown.Item href="#carpenter">CARPENTER</NavDropdown.Item>
                 <NavDropdown.Item href="#painter">PAINTER</NavDropdown.Item>

@@ -29,10 +29,6 @@ import TotalRegistration from "./componets/admin_dashboard/pages/TotalRegistrati
 import ServiceCategory from "./componets/admin_dashboard/service-category/ServiceCategory";
 import Protected from "./componets/protected/Protected";
 import ManageServiceCategory from "./componets/admin_dashboard/service-category/ManageServiceCategory";
-import RegisteredUsers from "./componets/admin_dashboard/pages/RegisteredUsers";
-import RegisteredVendor from "./componets/admin_dashboard/pages/RegisteredVendor";
-import RequestServices from "./componets/admin_dashboard/pages/RequestServices";
-import AllQueries from "./componets/admin_dashboard/pages/AllQueries";
 
 function App() {
   const location = useLocation();
@@ -70,6 +66,8 @@ function App() {
           <Route path="/Registration" element={<Registration />} />
           <Route path="/Login" element={<Login />} />
           <Route path="/AboutUs" element={<AboutUs />} />
+          <Route path="/ServicesPage" element={<ServicesPage />} />
+          <Route path="/VendorList" element={<VendorList />} />
 
           {/* Protected Routes */}
           <Route 

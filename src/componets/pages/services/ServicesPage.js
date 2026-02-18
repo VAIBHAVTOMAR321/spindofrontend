@@ -1,8 +1,54 @@
-import React from 'react'
-import { Container } from 'react-bootstrap'
-import "../../assets/css/home.css"
+import React, { useState, useEffect } from 'react'
+import { Container, Row, Col, Card, Button, Image } from 'react-bootstrap'
+import "../../../assets/css/home.css";
+import "../../../assets/css/services.css";
 
 function ServicesPage() {
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Fetch data from the API
+    fetch('https://mahadevaaya.com/spindo/spindobackend/api/service-category/')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.status && data.data) {
+          setServices(data.data);
+        } else {
+          setError('Invalid data format received from API');
+        }
+        setLoading(false);
+      })
+      .catch(error => {
+        setError('Error fetching data: ' + error.message);
+        setLoading(false);
+      });
+  }, []);
+
+  const handleBookService = (serviceId) => {
+    console.log('Booking service:', serviceId);
+    // Add your booking logic here
+  };
+
+  // Function to get the correct image path
+  const getImagePath = (imagePath) => {
+    if (!imagePath) return null;
+    
+    // If the image path is already a full URL, return it as is
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    
+    // Otherwise, construct the full URL
+    return `https://mahadevaaya.com/spindo/spindobackend/${imagePath}`;
+  };
+
   return (
     <div className="home-container">
       <div className="home-background"></div>
@@ -10,45 +56,65 @@ function ServicesPage() {
       
       <Container>
         <div className="home-content">
-          <h1 className="home-title">OUR VISION, MISSION, PHILOSOPHY</h1>
+          <h1 className="home-title">Our Services</h1>
           
-          <p className="home-text">
-            SPINDO is revolutionizing the service industry through its innovative technology platform, offering a wide range of home services. From beauty treatments to cleaning, plumbing, carpentry, appliance repair, computer hardware solutions, painting, and customized security services, customers can conveniently book these services through our platform and enjoy them in the comfort of their homes, at their preferred time.
-          </p>
-          
-          <div className="service-highlights">
-            <span className="service-tag">Beauty Treatments</span>
-            <span className="service-tag">Cleaning</span>
-            <span className="service-tag">Plumbing</span>
-            <span className="service-tag">Carpentry</span>
-            <span className="service-tag">Appliance Repair</span>
-            <span className="service-tag">Computer Hardware</span>
-            <span className="service-tag">Painting</span>
-            <span className="service-tag">Security Services</span>
-          </div>
-          
-          <p className="home-text">
-            We are committed to delivering a consistently high-quality, standardized, and reliable service experience to our customers. To fulfil this commitment, we collaborate closely with our hand-picked service partners. We empower them with cutting-edge technology, comprehensive training, quality products, specialized tools, financial support, insurance coverage, and the strength of our brand. By doing so, we enable our partners to succeed and uphold our promise of excellence in service delivery.
-          </p>
-          
-          <h2 className="home-subtitle">Our Vision</h2>
-          <p className="home-text">
-            To make it convenient for professionals to provide their services and enhance the overall customer experience through our innovative technology platform.
-          </p>
-          
-          <h2 className="home-subtitle">Our Mission</h2>
-          <p className="home-text">
-            To revolutionize the home service industry by connecting skilled professionals with customers through a seamless digital experience, ensuring quality, reliability, and convenience for all.
-          </p>
-          
-          <h2 className="home-subtitle">Our Philosophy</h2>
-          <p className="home-text">
-            We believe in empowering our service partners with the right tools, training, and technology to deliver exceptional services. By creating a symbiotic relationship between customers and service providers, we aim to build a community where quality services are accessible to everyone.
-          </p>
+          {loading ? (
+            <div className="text-center my-4">
+              <div className="spinner-border text-primary" role="status">
+                <span className="sr-only">Loading...</span>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="alert alert-danger my-4">
+              {error}
+            </div>
+          ) : (
+            <Row className="my-4">
+              {services.slice(0, 3).map(service => (
+                <Col md={4} key={service.id} className="mb-4">
+                  <Card className="service-card">
+                    {/* Service Image */}
+                    <div className="service-image-container">
+                      {service.prod_img ? (
+                        <Image 
+                          src={getImagePath(service.prod_img)} 
+                          alt={service.prod_name}
+                          className="service-image img-fluid"
+                          onError={(e) => {
+                            // Fallback image if the main image fails to load
+                            e.target.src = 'https://via.placeholder.com/300x200?text=Service+Image';
+                          }}
+                        />
+                      ) : (
+                        <div className="service-image-placeholder">
+                          <i className="fas fa-image fa-3x"></i>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <Card.Body>
+                      <Card.Title className="service-name">{service.prod_name}</Card.Title>
+                      <Card.Text className="service-description">
+                        {service.prod_desc}
+                      </Card.Text>
+                    </Card.Body>
+                    <Card.Footer className="text-center">
+                      <Button 
+                        className="btn-book"
+                        onClick={() => handleBookService(service.id)}
+                      >
+                        Book Now
+                      </Button>
+                    </Card.Footer>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          )}
         </div>
       </Container>
     </div>
   )
 }
 
-export default ServicesPage
+export default ServicesPage;
