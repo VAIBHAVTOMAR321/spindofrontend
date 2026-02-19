@@ -36,7 +36,7 @@ const StaffLeftNav = ({ sidebarOpen, setSidebarOpen, isMobile, isTablet }) => {
   const toggleSubmenu = (index) => {
     setOpenSubmenu(openSubmenu === index ? null : index);
   };
-
+ 
 const menuItems = [
   
   {
