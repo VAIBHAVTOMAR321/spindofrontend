@@ -255,15 +255,14 @@ const StaffDashBoard = () => {
 
   // Available categories (you can get this from API or define it statically)
   const availableCategories = [
-    "Plumbing",
-    "Home Cleaning",
-    "Electrical",
-    "Carpentry",
+    "Plumber",
     "Painting",
-    "Appliance Repair",
-    "Beauty Services",
-    "Computer Hardware",
-    "Security Services"
+    "Electrician",
+    "Carpenter",
+    "Painting",
+    "Medical Services",
+    "Comprehensive Home Services",
+   
   ];
 
   return (
@@ -381,7 +380,7 @@ const StaffDashBoard = () => {
 
           <Container fluid className="dashboard-body dashboard-main-container">
             <div className="d-flex justify-content-between align-items-center mb-4">
-              <h2>Vendor Dashboard</h2>
+              <h2>Staff Dashboard</h2>
               <Button variant="outline-primary" size="sm" onClick={handleRefresh}>
                 <i className="bi bi-arrow-clockwise me-2"></i>
                 Refresh Data
