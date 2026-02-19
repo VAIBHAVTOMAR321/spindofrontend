@@ -274,15 +274,15 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                           .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                           .map((request) => (
                             <tr key={request.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                              <td style={{ fontWeight: 600, color: '#6366f1' }}>{request.request_id}</td>
-                              <td>{request.username}</td>
-                              <td>{request.contact_number}</td>
-                              <td>{request.email}</td>
-                              <td>{request.state}</td>
-                              <td>{request.district}</td>
-                              <td>{new Date(request.schedule_date).toLocaleDateString()}</td>
-                              <td>{request.assigned_to_name || '--'}</td>
-                              <td>{request.assigned_by_name || '--'}</td>
+                              <td style={{ fontWeight: 600, color: '#6366f1' }}>{typeof request.request_id === 'string' || typeof request.request_id === 'number' ? request.request_id : '--'}</td>
+                              <td>{typeof request.username === 'string' ? request.username : '--'}</td>
+                              <td>{typeof request.contact_number === 'string' || typeof request.contact_number === 'number' ? request.contact_number : '--'}</td>
+                              <td>{typeof request.email === 'string' ? request.email : '--'}</td>
+                              <td>{typeof request.state === 'string' ? request.state : '--'}</td>
+                              <td>{typeof request.district === 'string' ? request.district : '--'}</td>
+                              <td>{typeof request.schedule_date === 'string' ? new Date(request.schedule_date).toLocaleDateString() : '--'}</td>
+                              <td>{typeof request.assigned_to_name === 'string' ? request.assigned_to_name : '--'}</td>
+                              <td>{typeof request.assigned_by_name === 'string' ? request.assigned_by_name : '--'}</td>
                               <td>
                                 <span
                                   style={{
@@ -294,10 +294,10 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                                     color: request.status === 'pending' ? '#92400e' : '#065f46',
                                   }}
                                 >
-                                  {request.status?.charAt(0).toUpperCase() + request.status?.slice(1)}
+                                  {typeof request.status === 'string' ? request.status.charAt(0).toUpperCase() + request.status.slice(1) : '--'}
                                 </span>
                               </td>
-                              <td>{new Date(request.created_at).toLocaleDateString()}</td>
+                              <td>{typeof request.created_at === 'string' ? new Date(request.created_at).toLocaleDateString() : '--'}</td>
                               <td>
                                 <Button
                                   variant="primary"
@@ -363,14 +363,14 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                           .slice((vendorCurrentPage - 1) * itemsPerPage, vendorCurrentPage * itemsPerPage)
                           .map((vendor) => (
                             <tr key={vendor.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                              <td style={{ fontWeight: 600, color: '#6366f1' }}>{vendor.unique_id}</td>
-                              <td>{vendor.username}</td>
-                              <td>{vendor.mobile_number}</td>
-                              <td>{vendor.email}</td>
-                              <td>{vendor.state}</td>
-                              <td>{vendor.district}</td>
-                              <td>{vendor.block}</td>
-                              <td>{vendor.category || 'N/A'}</td>
+                              <td style={{ fontWeight: 600, color: '#6366f1' }}>{typeof vendor.unique_id === 'string' || typeof vendor.unique_id === 'number' ? vendor.unique_id : '--'}</td>
+                              <td>{typeof vendor.username === 'string' ? vendor.username : '--'}</td>
+                              <td>{typeof vendor.mobile_number === 'string' || typeof vendor.mobile_number === 'number' ? vendor.mobile_number : '--'}</td>
+                              <td>{typeof vendor.email === 'string' ? vendor.email : '--'}</td>
+                              <td>{typeof vendor.state === 'string' ? vendor.state : '--'}</td>
+                              <td>{typeof vendor.district === 'string' ? vendor.district : '--'}</td>
+                              <td>{typeof vendor.block === 'string' ? vendor.block : '--'}</td>
+                              <td>{typeof vendor.category === 'string' ? vendor.category : 'N/A'}</td>
                               <td>
                                 <span
                                   style={{
@@ -382,10 +382,10 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                                     color: vendor.is_active ? '#065f46' : '#92400e',
                                   }}
                                 >
-                                  {vendor.is_active ? 'Active' : 'Inactive'}
+                                  {typeof vendor.is_active === 'boolean' ? (vendor.is_active ? 'Active' : 'Inactive') : 'N/A'}
                                 </span>
                               </td>
-                              <td>{new Date(vendor.created_at).toLocaleDateString()}</td>
+                              <td>{typeof vendor.created_at === 'string' ? new Date(vendor.created_at).toLocaleDateString() : '--'}</td>
                             </tr>
                           ))}
                       </tbody>
@@ -445,25 +445,25 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                   <div className="col-md-6">
                     <div className="p-3 bg-light rounded-lg">
                       <small style={{ color: '#64748b' }}>Request ID</small>
-                      <p style={{ fontWeight: 600, color: '#1e293b' }}>{selectedRequest.request_id}</p>
+                      <p style={{ fontWeight: 600, color: '#1e293b' }}>{typeof selectedRequest.request_id === 'string' || typeof selectedRequest.request_id === 'number' ? selectedRequest.request_id : '--'}</p>
                     </div>
                   </div>
                   <div className="col-md-6">
                     <div className="p-3 bg-light rounded-lg">
                       <small style={{ color: '#64748b' }}>Customer</small>
-                      <p style={{ fontWeight: 600, color: '#1e293b' }}>{selectedRequest.username}</p>
+                      <p style={{ fontWeight: 600, color: '#1e293b' }}>{typeof selectedRequest.username === 'string' ? selectedRequest.username : '--'}</p>
                     </div>
                   </div>
                   <div className="col-md-6">
                     <div className="p-3 bg-light rounded-lg">
                       <small style={{ color: '#64748b' }}>Contact</small>
-                      <p style={{ fontWeight: 600, color: '#1e293b' }}>{selectedRequest.contact_number}</p>
+                      <p style={{ fontWeight: 600, color: '#1e293b' }}>{typeof selectedRequest.contact_number === 'string' || typeof selectedRequest.contact_number === 'number' ? selectedRequest.contact_number : '--'}</p>
                     </div>
                   </div>
                   <div className="col-md-6">
                     <div className="p-3 bg-light rounded-lg">
                       <small style={{ color: '#64748b' }}>Email</small>
-                      <p style={{ fontWeight: 600, color: '#1e293b' }}>{selectedRequest.email}</p>
+                      <p style={{ fontWeight: 600, color: '#1e293b' }}>{typeof selectedRequest.email === 'string' ? selectedRequest.email : '--'}</p>
                     </div>
                   </div>
                 </div>
@@ -495,7 +495,9 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                       <option value="">Select a vendor</option>
                       {vendorList.map((vendor) => (
                         <option key={vendor.unique_id} value={vendor.unique_id}>
-                          {vendor.username} ({vendor.unique_id}) - {vendor.category || 'N/A'}
+                          {typeof vendor.username === 'string' ? vendor.username : 'Unknown'} 
+                          ({typeof vendor.unique_id === 'string' || typeof vendor.unique_id === 'number' ? vendor.unique_id : 'N/A'}) - 
+                          {typeof vendor.category === 'string' ? vendor.category : 'N/A'}
                         </option>
                       ))}
                     </Form.Select>
