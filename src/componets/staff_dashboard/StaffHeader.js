@@ -1,10 +1,9 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   Container,
   Row,
   Col,
   Button,
-  Badge,
   Dropdown,
   Image,
   Spinner,
@@ -12,116 +11,128 @@ import {
 } from "react-bootstrap";
 import {
   FaBars,
-  FaBell,
   FaUserCircle,
-  FaCog,
   FaSignOutAlt,
-  FaSearch,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import AuthContext from "../context/AuthContext";
 
-// 1. Accept searchTerm and setSearchTerm as props
-function StaffHeader({ toggleSidebar, searchTerm, setSearchTerm }) {
-  
+ // Adjust the import path if needed
+
+// Define the base URL for the API
+const BASE_URL = "https://mahadevaaya.com/spindo/spindobackend";
+
+function StaffHeader({ toggleSidebar }) {
   const navigate = useNavigate();
 
-  // Get auth data from localStorage
-  const getAuthData = () => {
-    const storedAuth = localStorage.getItem('auth');
-    return storedAuth ? JSON.parse(storedAuth) : null;
-  };
+  // Consume the AuthContext to get tokens and logout function
+  const { tokens, logout } = useContext(AuthContext);
 
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      text: "New employee joined - Rahul Sharma",
-      time: "10 min ago",
-      read: false,
-    },
-    {
-      id: 2,
-      text: "HR meeting scheduled at 4 PM",
-      time: "1 hour ago",
-      read: false,
-    },
-    {
-      id: 3,
-      text: "Payroll processed successfully",
-      time: "3 hours ago",
-      read: true,
-    },
-  ]);
-
-  const [unreadCount, setUnreadCount] = useState(2);
-  
-  // State for user details
+  // State for user details, matching the API response structure
   const [userDetails, setUserDetails] = useState({
-    first_name: "",
-    last_name: "",
-    profile_photo: null,
+    can_name: "",
+    staff_image: null,
   });
   
   // State for loading and error handling
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [authError, setAuthError] = useState(null);
   const [imageError, setImageError] = useState(false);
 
-  // Function to get display name
+  // Function to get display name from state
   const getDisplayName = () => {
-    if (userDetails.first_name && userDetails.last_name) {
-      return `${userDetails.first_name} ${userDetails.last_name}`;
-    } else if (userDetails.first_name) {
-      return userDetails.first_name;
-    } else {
-      return "Admin";
+    return userDetails.can_name || "Admin";
+  };
+
+  // Function to fetch the current user's data using their unique_id
+  const fetchUserData = async () => {
+    // Ensure we have the token and unique_id before making the request
+    if (!tokens?.access || !tokens?.user?.unique_id) {
+      setError("Authentication details are missing. Please log in.");
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    
+    const accessToken = tokens.access;
+    const uniqueId = tokens.user.unique_id;
+
+    try {
+      // Construct the API URL with the unique_id from the context
+      const apiUrl = `${BASE_URL}/api/staffadmin/register/?unique_id=${uniqueId}`;
+      
+      // Make a GET request with the Authorization header
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // Update state with the user data from the API response
+      if (response.data.status && response.data.data) {
+        // The API returns an array, but with unique_id, it should be one item.
+        // We access the first item.
+        const staffData = response.data.data[0];
+        if(staffData) {
+            setUserDetails(staffData);
+        } else {
+            throw new Error("No staff member found with this ID.");
+        }
+      } else {
+        throw new Error("Could not retrieve user details.");
+      }
+
+    } catch (err) {
+      console.error("Error fetching user data:", err);
+      // Handle specific errors like expired token
+      if (err.response?.status === 401) {
+        setError("Session expired. Please log in again.");
+        // Optional: Automatically log the user out
+        // handleLogout(); 
+      } else {
+        setError(err.message || "Failed to load profile. Please try again later.");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Function to fetch user data with auth handling
+  // Fetch user data when the component mounts or when tokens change
+  useEffect(() => {
+    fetchUserData();
+  }, [tokens]); // Re-run effect if tokens change
 
-
-  // Fetch user data when component mounts
- 
-
-  const markAsRead = (id) => {
-    setNotifications(
-      notifications.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-    setUnreadCount((prev) => prev - 1);
-  };
-  
-  // Get user photo URL
+  // Get the full URL for the user's profile photo
   const getUserPhotoUrl = () => {
-    const profilePhoto = userDetails.profile_photo;
-    
-    console.log('Profile photo from state:', profilePhoto);
+    const profilePhoto = userDetails.staff_image;
     
     if (profilePhoto && !imageError) {
       if (profilePhoto.startsWith('http')) {
-        console.log('Full URL profile photo:', profilePhoto);
         return profilePhoto;
       }
-      const fullUrl = `https://mahadevaaya.com/eventmanagement/eventmanagement_backend/${profilePhoto}`;
-      console.log('Constructed profile photo URL:', fullUrl);
-      return fullUrl;
+      return `${BASE_URL}${profilePhoto}`;
     }
     return null;
   };
   
-  // Handle image loading error
+  // Fallback if the profile image fails to load
   const handleImageError = (e) => {
     console.error('Error loading profile image:', e);
     setImageError(true);
     e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(getDisplayName())}&background=0d6efd&color=fff&size=40`;
   };
   
-  // Handle logout
+  // Handle user logout
   const handleLogout = () => {
-    localStorage.removeItem('auth');
+    // Call the logout function from AuthContext to clear global state
+    logout();
+    // Then navigate to the login page
     navigate("/", { replace: true });
   };
+
   return (
     <header className="dashboard-header">
       <Container fluid>
@@ -137,65 +148,44 @@ function StaffHeader({ toggleSidebar, searchTerm, setSearchTerm }) {
           </Col>
 
           <Col>
-            {authError && (
-              <Alert variant="danger" className="mb-0 py-1">
-                <small>{authError}</small>
-              </Alert>
-            )}
+            {/* Display error messages */}
             {error && (
-              <Alert variant="warning" className="mb-0 py-1">
+              <Alert variant="danger" className="mb-0 py-1">
                 <small>{error}</small>
               </Alert>
             )}
           </Col>
+
           <Col xs="auto">
-            <div className="header-actions">
-              <Dropdown align="end">
-                {/* <Dropdown.Toggle variant="light" className="notification-btn">
-                  <FaBell />
-                  {unreadCount > 0 && (
-                    <Badge pill bg="danger" className="notification-badge">
-                      {unreadCount}
-                    </Badge>
-                  )}
-                </Dropdown.Toggle> */}
+            <div className="header-actions d-flex align-items-center">
+              {/* Show a spinner while loading user data */}
+              {isLoading ? (
+                <Spinner animation="border" variant="primary" size="sm" />
+              ) : (
+                <Dropdown align="end">
+                  <Dropdown.Toggle variant="light" className="user-profile-btn d-flex align-items-center">
+                    {getUserPhotoUrl() ? (
+                      <Image
+                        src={getUserPhotoUrl()}
+                        roundedCircle
+                        className="user-avatar me-2"
+                        onError={handleImageError}
+                        width={32}
+                        height={32}
+                      />
+                    ) : (
+                      <FaUserCircle className="user-avatar me-2" size={32} />
+                    )}
+                    <span>{getDisplayName()}</span>
+                  </Dropdown.Toggle>
 
-                {/* <Dropdown.Menu className="notification-dropdown">
-                  <div className="notification-header">
-                    <h6>Notifications</h6>
-                  </div>
-
-                  {notifications.map((notif) => (
-                    <Dropdown.Item
-                      key={notif.id}
-                      className={`notification-item ${
-                        !notif.read ? "unread" : ""
-                      }`}
-                      onClick={() => markAsRead(notif.id)}
-                    >
-                      <p>{notif.text}</p>
-                      <small>{notif.time}</small>
+                  <Dropdown.Menu>
+                    <Dropdown.Item onClick={handleLogout}>
+                      <FaSignOutAlt className="me-2" /> Logout
                     </Dropdown.Item>
-                  ))}
-                </Dropdown.Menu> */}
-              </Dropdown>
-
-              <Dropdown align="end">
-  <Dropdown.Toggle variant="light" className="user-profile-btn">
-    {/* <Image
-      src={getUserPhotoUrl()}
-      roundedCircle
-      className="user-avatar"
-      onError={handleImageError}
-    /> */}
-    Admin
-  </Dropdown.Toggle>
-  <Dropdown.Menu>
-    <Dropdown.Item onClick={handleLogout}>
-      <FaSignOutAlt className="me-2" /> Logout
-    </Dropdown.Item>
-  </Dropdown.Menu>
-</Dropdown>
+                  </Dropdown.Menu>
+                </Dropdown>
+              )}
             </div>
           </Col>
         </Row>

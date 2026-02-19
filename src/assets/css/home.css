@@ -7,10 +7,10 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: black; /* Changed from white to black */
+  color: black;
   text-align: center;
   padding: 2rem;
-  background-color: white; /* Added white background */
+  background-color: white;
 }
 
 .home-background {
@@ -20,7 +20,6 @@
   width: 100%;
   height: 100%;
   background-color: #212529 !important; 
-
   z-index: -2;
 }
 
@@ -38,26 +37,32 @@
 }
 
 .home-content {
-
   margin: 0 auto;
   animation: fadeIn 1.5s ease-in-out;
+  width: 100%;
 }
 
 .home-title {
   font-size: 3.5rem;
   font-weight: 700;
   margin-bottom: 2rem;
-  text-shadow: none; /* Removed text shadow for better readability on white background */
+  text-shadow: none;
   letter-spacing: 1px;
-  color: black; /* Ensuring title is black */
+  color: black;
 }
 
 .home-text {
   font-size: 1.2rem;
   line-height: 1.8;
   margin-bottom: 1.5rem;
-  text-shadow: none; /* Removed text shadow for better readability on white background */
-  color: black; /* Changed from #000 to black for consistency */
+  text-shadow: none;
+  color: black;
+  text-align: left;
+}
+
+.intro-paragraph {
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
 .service-highlights {
@@ -69,20 +74,58 @@
 }
 
 .service-tag {
-  background-color: rgba(0, 0, 0, 0.1); /* Changed to a light gray for better contrast on white */
+  background-color: rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(5px);
-  border: 1px solid rgba(0, 0, 0, 0.2); /* Changed border color for better visibility */
+  border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 20px;
   padding: 8px 16px;
   font-size: 0.9rem;
   font-weight: 500;
-  color: black; /* Ensuring tag text is black */
+  color: black;
   transition: all 0.3s ease;
 }
 
 .service-tag:hover {
-  background-color: rgba(0, 0, 0, 0.2); /* Darker on hover */
+  background-color: rgba(0, 0, 0, 0.2);
   transform: translateY(-3px);
+}
+
+.image-text-section {
+  margin: 3rem 0;
+  text-align: left;
+}
+
+.image-column {
+  padding-right: 2rem;
+}
+
+.image-container {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.service-image {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.service-image.small {
+  width: calc(50% - 0.5rem);
+}
+
+.service-image:hover {
+  transform: scale(1.03);
+}
+
+.text-column {
+  padding-left: 2rem;
+  display: flex;
+  align-items: center;
 }
 
 .cta-button {
@@ -125,5 +168,17 @@
   
   .home-text {
     font-size: 1.1rem;
+  }
+  
+  .image-column, .text-column {
+    padding: 1rem 0;
+  }
+  
+  .image-container {
+    justify-content: center;
+  }
+  
+  .service-image.small {
+    width: 100%;
   }
 }

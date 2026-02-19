@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Container, Form, Button, Row, Col, Alert, Spinner } from "react-bootstrap";
+import { Container, Form, Button, Row, Col, Alert, Spinner, Modal, Dropdown } from "react-bootstrap";
 import "../../../assets/css/admindashboard.css";
+import "../../../assets/css/service-multiselect.css";
 import StaffLeftNav from "../StaffLeftNav";
 import StaffHeader from "../StaffHeader";
 import { useAuth } from "../../context/AuthContext";
@@ -22,19 +23,18 @@ const VendorRegistration = () => {
     block: "",
     password: "",
     address: "",
-    category: {
-      type: "",
-      customType: "", // New field for custom category type
-      subtype: ""
-    },
+    category: [], // Changed to array
     description: "",
-    aadhar_card: null
+    aadhar_card: null,
+    vendor_image: null
   });
   
   // UI state
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   // --- NEW STATE FOR LOCATION DATA ---
   const [allDistricts, setAllDistricts] = useState([]);
@@ -114,31 +114,31 @@ const VendorRegistration = () => {
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   
+  const handleCategoryChange = (e) => {
+    const { value, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      category: checked 
+        ? [...prev.category, value] 
+        : prev.category.filter(item => item !== value)
+    }));
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     
-    if (name === "type" || name === "subtype" || name === "customType") {
+    // When district changes, block should be reset
+    if (name === 'district') {
       setFormData(prev => ({
         ...prev,
-        category: {
-          ...prev.category,
-          [name]: value
-        }
+        [name]: value,
+        block: '' // Reset block
       }));
     } else {
-      // When district changes, block should be reset
-      if (name === 'district') {
-        setFormData(prev => ({
-          ...prev,
-          [name]: value,
-          block: '' // Reset block
-        }));
-      } else {
-        setFormData(prev => ({
-          ...prev,
-          [name]: value
-        }));
-      }
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
     }
   };
 
@@ -150,11 +150,19 @@ const VendorRegistration = () => {
         ...prev,
         [name]: file
       }));
+      // Generate preview URL if it's an image file
+      if (name === 'vendor_image' || file.type.startsWith('image/')) {
+        const url = URL.createObjectURL(file);
+        setImagePreviewUrl(url);
+      }
     } else {
       setFormData(prev => ({
         ...prev,
         [name]: null
       }));
+      if (name === 'vendor_image') {
+        setImagePreviewUrl(null);
+      }
     }
   };
   
@@ -173,12 +181,13 @@ const VendorRegistration = () => {
         return;
       }
       
-      const formDataToSend = new FormData();
+      if (formData.category.length === 0) {
+        setError("Please select at least one category");
+        setLoading(false);
+        return;
+      }
       
-      // Determine the category type to send
-      const categoryTypeToSend = formData.category.type === "Other" 
-        ? formData.category.customType 
-        : formData.category.type;
+      const formDataToSend = new FormData();
       
       // Append all fields to FormData
       formDataToSend.append("username", formData.username);
@@ -189,10 +198,14 @@ const VendorRegistration = () => {
       formDataToSend.append("block", formData.block);
       formDataToSend.append("password", formData.password);
       formDataToSend.append("address", formData.address);
-      formDataToSend.append("category[type]", categoryTypeToSend);
-      formDataToSend.append("category[subtype]", formData.category.subtype);
+       // Append category as array
+       formDataToSend.append("category", JSON.stringify(formData.category));
       formDataToSend.append("description", formData.description);
       formDataToSend.append("aadhar_card", aadharFile);
+      // Append vendor image if selected
+      if (formData.vendor_image) {
+        formDataToSend.append("vendor_image", formData.vendor_image);
+      }
       
       const response = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/vendor/register/", {
         method: "POST",
@@ -259,18 +272,16 @@ const VendorRegistration = () => {
       block: "",
       password: "",
       address: "",
-      category: {
-        type: "",
-        customType: "",
-        subtype: ""
-      },
+      category: [], // Reset category array
       description: "",
-      aadhar_card: null
+      aadhar_card: null,
+      vendor_image: null
     });
-    // Clear file input
+    // Clear file inputs and preview
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    setImagePreviewUrl(null);
     // --- RESET LOCATION STATE ---
     setAvailableBlocks([]);
   };
@@ -435,56 +446,118 @@ const VendorRegistration = () => {
               </Form.Group>
               </Col>
             
-               <Col md={6} lg={4} sm={12}>
-                  <Form.Group controlId="type">
-                    <Form.Label>Category Type</Form.Label>
-                    <Form.Select
-                      name="type"
-                      value={formData.category.type}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="">Select category type</option>
-                      <option value="Electronics">Electronics</option>
-                      <option value="Home Services">Home Services</option>
-                      <option value="Beauty">Beauty</option>
-                      <option value="Healthcare">Healthcare</option>
-                      <option value="Education">Education</option>
-                      <option value="Other">Other (Specify)</option>
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-               <Col md={6} lg={4} sm={12}>
-                  {formData.category.type === "Other" && (
-                    <Form.Group controlId="customType">
-                      <Form.Label>Specify Category Type</Form.Label>
-                      <Form.Control
-                        type="text"
-                        placeholder="Enter category type"
-                        name="customType"
-                        value={formData.category.customType}
-                        onChange={handleChange}
-                        required={formData.category.type === "Other"}
-                      />
+                <Col md={6} lg={8} sm={12}>
+                    <Form.Group controlId="category">
+                      <Form.Label>Category</Form.Label>
+                      {/* Selected categories tags */}
+                      <div className="selected-services">
+                        {formData.category.map((category, idx) => (
+                          <span className="selected-service-tag" key={category}>
+                            {category}
+                            <button
+                              type="button"
+                              className="remove-btn"
+                              aria-label="Remove"
+                              onClick={() => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  category: prev.category.filter((_, i) => i !== idx)
+                                }));
+                              }}
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                      {/* Dropdown for selecting categories */}
+                      <Dropdown>
+                        <Dropdown.Toggle variant="outline-primary" id="category-dropdown">
+                          {formData.category.length === 0 ? "Select Category" : "Add Category"}
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu style={{ maxHeight: 250, overflowY: 'auto' }}>
+                          {[
+                            "Plumbing", 
+                            "Home Cleaning", 
+                            "Home Service", 
+                            "Electronics", 
+                            "Beauty", 
+                            "Healthcare", 
+                            "Education", 
+                            "Other"
+                          ]
+                            .filter(category => !formData.category.includes(category))
+                            .map(category => (
+                              <Dropdown.Item
+                                key={category}
+                                onClick={() => {
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    category: [...prev.category, category]
+                                  }));
+                                }}
+                              >
+                                {category}
+                              </Dropdown.Item>
+                            ))}
+                          {[
+                            "Plumbing", 
+                            "Home Cleaning", 
+                            "Home Service", 
+                            "Electronics", 
+                            "Beauty", 
+                            "Healthcare", 
+                            "Education", 
+                            "Other"
+                          ].filter(category => !formData.category.includes(category)).length === 0 && (
+                            <Dropdown.Item disabled>No more categories</Dropdown.Item>
+                          )}
+                        </Dropdown.Menu>
+                      </Dropdown>
+                      {/* Custom category input */}
+                      {formData.category.includes("Other") && (
+                        <div className="mt-3">
+                          <Form.Control
+                            type="text"
+                            placeholder="Specify category"
+                            onChange={(e) => {
+                              const customCategory = e.target.value;
+                              setFormData(prev => ({
+                                ...prev,
+                                category: prev.category.map(cat => cat === "Other" ? customCategory : cat)
+                              }));
+                            }}
+                            required={formData.category.includes("Other")}
+                          />
+                        </div>
+                      )}
                     </Form.Group>
-                  )}
-                </Col>
-            
-              
-         
+                  </Col>
                 <Col md={6} lg={4} sm={12}>
-                  <Form.Group controlId="subtype">
-                    <Form.Label>Category Subtype</Form.Label>
-                    <Form.Control
-                      type="text"
-                      placeholder="Enter category subtype"
-                      name="subtype"
-                      value={formData.category.subtype}
-                      onChange={handleChange}
-                      required
-                    />
-                  </Form.Group>
-                </Col>
+                   <Form.Group controlId="vendor_image">
+                     <Form.Label>Vendor Image</Form.Label>
+                     <Form.Control
+                       type="file"
+                       accept="image/*"
+                       name="vendor_image"
+                       onChange={handleFileChange}
+                     />
+                     {imagePreviewUrl && (
+                       <div className="mt-3">
+                         <Button 
+                           variant="info" 
+                           onClick={() => setShowImageModal(true)}
+                           size="sm"
+                         >
+                           Preview Vendor Image
+                         </Button>
+                       </div>
+                     )}
+                     <Form.Text className="text-muted">
+                       Please upload a clear image of the vendor (PNG, JPG, or JPEG format)
+                     </Form.Text>
+                   </Form.Group>
+                 </Col>
           
               <Col md={6} lg={4} sm={12}>
               <Form.Group className="mb-4" controlId="description">
@@ -510,6 +583,17 @@ const VendorRegistration = () => {
                   onChange={handleFileChange}
                   required
                 />
+                {imagePreviewUrl && (
+                  <div className="mt-3">
+                    <Button 
+                      variant="info" 
+                      onClick={() => setShowImageModal(true)}
+                      size="sm"
+                    >
+                      Preview Aadhar Card
+                    </Button>
+                  </div>
+                )}
                 <Form.Text className="text-muted">
                   Please upload a clear image of your Aadhar card (PNG, JPG, or JPEG format)
                 </Form.Text>
@@ -533,6 +617,27 @@ const VendorRegistration = () => {
                 )}
               </Button>
             </Form>
+
+            {/* Aadhar Card Preview Modal */}
+            <Modal show={showImageModal} onHide={() => setShowImageModal(false)} centered>
+              <Modal.Header closeButton>
+                <Modal.Title>Aadhar Card Preview</Modal.Title>
+              </Modal.Header>
+              <Modal.Body className="text-center">
+                {imagePreviewUrl && (
+                  <img
+                    src={imagePreviewUrl}
+                    alt="Aadhar Card"
+                    style={{ maxWidth: '100%', maxHeight: '500px', borderRadius: 8 }}
+                  />
+                )}
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="secondary" onClick={() => setShowImageModal(false)}>
+                  Close
+                </Button>
+              </Modal.Footer>
+            </Modal>
           </Container>
         </div>
       </div>

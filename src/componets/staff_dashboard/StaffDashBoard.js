@@ -32,8 +32,10 @@ const StaffDashBoard = () => {
     state: "",
     district: "",
     block: "",
+    address: "",
+    description: "",
     is_active: true,
-    category: ""
+    category: []
   });
   
   // Get auth context
@@ -43,7 +45,6 @@ const StaffDashBoard = () => {
   const VENDOR_API_URL = "https://mahadevaaya.com/spindo/spindobackend/api/vendor/register/";
   const CUSTOMER_API_URL = "https://mahadevaaya.com/spindo/spindobackend/api/customer/register/";
   const VENDOR_UPDATE_URL = "https://mahadevaaya.com/spindo/spindobackend/api/vendor/register/";
-  const VENDOR_DELETE_URL = "https://mahadevaaya.com/spindo/spindobackend/api/vendor/register/";
 
   useEffect(() => {
     const checkDevice = () => {
@@ -171,8 +172,10 @@ const StaffDashBoard = () => {
       state: vendor.state,
       district: vendor.district,
       block: vendor.block,
+      address: vendor.address || "",
+      description: vendor.description || "",
       is_active: vendor.is_active,
-      category: vendor.category?.id || ""
+      category: Array.isArray(vendor.category) ? vendor.category : []
     });
     setShowEditModal(true);
   };
@@ -184,6 +187,20 @@ const StaffDashBoard = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+  };
+
+  // Handle category changes
+  const handleCategoryChange = (e) => {
+    const { value, checked } = e.target;
+    setEditForm(prev => {
+      let newCategories = [...prev.category];
+      if (checked) {
+        newCategories.push(value);
+      } else {
+        newCategories = newCategories.filter(cat => cat !== value);
+      }
+      return { ...prev, category: newCategories };
+    });
   };
 
   // Handle save changes in edit modal
@@ -236,51 +253,18 @@ const StaffDashBoard = () => {
     }
   };
 
-  // Handle delete button click
-  const handleDeleteClick = async (vendorUniqueId) => {
-    if (window.confirm("Are you sure you want to delete this vendor?")) {
-      try {
-        const headers = {
-          headers: { Authorization: `Bearer ${tokens.access}` }
-        };
-        
-        // Send unique_id in request body for DELETE request
-        const response = await axios.delete(
-          `${VENDOR_DELETE_URL}`, 
-          { 
-            ...headers,
-            data: { unique_id: vendorUniqueId }
-          }
-        );
-        
-        if (response.data.status) {
-          // Remove vendor from state using unique_id
-          setVendors(prev => prev.filter(vendor => vendor.unique_id !== vendorUniqueId));
-          // Show success message
-          alert("Vendor deleted successfully!");
-        } else {
-          throw new Error("Failed to delete vendor");
-        }
-      } catch (err) {
-        console.error("DELETE ERROR:", err.response?.data || err.message);
-        
-        // Check if access token is expired (status code 401)
-        if (err.response?.status === 401) {
-          console.log("Access token expired, attempting to refresh...");
-          const newAccessToken = await refreshAccessToken(tokens.refresh);
-          
-          if (newAccessToken) {
-            // Retry delete with new access token
-            return handleDeleteClick(vendorUniqueId);
-          } else {
-            setError("Session expired. Please log in again.");
-          }
-        } else {
-          setError(err.response?.data?.detail || err.message || "Failed to delete vendor");
-        }
-      }
-    }
-  };
+  // Available categories (you can get this from API or define it statically)
+  const availableCategories = [
+    "Plumbing",
+    "Home Cleaning",
+    "Electrical",
+    "Carpentry",
+    "Painting",
+    "Appliance Repair",
+    "Beauty Services",
+    "Computer Hardware",
+    "Security Services"
+  ];
 
   return (
     <>
@@ -364,6 +348,20 @@ const StaffDashBoard = () => {
           
           .customer-card .card-number {
             color: #36b9cc;
+          }
+          
+          .table-responsive {
+            max-height: 600px;
+            overflow-y: auto;
+          }
+          
+          .category-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            margin: 0.1rem;
+            background-color: #e9ecef;
+            border-radius: 0.25rem;
+            font-size: 0.85rem;
           }
         `}
       </style>
@@ -500,88 +498,119 @@ const StaffDashBoard = () => {
                     </div>
                     
                     {filteredData.length > 0 ? (
-                      <Table striped bordered hover responsive>
-                        <thead className="table-thead">
-                          <tr>
-                            <th>#</th>
-                            <th>Unique ID</th>
-                            <th>Username</th>
-                            <th>Mobile Number</th>
-                            <th>State</th>
-                            <th>District</th>
-                            <th>Block</th>
-                            {activeTable === "vendors" && (
-                              <>
-                                <th>Email</th>
-                                <th>Category</th>
-                                <th>Aadhar Card</th>
-                                <th>Actions</th>
-                              </>
-                            )}
-                            <th>Active</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredData.map((item, index) => (
-                            <tr key={item.unique_id}>
-                              <td>{index + 1}</td>
-                              <td>{item.unique_id}</td>
-                              <td>{item.username}</td>
-                              <td>{item.mobile_number}</td>
-                              <td>{item.state}</td>
-                              <td>{item.district}</td>
-                              <td>{item.block}</td>
-                                 {activeTable === "vendors" && (
+                      <div className="table-responsive">
+                        <Table striped bordered hover responsive>
+                          <thead className="table-thead sticky-top">
+                            <tr>
+                              <th>#</th>
+                              <th>Unique ID</th>
+                              <th>Username</th>
+                              <th>Mobile Number</th>
+                              <th>Email</th>
+                              <th>State</th>
+                              <th>District</th>
+                              <th>Block</th>
+                              <th>Address</th>
+                              <th>Description</th>
+                              {activeTable === "vendors" && (
+                                <>
+                                  <th>Vendor Image</th>
+                                  <th>Aadhar Card</th>
+                                  <th>Categories</th>
+                                  <th>Created At</th>
+                                  <th>Updated At</th>
+                                  {/* <th>Actions</th> */}
+                                </>
+                              )}
+                              <th>Active</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredData.map((item, index) => (
+                              <tr key={item.unique_id}>
+                                <td>{index + 1}</td>
+                                <td>{item.unique_id}</td>
+                                <td>{item.username}</td>
+                                <td>{item.mobile_number}</td>
+                                <td>{item.email || 'N/A'}</td>
+                                <td>{item.state}</td>
+                                <td>{item.district}</td>
+                                <td>{item.block}</td>
+                                <td>{item.address || 'N/A'}</td>
+                                <td>{item.description || 'N/A'}</td>
+                                {activeTable === "vendors" && (
                                   <>
-                                    <td>{item.email}</td>
-                                    <td>{item.category?.type || 'N/A'}</td>
                                     <td>
-                                      {item.aadhar_card ? (
-                                       <img 
-      src={item.aadhar_card.startsWith('http') 
-        ? item.aadhar_card 
-        : `https://mahadevaaya.com/spindo/spindobackend${item.aadhar_card.startsWith('/') ? item.aadhar_card : '/' + item.aadhar_card}`} 
-      alt="Aadhar Card" 
-      style={{ 
-        width: '80px', 
-        height: 'auto', 
-        borderRadius: '4px',
-        objectFit: 'cover'
-      }} 
-    />
+                                      {item.vendor_image ? (
+                                        <img 
+                                          src={item.vendor_image.startsWith('http') 
+                                            ? item.vendor_image 
+                                            : `https://mahadevaaya.com/spindo/spindobackend${item.vendor_image.startsWith('/') ? item.vendor_image : '/' + item.vendor_image}`} 
+                                          alt="Vendor" 
+                                          style={{ 
+                                            width: '60px', 
+                                            height: '60px', 
+                                            borderRadius: '4px',
+                                            objectFit: 'cover'
+                                          }} 
+                                        />
                                       ) : (
                                         <span className="text-muted">No Image</span>
                                       )}
                                     </td>
                                     <td>
-                                    <Button 
-                                      variant="primary" 
-                                      size="sm" 
-                                      className="action-btn"
-                                      onClick={() => handleEditClick(item)}
-                                    >
-                                      <i className="bi bi-pencil"></i> Edit
-                                    </Button>
-                                    <Button 
-                                      variant="danger" 
-                                      size="sm" 
-                                      className="action-btn"
-                                      onClick={() => handleDeleteClick(item.unique_id)}
-                                    >
-                                      <i className="bi bi-trash"></i> Delete
-                                    </Button>
-                                  </td>
-                                </>
-                              )}
-                              <td>
-                                <span className={`badge ${item.is_active ? 'bg-success' : 'bg-danger'}`}>
-                                  {item.is_active ? 'Yes' : 'No'}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </Table>
+                                      {item.aadhar_card ? (
+                                        <img 
+                                          src={item.aadhar_card.startsWith('http') 
+                                            ? item.aadhar_card 
+                                            : `https://mahadevaaya.com/spindo/spindobackend${item.aadhar_card.startsWith('/') ? item.aadhar_card : '/' + item.aadhar_card}`} 
+                                          alt="Aadhar Card" 
+                                          style={{ 
+                                            width: '60px', 
+                                            height: '60px', 
+                                            borderRadius: '4px',
+                                            objectFit: 'cover'
+                                          }} 
+                                        />
+                                      ) : (
+                                        <span className="text-muted">No Image</span>
+                                      )}
+                                    </td>
+                                    <td>
+                                      {Array.isArray(item.category) && item.category.length > 0 ? (
+                                        item.category.map((cat, idx) => (
+                                          <span key={idx} className="category-badge">
+                                            {typeof cat === 'string' ? cat : cat.type || cat}
+                                          </span>
+                                        ))
+                                      ) : (
+                                        <span className="text-muted">N/A</span>
+                                      )}
+                                    </td>
+                                    <td>{new Date(item.created_at).toLocaleDateString()}</td>
+                                    <td>{new Date(item.updated_at).toLocaleDateString()}</td>
+                                    {/* <td>
+                                      <Button 
+                                        variant="primary" 
+                                        size="sm" 
+                                        className="action-btn"
+                                        onClick={() => handleEditClick(item)}
+                                      >
+                                        <i className="bi bi-pencil"></i> Edit
+                                      </Button>
+                                    </td> */}
+                                  </>
+                                )}
+                                <td>
+                                  <span className={`badge ${item.is_active ? 'bg-success' : 'bg-danger'}`}>
+                                    {item.is_active ? 'Yes' : 'No'}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      </div>
                     ) : (
                       <Alert variant="info">
                         No {activeTable === "vendors" ? "vendors" : "customers"} found for the selected filter.
@@ -596,7 +625,7 @@ const StaffDashBoard = () => {
       </div>
 
       {/* Edit Vendor Modal */}
-      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="lg">
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="xl" scrollable>
         <Modal.Header closeButton>
           <Modal.Title>Edit Vendor</Modal.Title>
         </Modal.Header>
@@ -675,23 +704,61 @@ const StaffDashBoard = () => {
               </Col>
             </Row>
             <Row>
-              <Col md={6}>
+              <Col md={12}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Category</Form.Label>
+                  <Form.Label>Address</Form.Label>
                   <Form.Control
-                    type="text"
-                    name="category"
-                    value={editForm.category}
+                    as="textarea"
+                    rows={2}
+                    name="address"
+                    value={editForm.address}
                     onChange={handleInputChange}
                   />
                 </Form.Group>
               </Col>
-              <Col md={6}>
+            </Row>
+            <Row>
+              <Col md={12}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Description</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    name="description"
+                    value={editForm.description}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={12}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Categories</Form.Label>
+                  <div className="d-flex flex-wrap">
+                    {availableCategories.map(category => (
+                      <Form.Check
+                        key={category}
+                        type="checkbox"
+                        id={`category-${category}`}
+                        label={category}
+                        value={category}
+                        checked={editForm.category.includes(category)}
+                        onChange={handleCategoryChange}
+                        className="me-3 mb-2"
+                      />
+                    ))}
+                  </div>
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={12}>
                 <Form.Group className="mb-3">
                   <Form.Check
                     type="checkbox"
                     name="is_active"
-                    label="Active"
+                    label="Active Status"
                     checked={editForm.is_active}
                     onChange={handleInputChange}
                   />

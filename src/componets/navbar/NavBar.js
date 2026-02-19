@@ -3,12 +3,57 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import { Button } from 'react-bootstrap';
-import { FaEnvelope, FaPhone, FaFacebook, FaTwitter, FaLinkedin, FaInstagram, FaThumbsUp } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { FaEnvelope, FaPhone, FaFacebook, FaTwitter, FaLinkedin, FaInstagram } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import "../../assets/css/NavBar.css";
 import Logo from "../../assets/images/splogo.png";    
 
 function NavBar() {
+  const [services, setServices] = useState([]);
+  const [selectedService, setSelectedService] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  // Fetch services from API
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await fetch('https://mahadevaaya.com/spindo/spindobackend/api/service-category/');
+        if (!response.ok) {
+          throw new Error('Failed to fetch services');
+        }
+        const data = await response.json();
+        if (data.status) {
+          setServices(data.data);
+        } else {
+          setError('Failed to load services');
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  const handleServiceSelect = (service) => {
+    setSelectedService(service);
+    console.log('Selected Service for Vendor List:', service);
+    // Navigate to vendor list page with the selected service
+    navigate('/VendorList', { 
+      state: { 
+        service: {
+          id: service.id,
+          prod_name: service.prod_name
+        } 
+      } 
+    });
+  };
+
   return (
     <>
       {/* Top bar with contact info and social links */}
@@ -29,42 +74,51 @@ function NavBar() {
       
       {/* Main navigation */}
       <Navbar expand="lg" className="bg-body-tertiary sticky-top">
-       
+        <Container>
           <Navbar.Brand href="#home">
             <div className="d-flex align-items-center">
-            <Link to="/"> <img src={Logo} alt="Spindo Logo" className="spi-logo img-fluid me-2" /></Link>
-          
-             
+              <Link to="/"> <img src={Logo} alt="Spindo Logo" className="spi-logo img-fluid me-2" /></Link>
             </div>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
-         
           <Navbar.Collapse id="basic-navbar-nav">
             {/* Left side navigation items */}
-              <Container>
             <Nav className="me-auto">
               <Nav.Link href="/">HOME</Nav.Link>
               <Nav.Link href="/AboutUs">ABOUT</Nav.Link>
+              
               <NavDropdown title="SERVICES" id="basic-nav-dropdown">
-                <NavDropdown.Item href="/VendorList">PLUMBER</NavDropdown.Item>
-                <NavDropdown.Item href="#electrician">ELECTRICIAN</NavDropdown.Item>
-                <NavDropdown.Item href="#carpenter">CARPENTER</NavDropdown.Item>
-                <NavDropdown.Item href="#painter">PAINTER</NavDropdown.Item>
-                <NavDropdown.Item href="#cleaning">CLEANING</NavDropdown.Item>
+                {loading ? (
+                  <NavDropdown.Item>Loading...</NavDropdown.Item>
+                ) : error ? (
+                  <NavDropdown.Item>Error: {error}</NavDropdown.Item>
+                ) : (
+                  services.map((service) => (
+                    <NavDropdown.Item 
+                      key={service.id} 
+                      onClick={() => handleServiceSelect(service)}
+                    >
+                      {service.prod_name.toUpperCase()}
+                    </NavDropdown.Item>
+                  ))
+                )}
                 <NavDropdown.Divider />
-                <NavDropdown.Item href="#other">OTHER SERVICES</NavDropdown.Item>
+                <NavDropdown.Item onClick={() => handleServiceSelect({ prod_name: 'OTHER SERVICES' })}>
+                  OTHER SERVICES
+                </NavDropdown.Item>
               </NavDropdown>
+
               <Nav.Link href="/ContactUs">Get in Touch</Nav.Link>
               <Nav.Link href="#payment">Payment</Nav.Link>
               <Nav.Link href="/Login">Book Services</Nav.Link>
             </Nav>
-            </Container>
+            
             {/* Right side - Only Register and Login buttons */}
             <Nav className="ms-auto">
-             <Link to="/Registration">
-              <Button variant="outline-primary" className="me-2">
-                Register
-              </Button>
+              <Link to="/Registration">
+                <Button variant="outline-primary" className="me-2">
+                  Register
+                </Button>
               </Link>
               <Link to="/Login">
                 <Button variant="primary">
@@ -74,12 +128,12 @@ function NavBar() {
             </Nav>
             
             {/* Mobile contact info - only shows in mobile view */}
-            <Nav className="mobile-contact">
+            <Nav className="mobile-contact d-lg-none">
               <Nav.Link href="mailto:contact@example.com"><FaEnvelope /> Email</Nav.Link>
               <Nav.Link href="tel:+11234567890"><FaPhone /> Phone</Nav.Link>
             </Nav>
           </Navbar.Collapse>
-     
+        </Container>
       </Navbar>
     </>
   );

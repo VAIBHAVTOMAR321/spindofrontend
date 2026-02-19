@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Form, Button, Row, Col, Card, Spinner, Alert, InputGroup } from "react-bootstrap";
+import { useLocation } from "react-router-dom";
 
 import "../../../assets/css/admindashboard.css";
 import { useAuth } from "../../context/AuthContext";
@@ -14,6 +15,7 @@ const StaffBill = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const { user, tokens } = useAuth();
+  const location = useLocation();
 
   // State for categories
   const [categories, setCategories] = useState([]);
@@ -38,6 +40,19 @@ const StaffBill = () => {
     bill_date_time: new Date().toISOString().slice(0, 19).replace('T', ' '),
     status: "Paid",
   });
+
+  // Auto-fill form with data from location state
+  useEffect(() => {
+    if (location.state) {
+      const { customer_name, cust_mobile, service_type } = location.state;
+      setBillData(prev => ({
+        ...prev,
+        customer_name: customer_name || prev.customer_name,
+        cust_mobile: cust_mobile || prev.cust_mobile,
+        service_type: service_type || prev.service_type,
+      }));
+    }
+  }, [location.state]);
 
   // Device detection effect
   useEffect(() => {

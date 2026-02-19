@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Table, Button } from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 import "../../../assets/css/admindashboard.css";
 import StaffHeader from "../StaffHeader";
@@ -30,6 +31,23 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
 
   // Auth
   const { tokens } = useAuth();
+  const navigate = useNavigate();
+
+  // Navigate to StaffBill with request data
+  const handleCreateBill = (request) => {
+    navigate('/StaffBill', { 
+      state: { 
+        customer_name: request.username,
+        cust_mobile: request.contact_number,
+        email: request.email,
+        state: request.state,
+        district: request.district,
+        request_id: request.request_id,
+        service_type: request.service_type || '',
+        assigned_to: request.assigned_to_name
+      } 
+    });
+  };
 
   // Data state
   const [requestData, setRequestData] = useState([]); // Holds all requests from API
@@ -126,7 +144,7 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
               {/* Modern Table for Assigned Requests */}
               <div className="table-responsive rounded-4 shadow-sm" style={{ background: '#fff', padding: '0.5rem 0.5rem 1rem 0.5rem' }}>
                 <Table className="align-middle mb-0" style={{ minWidth: 900 }}>
-                  <thead className="table-thead">
+                   <thead className="table-thead">
                     <tr style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
                       <th>Request ID</th>
                       <th>Username</th>
@@ -139,7 +157,7 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
                       <th>Assigned By</th>
                       <th>Status</th>
                       <th>Created</th>
-                      {/* Action column removed */}
+                      <th>Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -172,13 +190,26 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
                               </span>
                             </td>
                             <td>{new Date(request.created_at).toLocaleDateString()}</td>
-                            {/* Action column cell removed */}
+                            <td>
+                              {request.status === 'completed' && (
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  onClick={() => handleCreateBill(request)}
+                                  style={{
+                                    backgroundColor: '#6366f1',
+                                    borderColor: '#6366f1',
+                                  }}
+                                >
+                                  Create Bill
+                                </Button>
+                              )}
+                            </td>
                           </tr>
                         ))
                     ) : (
                       <tr>
-                        {/* Updated colSpan from 12 to 11 */}
-                        <td colSpan="11" className="text-center text-muted py-4">
+                        <td colSpan="12" className="text-center text-muted py-4">
                           No assigned service requests found.
                         </td>
                       </tr>
