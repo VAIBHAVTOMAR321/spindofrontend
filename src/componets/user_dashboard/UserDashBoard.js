@@ -137,18 +137,18 @@ const UserDashBoard = () => {
         <UserHeader toggleSidebar={toggleSidebar} />
         <Container fluid className="dashboard-body dashboard-main-container">
           {/* Profile | Services & Queries layout */}
-          <Row className="mt-4 g-4">
+          <Row className="mt-2 g-2" style={{ margin: 0, width: '100%' }}>
             {/* Profile Card - left column */}
-            <Col xs={12} md={5} lg={4}>
-              <Card className="shadow-lg border-0 rounded-4 p-3 h-100 animate__animated animate__fadeIn">
-                <Card.Body className="d-flex flex-column align-items-center">
+            <Col xs={12} sm={12} md={6} lg={4}>
+              <Card className="shadow-sm border-0 rounded-3 p-2 h-100 animate__animated animate__fadeIn">
+                <Card.Body className="d-flex flex-column align-items-center p-2">
                   {loading ? (
-                    <Spinner animation="border" variant="primary" />
+                    <Spinner animation="border" variant="primary" size="sm" />
                   ) : error ? (
-                    <Alert variant="danger">{error}</Alert>
+                    <Alert variant="danger" className="mb-2" style={{ fontSize: 'clamp(11px, 2vw, 13px)' }}>{error}</Alert>
                   ) : profile ? (
                     <>
-                      <div style={{ width: 90, height: 90, borderRadius: '50%', overflow: 'hidden', border: '3px solid #2b6777', marginBottom: 12 }}>
+                      <div style={{ width: 'clamp(50px, 12vw, 70px)', height: 'clamp(50px, 12vw, 70px)', borderRadius: '50%', overflow: 'hidden', border: '2px solid #2b6777', marginBottom: 8 }}>
                         {profile.image ? (
                           <img
                             src={
@@ -162,17 +162,17 @@ const UserDashBoard = () => {
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                           />
                         ) : (
-                          <span className="d-flex align-items-center justify-content-center h-100 w-100" style={{ color: '#aaa', fontSize: 48 }}>
+                          <span className="d-flex align-items-center justify-content-center h-100 w-100" style={{ color: '#aaa', fontSize: 32 }}>
                             <i className="bi bi-person-circle"></i>
                           </span>
                         )}
                       </div>
-                      <h5 className="fw-bold mb-1 text-center">Welcome, {profile.username || "User"}!</h5>
-                      <div className="text-muted mb-2" style={{ fontSize: 14 }}>{profile.email}</div>
-                      <div className="mb-1" style={{ fontSize: 13 }}><b>Mobile:</b> {profile.mobile_number}</div>
-                      <div className="mb-1" style={{ fontSize: 13 }}><b>Location:</b> {profile.state}, {profile.district}, {profile.block}</div>
+                      <h6 className="fw-bold mb-1 text-center" style={{ fontSize: 'clamp(13px, 2vw, 15px)' }}>Welcome, {profile.username || "User"}!</h6>
+                      <div className="text-muted mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>{profile.email}</div>
+                      <div className="mb-0" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}><b>Mobile:</b> {profile.mobile_number}</div>
+                      <div className="mb-2" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}><b>Location:</b> {profile.state}, {profile.district}, {profile.block}</div>
                       <Link to="/UserProfile">
-                        <Button variant="outline-primary" size="sm" className="mt-2">View Profile</Button>
+                        <Button variant="outline-primary" size="sm" className="mt-1" style={{ fontSize: 'clamp(11px, 2vw, 13px)' }}>View Profile</Button>
                       </Link>
                     </>
                   ) : null}
@@ -181,63 +181,63 @@ const UserDashBoard = () => {
             </Col>
 
             {/* Services & Queries stacked in right column */}
-            <Col xs={12} md={7} lg={8}>
+            <Col xs={12} sm={12} md={6} lg={8}>
               {/* Services Section */}
-              <div className="mb-4">
-                <h4 className="fw-bold mb-3" style={{ color: '#2b6777', letterSpacing: 1 }}>Services</h4>
-                <Row className="g-4 mb-2">
-                  <Col xs={12} md={6} lg={4}>
+              <div className="mb-3">
+                <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Services</h6>
+                <Row className="g-2 mb-2" style={{ margin: 0 }}>
+                  <Col xs={12} sm={6} md={6} lg={4}>
                     <Link to="/ViewRequestService" state={{ filter: 'Approved' }} style={{ textDecoration: 'none' }}>
-                      <Card className="stat-card text-center animate__animated animate__fadeIn" style={{ cursor: 'pointer', minHeight: 120 }}>
-                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-2">
-                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#28a745', width: 36, height: 36, borderRadius: '50%' }}>
-                            <i className="bi bi-check-circle" style={{ fontSize: 20 }}></i>
+                      <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#28a745', width: 28, height: 28, borderRadius: '50%' }}>
+                            <i className="bi bi-check-circle" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 14 }}>Approved Services</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 20 }}>{serviceLoading ? <Spinner size="sm" /> : approvedServices}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Approved</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{serviceLoading ? <Spinner size="sm" /> : approvedServices}</div>
                         </Card.Body>
                       </Card>
                     </Link>
                   </Col>
-                  <Col xs={12} md={6} lg={4}>
+                  <Col xs={12} sm={6} md={6} lg={4}>
                     <Link to="/ViewRequestService" state={{ filter: 'Pending' }} style={{ textDecoration: 'none' }}>
-                      <Card className="stat-card text-center animate__animated animate__fadeIn" style={{ cursor: 'pointer', minHeight: 120 }}>
-                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-2">
-                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#fff3cd', color: '#ff9800', width: 36, height: 36, borderRadius: '50%' }}>
-                            <i className="bi bi-hourglass-split" style={{ fontSize: 20 }}></i>
+                      <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#fff3cd', color: '#ff9800', width: 28, height: 28, borderRadius: '50%' }}>
+                            <i className="bi bi-hourglass-split" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 14 }}>Pending Services</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 20 }}>{serviceLoading ? <Spinner size="sm" /> : pendingServices}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Pending</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{serviceLoading ? <Spinner size="sm" /> : pendingServices}</div>
                         </Card.Body>
                       </Card>
                     </Link>
                   </Col>
-                  <Col xs={12} md={6} lg={4}>
+                  <Col xs={12} sm={6} md={6} lg={4}>
                     <Link to="/ViewRequestService" state={{ filter: 'Rejected' }} style={{ textDecoration: 'none' }}>
-                      <Card className="stat-card text-center animate__animated animate__fadeIn" style={{ cursor: 'pointer', minHeight: 120 }}>
-                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-2">
-                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#ffe3e3', color: '#e53935', width: 36, height: 36, borderRadius: '50%' }}>
-                            <i className="bi bi-x-circle" style={{ fontSize: 20 }}></i>
+                      <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#ffe3e3', color: '#e53935', width: 28, height: 28, borderRadius: '50%' }}>
+                            <i className="bi bi-x-circle" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 14 }}>Rejected Services</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 20 }}>{serviceLoading ? <Spinner size="sm" /> : rejectedServices}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Rejected</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{serviceLoading ? <Spinner size="sm" /> : rejectedServices}</div>
                         </Card.Body>
                       </Card>
                     </Link>
                   </Col>
                 </Row>
-                <Row className="mb-4">
-                  <Col xs={12} md={6} lg={6} className="mb-2">
+                <Row className="mb-3 g-2" style={{ margin: 0 }}>
+                  <Col xs={12} sm={6} md={6} lg={6} className="mb-0">
                     <Link to="/RequestService" style={{ textDecoration: 'none' }}>
-                      <Button variant="primary" className="w-100">
-                        <i className="bi bi-plus-circle me-2"></i> Add Service Request
+                      <Button variant="primary" className="w-100" size="sm" style={{ fontSize: 'clamp(11px, 2vw, 13px)', padding: '6px 8px' }}>
+                        <i className="bi bi-plus-circle me-1"></i> Add Request
                       </Button>
                     </Link>
                   </Col>
-                  <Col xs={12} md={6} lg={6} className="mb-2">
+                  <Col xs={12} sm={6} md={6} lg={6} className="mb-0">
                     <Link to="/ViewRequestService" style={{ textDecoration: 'none' }}>
-                      <Button variant="outline-primary" className="w-100">
-                        <i className="bi bi-list-task me-2"></i> View Service Requests
+                      <Button variant="outline-primary" className="w-100" size="sm" style={{ fontSize: 'clamp(11px, 2vw, 13px)', padding: '6px 8px' }}>
+                        <i className="bi bi-list-task me-1"></i> View Requests
                       </Button>
                     </Link>
                   </Col>
@@ -245,43 +245,43 @@ const UserDashBoard = () => {
               </div>
               {/* Queries Section */}
               <div>
-                <h4 className="fw-bold mb-3" style={{ color: '#2b6777', letterSpacing: 1 }}>Queries</h4>
-                <Row className="g-3">
-                  <Col xs={12} sm={4}>
+                <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Queries</h6>
+                <Row className="g-2" style={{ margin: 0 }}>
+                  <Col xs={12} sm={6} md={4}>
                     <Link to="/UserAllQuery" state={{ filter: 'Approved' }} style={{ textDecoration: 'none' }}>
-                      <Card className="stat-card text-center" style={{ cursor: 'pointer', minHeight: 120 }}>
-                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-2">
-                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#28a745', width: 36, height: 36, borderRadius: '50%' }}>
-                            <i className="bi bi-check-circle" style={{ fontSize: 20 }}></i>
+                      <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#28a745', width: 28, height: 28, borderRadius: '50%' }}>
+                            <i className="bi bi-check-circle" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 14 }}>Approved</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 20 }}>{approvedQueries}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Approved</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{approvedQueries}</div>
                         </Card.Body>
                       </Card>
                     </Link>
                   </Col>
-                  <Col xs={12} sm={4}>
+                  <Col xs={12} sm={6} md={4}>
                     <Link to="/UserAllQuery" state={{ filter: 'Pending' }} style={{ textDecoration: 'none' }}>
-                      <Card className="stat-card text-center" style={{ cursor: 'pointer', minHeight: 120 }}>
-                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-2">
-                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#fff3cd', color: '#ff9800', width: 36, height: 36, borderRadius: '50%' }}>
-                            <i className="bi bi-hourglass-split" style={{ fontSize: 20 }}></i>
+                      <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#fff3cd', color: '#ff9800', width: 28, height: 28, borderRadius: '50%' }}>
+                            <i className="bi bi-hourglass-split" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 14 }}>Pending</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 20 }}>{pendingQueries}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Pending</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{pendingQueries}</div>
                         </Card.Body>
                       </Card>
                     </Link>
                   </Col>
-                  <Col xs={12} sm={4}>
+                  <Col xs={12} sm={6} md={4}>
                     <Link to="/UserAllQuery" state={{ filter: 'Rejected' }} style={{ textDecoration: 'none' }}>
-                      <Card className="stat-card text-center" style={{ cursor: 'pointer', minHeight: 120 }}>
-                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-2">
-                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#ffe3e3', color: '#e53935', width: 36, height: 36, borderRadius: '50%' }}>
-                            <i className="bi bi-x-circle" style={{ fontSize: 20 }}></i>
+                      <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#ffe3e3', color: '#e53935', width: 28, height: 28, borderRadius: '50%' }}>
+                            <i className="bi bi-x-circle" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 14 }}>Rejected</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 20 }}>{rejectedQueries}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Rejected</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{rejectedQueries}</div>
                         </Card.Body>
                       </Card>
                     </Link>
@@ -291,30 +291,56 @@ const UserDashBoard = () => {
             </Col>
           </Row>
 
+          {/* Quick Actions - Mobile & Tablet Only (below Profile) */}
+          <Row className="mt-2 g-2 d-md-none" style={{ margin: 0 }}>
+            <Col xs={12} sm={12}>
+              <Card className="quick-actions-card h-100 border-0">
+                <Card.Body className="d-flex flex-column align-items-center justify-content-center p-2">
+                  <h6 className="mb-2 fw-bold" style={{ fontSize: 'clamp(12px, 2vw, 14px)' }}>Quick Actions</h6>
+                  <Link to="/UserQuery" className="w-100 mb-1" style={{ textDecoration: 'none' }}>
+                    <Button variant="primary" className="w-100" size="sm" style={{ fontSize: 'clamp(11px, 2vw, 13px)', padding: '6px 8px' }}>
+                      <i className="bi bi-plus-circle me-1"></i> New Query
+                    </Button>
+                  </Link>
+                  <Link to="/UserAllQuery" className="w-100 mb-1" style={{ textDecoration: 'none' }}>
+                    <Button variant="outline-primary" className="w-100" size="sm" style={{ fontSize: 'clamp(11px, 2vw, 13px)', padding: '6px 8px' }}>
+                      <i className="bi bi-list-task me-1"></i> View Queries
+                    </Button>
+                  </Link>
+                  <Link to="/UserProfile" className="w-100" style={{ textDecoration: 'none' }}>
+                    <Button variant="outline-secondary" className="w-100" size="sm" style={{ fontSize: 'clamp(11px, 2vw, 13px)', padding: '6px 8px' }}>
+                      <i className="bi bi-person me-1"></i> Edit Profile
+                    </Button>
+                  </Link>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+
           {/* Recent Activity & Quick Actions */}
-          <Row className="mt-4 g-4">
-            <Col xs={12} md={7}>
-              <Card className="recent-orders-card h-100">
-                <Card.Body>
-                  <h5 className="mb-3 fw-bold">Recent Queries</h5>
+          <Row className="mt-2 g-2" style={{ margin: 0 }}>
+            <Col xs={12} md={7} sm={12}>
+              <Card className="recent-orders-card h-100 border-0">
+                <Card.Body className="p-2">
+                  <h6 className="mb-2 fw-bold" style={{ fontSize: 'clamp(12px, 2vw, 14px)' }}>Recent Queries</h6>
                   {recentQueries.length === 0 ? (
-                    <div className="text-muted">No recent queries.</div>
+                    <div className="text-muted" style={{ fontSize: 'clamp(10px, 2vw, 12px)' }}>No recent queries.</div>
                   ) : (
                     <>
                       <ul className="list-group list-group-flush">
                         {recentQueries.map(q => (
-                          <li key={q.id} className="list-group-item d-flex justify-content-between align-items-center px-0">
-                            <div>
-                              <div className="fw-semibold">{q.title || q.issue}</div>
-                              <div className="small text-muted">{q.created_at ? new Date(q.created_at).toLocaleDateString() : ''}</div>
+                          <li key={q.id} className="list-group-item d-flex justify-content-between align-items-center px-0 py-1 flex-wrap gap-1">
+                            <div style={{ flex: '1 1 auto', minWidth: 0 }}>
+                              <div className="fw-semibold" style={{ fontSize: 'clamp(11px, 1.8vw, 13px)' }}>{q.title || q.issue}</div>
+                              <div className="small text-muted" style={{ fontSize: 'clamp(9px, 1.5vw, 11px)' }}>{q.created_at ? new Date(q.created_at).toLocaleDateString() : ''}</div>
                             </div>
-                            <span className={`badge rounded-pill ${((q.status || '').toLowerCase() === 'approved') ? 'bg-success' : ((q.status || '').toLowerCase() === 'rejected') ? 'bg-danger' : 'bg-warning text-dark'}`}>{q.status || 'Pending'}</span>
+                            <span className={`badge rounded-pill ${((q.status || '').toLowerCase() === 'approved') ? 'bg-success' : ((q.status || '').toLowerCase() === 'rejected') ? 'bg-danger' : 'bg-warning text-dark'}`} style={{ fontSize: 'clamp(9px, 1.5vw, 10px)' }}>{q.status || 'Pending'}</span>
                           </li>
                         ))}
                       </ul>
                       {queries.length > 3 && (
-                        <div className="text-end mt-2">
-                          <Link to="/UserAllQuery" style={{ textDecoration: 'none', fontWeight: 500 }}>
+                        <div className="text-end mt-1">
+                          <Link to="/UserAllQuery" style={{ textDecoration: 'none', fontWeight: 500, fontSize: 'clamp(10px, 1.8vw, 12px)' }}>
                             More...
                           </Link>
                         </div>
@@ -324,23 +350,23 @@ const UserDashBoard = () => {
                 </Card.Body>
               </Card>
             </Col>
-            <Col xs={12} md={5}>
-              <Card className="quick-actions-card h-100">
-                <Card.Body className="d-flex flex-column align-items-center justify-content-center">
-                  <h5 className="mb-3 fw-bold">Quick Actions</h5>
-                  <Link to="/UserQuery" className="w-100 mb-2" style={{ textDecoration: 'none' }}>
-                    <Button variant="primary" className="w-100">
-                      <i className="bi bi-plus-circle me-2"></i> Raise New Query
+            <Col xs={12} md={5} sm={12} className="d-none d-md-block">
+              <Card className="quick-actions-card h-100 border-0">
+                <Card.Body className="d-flex flex-column align-items-center justify-content-center p-2">
+                  <h6 className="mb-2 fw-bold" style={{ fontSize: 'clamp(12px, 2vw, 14px)' }}>Quick Actions</h6>
+                  <Link to="/UserQuery" className="w-100 mb-1" style={{ textDecoration: 'none' }}>
+                    <Button variant="primary" className="w-100" size="sm" style={{ fontSize: 'clamp(11px, 2vw, 13px)', padding: '6px 8px' }}>
+                      <i className="bi bi-plus-circle me-1"></i> New Query
                     </Button>
                   </Link>
-                  <Link to="/UserAllQuery" className="w-100 mb-2" style={{ textDecoration: 'none' }}>
-                    <Button variant="outline-primary" className="w-100">
-                      <i className="bi bi-list-task me-2"></i> View All Queries
+                  <Link to="/UserAllQuery" className="w-100 mb-1" style={{ textDecoration: 'none' }}>
+                    <Button variant="outline-primary" className="w-100" size="sm" style={{ fontSize: 'clamp(11px, 2vw, 13px)', padding: '6px 8px' }}>
+                      <i className="bi bi-list-task me-1"></i> View Queries
                     </Button>
                   </Link>
                   <Link to="/UserProfile" className="w-100" style={{ textDecoration: 'none' }}>
-                    <Button variant="outline-secondary" className="w-100">
-                      <i className="bi bi-person me-2"></i> Edit Profile
+                    <Button variant="outline-secondary" className="w-100" size="sm" style={{ fontSize: 'clamp(11px, 2vw, 13px)', padding: '6px 8px' }}>
+                      <i className="bi bi-person me-1"></i> Edit Profile
                     </Button>
                   </Link>
                 </Card.Body>

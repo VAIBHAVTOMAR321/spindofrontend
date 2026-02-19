@@ -57,7 +57,7 @@ const menuItems = [
       active: true,
     },
     {
-      icon: <FaQuestionCircle />,
+      icon: <FaTools />,
       label: "SERVICE REQUEST",
       submenu: [
         {
@@ -68,23 +68,23 @@ const menuItems = [
         {
           label: "View Service Requests",
           path: "/ViewRequestService",
-          icon: <FaBook />,
+          icon: <FaListUl />,
         },
       ],
     },
     {
-      icon: <FaQuestionCircle />,
+      icon: <FaComments />,
       label: "CONTACT WITH ADMIN ",
       submenu: [
         {
           label: "Generate Query",
           path: "/UserQuery",
-          icon: <FaPlusSquare />,
+          icon: <FaEdit />,
         },
         {
           label: "All Queries",
           path: "/UserAllQuery",
-          icon: <FaBook />,
+          icon: <FaTasks />,
         },
       ],
     },
