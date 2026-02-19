@@ -110,6 +110,38 @@ const AllBillsDetails = () => {
     }
   };
 
+  // Format currency with proper null checks
+  const formatCurrency = (value) => {
+    if (value === null || value === undefined || value === '') return '-';
+    return `₹${parseFloat(value).toFixed(2)}`;
+  };
+
+  // Calculate total from bill_items if amount is null
+  const calculateTotalFromItems = (billItems) => {
+    if (!billItems || !Array.isArray(billItems)) return 0;
+    return billItems.reduce((total, item) => {
+      const itemTotal = parseFloat(item[4]) || 0; // Total is at index 4
+      return total + itemTotal;
+    }, 0);
+  };
+
+  // Format bill items for display in table
+  const formatBillItems = (billItems) => {
+    if (!billItems || !Array.isArray(billItems) || billItems.length === 0) {
+      return '-';
+    }
+    
+    // If only one item, display it
+    if (billItems.length === 1) {
+      const item = billItems[0];
+      return `${item[0]} - ${item[1]}`;
+    }
+    
+    // If multiple items, show first one with count
+    const firstItem = billItems[0];
+    return `${firstItem[0]} - ${firstItem[1]} (+${billItems.length - 1} more)`;
+  };
+
   return (
     <div className="dashboard-container">
       <StaffLeftNav
@@ -154,52 +186,67 @@ const AllBillsDetails = () => {
                           />
                         </div>
                       </div>
-                      <Table responsive bordered hover className="rounded-4 shadow-sm">
-                        <thead className="table-thead">
-                          <tr>
-                            <th>#</th>
-                            <th>Bill ID</th>
-                            <th>Payment ID</th>
-                            <th>Customer Name</th>
-                            <th>Service Type</th>
-                            <th>Amount</th>
-                            <th>Total Payment</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th>View</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {paginatedBills.length === 0 ? (
+                      <div className="table-responsive">
+                        <Table responsive bordered hover className="rounded-4 shadow-sm">
+                          <thead className="table-thead">
                             <tr>
-                              <td colSpan={10} className="text-center">No bills found.</td>
+                              <th>#</th>
+                              <th>Bill ID</th>
+                              <th>Payment ID</th>
+                              <th>Customer Name</th>
+                              <th>Service Type</th>
+                              <th>Bill Items</th>
+                              <th>Amount</th>
+                              <th>Total Payment</th>
+                              <th>Status</th>
+                              <th>Date</th>
+                              <th>View</th>
                             </tr>
-                          ) : (
-                            paginatedBills.map((bill, idx) => (
-                              <tr key={bill.id || idx}>
-                                <td>{(currentPage - 1) * billsPerPage + idx + 1}</td>
-                                <td>{bill.bill_id}</td>
-                                <td>{bill.payment_id || '-'}</td>
-                                <td>{bill.customer_name}</td>
-                                <td>{bill.service_type}</td>
-                                <td>₹{bill.amount}</td>
-                                <td>₹{bill.total_payment}</td>
-                                <td>
-                                  <span style={{ fontWeight: 600, color: bill.status === 'Paid' ? '#52ab98' : bill.status === 'Unpaid' ? '#e53935' : '#2b6777' }}>
-                                    {bill.status || 'Pending'}
-                                  </span>
-                                </td>
-                                <td>{formatDateTime(bill.bill_date_time)}</td>
-                                <td>
-                                  <Button variant="outline-primary" size="sm" onClick={() => handleView(bill)}>
-                                    <i className="bi bi-eye"></i> View
-                                  </Button>
-                                </td>
+                          </thead>
+                          <tbody>
+                            {paginatedBills.length === 0 ? (
+                              <tr>
+                                <td colSpan={11} className="text-center">No bills found.</td>
                               </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </Table>
+                            ) : (
+                              paginatedBills.map((bill, idx) => {
+                                // Calculate total from bill_items if total_payment is null
+                                const totalPayment = bill.total_payment !== null ? 
+                                  parseFloat(bill.total_payment) : 
+                                  calculateTotalFromItems(bill.bill_items);
+                                
+                                return (
+                                  <tr key={bill.id || idx}>
+                                    <td>{(currentPage - 1) * billsPerPage + idx + 1}</td>
+                                    <td>{bill.bill_id}</td>
+                                    <td>{bill.payment_id || '-'}</td>
+                                    <td>{bill.customer_name}</td>
+                                    <td>{bill.service_type || '-'}</td>
+                                    <td>
+                                      <div style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        {formatBillItems(bill.bill_items)}
+                                      </div>
+                                    </td>
+                                    <td>{formatCurrency(bill.amount)}</td>
+                                    <td>{formatCurrency(totalPayment)}</td>
+                                    <td>
+                                      <span style={{ fontWeight: 600, color: bill.status === 'Paid' ? '#52ab98' : bill.status === 'Unpaid' ? '#e53935' : '#2b6777' }}>
+                                        {bill.status || 'Pending'}
+                                      </span>
+                                    </td>
+                                    <td>{formatDateTime(bill.bill_date_time)}</td>
+                                    <td>
+                                      <Button variant="outline-primary" size="sm" onClick={() => handleView(bill)}>
+                                        <i className="bi bi-eye"></i> View
+                                      </Button>
+                                    </td>
+                                  </tr>
+                                );
+                              })
+                            )}
+                          </tbody>
+                        </Table>
+                      </div>
                       {/* Pagination */}
                       {totalPages > 1 && (
                         <div className="d-flex justify-content-center align-items-center mt-3">
@@ -228,25 +275,63 @@ const AllBillsDetails = () => {
                       <Modal.Title>Bill Details</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                      {selectedBill && (
+                       {selectedBill && (
                         <div>
                           <Row>
                             <Col md={6}>
                               <p><strong>Bill ID:</strong> {selectedBill.bill_id}</p>
                               <p><strong>Payment ID:</strong> {selectedBill.payment_id || '-'}</p>
                               <p><strong>Customer Name:</strong> {selectedBill.customer_name}</p>
-                              <p><strong>Customer Mobile:</strong> {selectedBill.cust_mobile}</p>
-                              <p><strong>Service Type:</strong> {selectedBill.service_type}</p>
-                              <p><strong>Service Description:</strong> {selectedBill.service_des}</p>
+                              <p><strong>Customer Mobile:</strong> {selectedBill.cust_mobile || '-'}</p>
+                              <p><strong>Service Type:</strong> {selectedBill.service_type || '-'}</p>
+                              <p><strong>Service Description:</strong> {selectedBill.service_des || '-'}</p>
                             </Col>
                             <Col md={6}>
-                              <p><strong>Amount:</strong> ₹{selectedBill.amount}</p>
-                              <p><strong>GST:</strong> ₹{selectedBill.gst}</p>
-                              <p><strong>Total Payment:</strong> ₹{selectedBill.total_payment}</p>
-                              <p><strong>Payment Type:</strong> {selectedBill.payment_type}</p>
+                              <p><strong>Amount:</strong> {formatCurrency(selectedBill.amount)}</p>
+                              <p><strong>GST:</strong> {formatCurrency(selectedBill.gst)}</p>
+                              <p><strong>Total Payment:</strong> {formatCurrency(
+                                selectedBill.total_payment !== null ? 
+                                  selectedBill.total_payment : 
+                                  calculateTotalFromItems(selectedBill.bill_items)
+                              )}</p>
+                              <p><strong>Payment Type:</strong> {selectedBill.payment_type || '-'}</p>
                               <p><strong>Status:</strong> <span style={{ fontWeight: 600, color: selectedBill.status === 'Paid' ? '#52ab98' : selectedBill.status === 'Unpaid' ? '#e53935' : '#2b6777' }}>{selectedBill.status || 'Pending'}</span></p>
                             </Col>
                           </Row>
+                          
+                          {/* Bill Items */}
+                          {selectedBill.bill_items && selectedBill.bill_items.length > 0 && (
+                            <Row className="mt-4">
+                              <Col md={12}>
+                                <h5 style={{ color: "#2b6777", fontWeight: 600, marginBottom: "1rem" }}>
+                                  <i className="bi bi-list-check me-2"></i>Bill Items
+                                </h5>
+                                <Table responsive bordered size="sm" className="mb-3">
+                                  <thead className="table-thead">
+                                    <tr>
+                                      <th>Category</th>
+                                      <th>Description</th>
+                                      <th>Amount</th>
+                                      <th>GST</th>
+                                      <th>Total</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {selectedBill.bill_items.map((item, index) => (
+                                      <tr key={index}>
+                                        <td>{item[0] || '-'}</td>
+                                        <td>{item[1] || '-'}</td>
+                                        <td>{formatCurrency(item[2])}</td>
+                                        <td>{formatCurrency(item[3])}</td>
+                                        <td>{formatCurrency(item[4])}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </Table>
+                              </Col>
+                            </Row>
+                          )}
+
                           <Row>
                             <Col md={12}>
                               <p><strong>Bill Date & Time:</strong> {formatDateTime(selectedBill.bill_date_time)}</p>

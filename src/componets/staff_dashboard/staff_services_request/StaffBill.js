@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Container, Form, Button, Row, Col, Card, Spinner, Alert, InputGroup } from "react-bootstrap";
+import { Container, Form, Button, Row, Col, Card, Spinner, Alert, InputGroup, Table, Dropdown } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
 
 import "../../../assets/css/admindashboard.css";
+import "../../../assets/css/service-multiselect.css";
 import { useAuth } from "../../context/AuthContext";
 import StaffLeftNav from "../StaffLeftNav";
 import StaffHeader from "../StaffHeader";
@@ -40,6 +41,17 @@ const StaffBill = () => {
     bill_date_time: new Date().toISOString().slice(0, 19).replace('T', ' '),
     status: "Paid",
   });
+
+  // State for bill items
+  const [billItems, setBillItems] = useState([
+    {
+      category: [],
+      description: "",
+      amount: "",
+      gst: "18",
+      total: "0.00"
+    }
+  ]);
 
   // Auto-fill form with data from location state
   useEffect(() => {
@@ -124,6 +136,61 @@ const StaffBill = () => {
     setBillData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Handle bill item changes
+  const handleBillItemChange = (index, field, value) => {
+    const updatedItems = [...billItems];
+    updatedItems[index] = { ...updatedItems[index], [field]: value };
+    
+    // Calculate total for this item
+    const amount = parseFloat(updatedItems[index].amount) || 0;
+    const gstPercentage = parseFloat(updatedItems[index].gst) || 0;
+    const gstAmount = (amount * gstPercentage) / 100;
+    const total = amount + gstAmount;
+    updatedItems[index].total = total.toFixed(2);
+    
+    setBillItems(updatedItems);
+  };
+
+  // Handle category selection for bill items
+  const handleCategorySelect = (index, category) => {
+    const updatedItems = [...billItems];
+    if (!updatedItems[index].category.includes(category)) {
+      updatedItems[index].category = [...updatedItems[index].category, category];
+      setBillItems(updatedItems);
+    }
+  };
+
+  // Handle category removal for bill items
+  const handleCategoryRemove = (index, categoryToRemove) => {
+    const updatedItems = [...billItems];
+    updatedItems[index].category = updatedItems[index].category.filter(category => category !== categoryToRemove);
+    setBillItems(updatedItems);
+  };
+
+  // Add new bill item
+  const addBillItem = () => {
+    setBillItems([...billItems, {
+      category: [],
+      description: "",
+      amount: "",
+      gst: "18",
+      total: "0.00"
+    }]);
+  };
+
+  // Remove bill item
+  const removeBillItem = (index) => {
+    if (billItems.length > 1) {
+      setBillItems(billItems.filter((_, i) => i !== index));
+    }
+  };
+
+  // Calculate total bill amount from all items
+  const calculateTotalBill = () => {
+    const total = billItems.reduce((sum, item) => sum + parseFloat(item.total || 0), 0);
+    return total.toFixed(2);
+  };
+
   const handleAmountChange = (e) => {
     const { name, value } = e.target;
     const amount = parseFloat(value) || 0;
@@ -157,14 +224,21 @@ const StaffBill = () => {
       setError("Please select a service type.");
       return false;
     }
-    if (!billData.amount || parseFloat(billData.amount) <= 0) {
-      setError("Please enter a valid amount.");
-      return false;
-    }
     if (!billData.vendor_id) {
       setError("Please select a vendor.");
       return false;
     }
+    
+    // Validate bill items
+    const invalidItems = billItems.filter(item => 
+      !item.category || !item.description || !item.amount || parseFloat(item.amount) <= 0
+    );
+    
+    if (invalidItems.length > 0) {
+      setError("Please fill in all required fields for all bill items.");
+      return false;
+    }
+    
     setError("");
     return true;
   };
@@ -179,12 +253,24 @@ const StaffBill = () => {
     setSuccess("");
 
     try {
+      // Prepare bill items in the required format
+      const formattedBillItems = billItems.map(item => [
+        item.category,
+        item.description,
+        parseFloat(item.amount).toFixed(2),
+        (parseFloat(item.amount) * parseFloat(item.gst) / 100).toFixed(2),
+        item.total
+      ]);
+
       const payload = {
         ...billData,
-        amount: parseFloat(billData.amount).toFixed(2),
-        gst: parseFloat(billData.gst).toFixed(2),
-        total_payment: parseFloat(billData.total_payment).toFixed(2),
+        amount: calculateTotalBill(), // Set main amount to grand total
+        gst: "0.00", // GST is calculated per item, so main GST can be 0
+        total_payment: calculateTotalBill(),
+        bill_items: formattedBillItems
       };
+
+      console.log("Payload being sent:", JSON.stringify(payload, null, 2));
 
       const response = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/billing/", {
         method: "POST",
@@ -195,7 +281,9 @@ const StaffBill = () => {
         body: JSON.stringify(payload),
       });
 
+      console.log("Response status:", response.status);
       const data = await response.json();
+      console.log("Response data:", data);
 
       if (response.ok && data.status) {
         setSuccess("Bill created successfully!");
@@ -214,8 +302,18 @@ const StaffBill = () => {
           bill_date_time: new Date().toISOString().slice(0, 19).replace('T', ' '),
           status: "Paid",
         });
+        // Reset bill items
+        setBillItems([
+          {
+            category: "",
+            description: "",
+            amount: "",
+            gst: "18",
+            total: "0.00"
+          }
+        ]);
       } else {
-        setError(data.message || "Failed to create bill. Please try again.");
+        setError(data.message || `Failed to create bill. Status: ${response.status}. Please check console for details.`);
       }
     } catch (err) {
       console.error("Error submitting bill:", err);
@@ -240,6 +338,15 @@ const StaffBill = () => {
       bill_date_time: new Date().toISOString().slice(0, 19).replace('T', ' '),
       status: "Paid",
     });
+    setBillItems([
+      {
+        category: "",
+        description: "",
+        amount: "",
+        gst: "18",
+        total: "0.00"
+      }
+    ]);
     setError("");
     setSuccess("");
   };
@@ -339,25 +446,113 @@ const StaffBill = () => {
                           </Form.Group>
                         </Col>
                       </Row>
+                      {/* Bill Items Section */}
+                      <Row className="mb-4">
+                        <Col md={12}>
+                          <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h5 style={{ color: "#2b6777", fontWeight: 600 }}>
+                              <i className="bi bi-list-check me-2"></i>Bill Items
+                            </h5>
+                            <Button variant="outline-primary" size="sm" onClick={addBillItem}>
+                              <i className="bi bi-plus-circle me-1"></i> Add Item
+                            </Button>
+                          </div>
+                          
+                          <Table responsive bordered size="sm" className="mb-3">
+                            <thead className="table-thead">
+                              <tr>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>GST (%)</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {billItems.map((item, index) => (
+                                <tr key={index}>
+                                  <td>
+                                    <Form.Select 
+                                      value={item.category} 
+                                      onChange={(e) => handleBillItemChange(index, 'category', e.target.value)}
+                                      required
+                                      style={{ backgroundColor: "#e8f4f8", borderColor: "#52ab98", fontSize: "14px" }}
+                                    >
+                                      <option value="">-- Select --</option>
+                                      {categories.map((cat, idx) => <option key={idx} value={cat}>{cat}</option>)}
+                                    </Form.Select>
+                                  </td>
+                                  {/* <td>
+                                    <Form.Control 
+                                      type="text" 
+                                      value={item.description} 
+                                      onChange={(e) => handleBillItemChange(index, 'description', e.target.value)}
+                                      required
+                                      style={{ backgroundColor: "#e8f4f8", borderColor: "#52ab98", fontSize: "14px" }}
+                                      placeholder="Item description"
+                                    />
+                                  </td> */}
+                                  <td>
+                                    <Form.Control 
+                                      type="number" 
+                                      value={item.amount} 
+                                      onChange={(e) => handleBillItemChange(index, 'amount', e.target.value)}
+                                      required
+                                      step="0.01"
+                                      min="0"
+                                      style={{ backgroundColor: "#e8f4f8", borderColor: "#52ab98", fontSize: "14px" }}
+                                      placeholder="0.00"
+                                    />
+                                  </td>
+                                  <td>
+                                    <Form.Control 
+                                      type="number" 
+                                      value={item.gst} 
+                                      onChange={(e) => handleBillItemChange(index, 'gst', e.target.value)}
+                                      required
+                                      step="0.01"
+                                      min="0"
+                                      style={{ backgroundColor: "#e8f4f8", borderColor: "#52ab98", fontSize: "14px" }}
+                                      placeholder="18"
+                                    />
+                                  </td>
+                                  <td>
+                                    <Form.Control 
+                                      type="text" 
+                                      value={item.total} 
+                                      readOnly
+                                      style={{ backgroundColor: "#dee2e6", borderColor: "#ced4da", fontWeight: 'bold', fontSize: "14px" }}
+                                    />
+                                  </td>
+                                  <td>
+                                    <Button 
+                                      variant="outline-danger" 
+                                      size="sm" 
+                                      onClick={() => removeBillItem(index)}
+                                      disabled={billItems.length === 1}
+                                    >
+                                      <i className="bi bi-trash"></i>
+                                    </Button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </Table>
+
+                          {/* Total Bill Amount */}
+                          <div className="d-flex justify-content-end align-items-center">
+                            <h5 style={{ color: "#2b6777", fontWeight: 600, marginRight: "1rem" }}>
+                              Grand Total:
+                            </h5>
+                            <h4 style={{ color: "#52ab98", fontWeight: 700 }}>
+                              ₹{calculateTotalBill()}
+                            </h4>
+                          </div>
+                        </Col>
+                      </Row>
+
                       <Row>
-                        <Col md={3}>
-                          <Form.Group className="mb-3" controlId="amount">
-                            <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}><i className="bi bi-currency-rupee me-2"></i>Amount</Form.Label>
-                            <Form.Control type="number" name="amount" value={billData.amount} onChange={handleAmountChange} required step="0.01" min="0" style={{ backgroundColor: "#e8f4f8", borderColor: "#52ab98" }} placeholder="0.00" />
-                          </Form.Group>
-                        </Col>
-                        <Col md={3}>
-                          <Form.Group className="mb-3" controlId="gst">
-                            <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}><i className="bi bi-percent me-2"></i>GST (%)</Form.Label>
-                            <Form.Control type="number" name="gst" value={billData.gst} onChange={handleAmountChange} required step="0.01" min="0" style={{ backgroundColor: "#e8f4f8", borderColor: "#52ab98" }} placeholder="18" />
-                          </Form.Group>
-                        </Col>
-                        <Col md={3}>
-                          <Form.Group className="mb-3" controlId="total_payment">
-                            <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}><i className="bi bi-calculator me-2"></i>Total Payment</Form.Label>
-                            <Form.Control type="text" name="total_payment" value={billData.total_payment} readOnly style={{ backgroundColor: "#dee2e6", borderColor: "#ced4da", fontWeight: 'bold' }} />
-                          </Form.Group>
-                        </Col>
                         <Col md={3}>
                           <Form.Group className="mb-3" controlId="status">
                             <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}><i className="bi bi-flag me-2"></i>Status</Form.Label>
