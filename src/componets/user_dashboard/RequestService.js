@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Container, Card, Form, Button, Row, Col, Spinner, Alert, InputGroup, Dropdown } from "react-bootstrap";
 import UserLeftNav from "../user_dashboard/UserLeftNav";
 import UserHeader from "../user_dashboard/UserHeader";
@@ -16,6 +16,8 @@ const RequestService = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [serviceOptions, setServiceOptions] = useState([]);
+  // Ref for scrolling to top of form
+  const formTopRef = useRef();
   // Fetch service categories/subcategories for dropdown
   useEffect(() => {
     fetch("https://mahadevaaya.com/spindo/spindobackend/api/get-service/categories/")
@@ -47,7 +49,7 @@ const RequestService = () => {
     district: "",
     block: "",
     address: "",
-    request_for_services: [""],
+    request_for_services: [],
     schedule_date: "",
     schedule_time: "",
     description: ""
@@ -148,15 +150,21 @@ const RequestService = () => {
       const data = await response.json();
       if (response.ok && data.status) {
         setSuccess("Service request submitted successfully!");
-        setForm((prev) => ({ ...prev, request_for_services: [""], schedule_date: "", schedule_time: "", description: "" }));
+        setForm((prev) => ({ ...prev, request_for_services: [], schedule_date: "", schedule_time: "", description: "" }));
+        setTimeout(() => {
+          if (formTopRef.current) formTopRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
       } else {
-        // Log the error response for debugging
-        console.error("API Error Response:", data);
         setError(data.message || "Failed to submit request.");
+        setTimeout(() => {
+          if (formTopRef.current) formTopRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
       }
     } catch (err) {
-      console.error("API Exception:", err);
       setError("Error submitting request.");
+      setTimeout(() => {
+        if (formTopRef.current) formTopRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
     } finally {
       setLoading(false);
     }
@@ -172,6 +180,8 @@ const RequestService = () => {
             <Col xs={12} md={12} lg={12}>
               <Card className="animate__animated animate__fadeIn">
                 <Card.Body>
+                  {/* Ref for scrolling to top of form */}
+                  <div ref={formTopRef}></div>
                   <h3 className="mb-4 text-center" style={{ color: '#2b6777', fontWeight: 700, letterSpacing: 1 }}>Request a Service</h3>
                   {error && <Alert variant="danger">{error}</Alert>}
                   {success && <Alert variant="success">{success}</Alert>}

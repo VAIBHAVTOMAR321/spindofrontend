@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Container, Card, Table, Button, Form, Modal } from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
@@ -12,6 +13,7 @@ const BASE_URL = "https://mahadevaaya.com/spindo/spindobackend";
 const API_URL = `${BASE_URL}/api/vendor/register/`;
 
 const RegisteredVendor = ({ showCardOnly = false }) => {
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -229,7 +231,7 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
 
   if (showCardOnly) {
     return (
-      <div className="dashboard-card" onClick={() => window.location.href = '/RegisteredVendor'} style={{ cursor: 'pointer' }}>
+      <div className="dashboard-card" onClick={() => navigate('/RegisteredVendor')} style={{ cursor: 'pointer' }}>
         <div className="dashboard-card-icon user-icon" title="Number Of Vendors">
           <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" stroke="#10b981" strokeWidth="2"/><path d="M4 20c0-2.5 3.5-4 8-4s8 1.5 8 4" stroke="#10b981" strokeWidth="2"/></svg>
         </div>
@@ -411,14 +413,46 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
                       .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                       .map((vendor) => (
                         <tr key={vendor.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                          <td style={{ fontWeight: 500 }}>{vendor.unique_id}</td>
-                          <td>{vendor.username}</td>
-                          <td>{vendor.mobile_number}</td>
-                          <td>{vendor.email}</td>
-                          <td>{vendor.state}</td>
-                          <td>{vendor.district}</td>
-                          <td>{vendor.block}</td>
-                          <td>{vendor.category}</td>
+                          <td style={{ fontWeight: 500 }}>{
+                            typeof vendor.unique_id === 'object' && vendor.unique_id !== null
+                              ? JSON.stringify(vendor.unique_id)
+                              : vendor.unique_id ?? ''
+                          }</td>
+                          <td>{
+                            typeof vendor.username === 'object' && vendor.username !== null
+                              ? JSON.stringify(vendor.username)
+                              : vendor.username ?? ''
+                          }</td>
+                          <td>{
+                            typeof vendor.mobile_number === 'object' && vendor.mobile_number !== null
+                              ? JSON.stringify(vendor.mobile_number)
+                              : vendor.mobile_number ?? ''
+                          }</td>
+                          <td>{
+                            typeof vendor.email === 'object' && vendor.email !== null
+                              ? JSON.stringify(vendor.email)
+                              : vendor.email ?? ''
+                          }</td>
+                          <td>{
+                            typeof vendor.state === 'object' && vendor.state !== null
+                              ? JSON.stringify(vendor.state)
+                              : vendor.state ?? ''
+                          }</td>
+                          <td>{
+                            typeof vendor.district === 'object' && vendor.district !== null
+                              ? JSON.stringify(vendor.district)
+                              : vendor.district ?? ''
+                          }</td>
+                          <td>{
+                            typeof vendor.block === 'object' && vendor.block !== null
+                              ? JSON.stringify(vendor.block)
+                              : vendor.block ?? ''
+                          }</td>
+                          <td>{
+                            typeof vendor.category === 'object' && vendor.category !== null
+                              ? JSON.stringify(vendor.category)
+                              : vendor.category ?? ''
+                          }</td>
                           <td>
                             {vendor.aadhar_card && (
                               <img
@@ -430,7 +464,11 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
                               />
                             )}
                           </td>
-                          <td>{new Date(vendor.created_at).toLocaleDateString()}</td>
+                          <td>{
+                            typeof vendor.created_at === 'object' && vendor.created_at !== null
+                              ? JSON.stringify(vendor.created_at)
+                              : (vendor.created_at ? new Date(vendor.created_at).toLocaleDateString() : '')
+                          }</td>
                           {manageMode && (
                             <td>
                               <Button
@@ -474,7 +512,7 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
               {/* Edit Modal */}
               <Modal show={showModal} onHide={resetForm} centered>
                 <Modal.Header closeButton style={{ background: '#f1f5f9', borderBottom: '1px solid #e5e7eb' }}>
-                  <Modal.Title style={{ fontWeight: 700, color: '#fff' }}>
+                  <Modal.Title style={{ fontWeight: 700, color: '#10b981' }}>
                     Update Vendor
                   </Modal.Title>
                 </Modal.Header>

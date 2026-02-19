@@ -27,7 +27,7 @@ import {
 } from "react-icons/fa";
 import axios from "axios";
 import "../../assets/css/admindashboard.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FaInfoCircle,
   FaBullseye,
@@ -38,6 +38,7 @@ import { FaCodePullRequest, FaReceipt } from "react-icons/fa6";
 // import BRLogo from "../../assets/images/brainrock_logo.png";
 
 const VendorLeftNav = ({ sidebarOpen, setSidebarOpen, isMobile, isTablet }) => {
+  const navigate = useNavigate();
     // const { logout } = useContext(AuthContext);
     // const { user } = useContext(AuthContext);
 // const emp_id = user?.unique_id;  // This is the correct value
@@ -55,8 +56,7 @@ const menuItems = [
       path: "/VendorDashBoard",
       active: true,
     },
-    
-   {
+    {
       icon: <FaCodePullRequest />,
       label: "Requests",
       submenu: [
@@ -77,6 +77,23 @@ const menuItems = [
       label: "Bills",
       path: "/VendorAllBills",
     },
+    {
+      icon: <FaComments />,
+      label: "Contact With Admin",
+      submenu: [
+        {
+          label: "Generate Query",
+          path: "/GenerateVendorQuery",
+          icon: <FaComments />,
+        },
+        {       
+          label: "All Queries",
+          path: "/VendorAllQueries",
+          icon: <FaListUl />,
+        },
+      ],
+    },
+   
     {
       icon: <FaUserCircle />,
       label: "My Profile",
@@ -108,6 +125,12 @@ const menuItems = [
     
   ];
 
+
+  // Logout handler
+  const handleLogout = () => {
+    localStorage.removeItem("auth");
+    navigate("/Login", { replace: true });
+  };
   //  Auto-close sidebar when switching to mobile or tablet
 
   return (
@@ -182,7 +205,7 @@ const menuItems = [
         <div className="sidebar-footer">
           <Nav.Link
             className="nav-item logout-btn"
-        //    onClick={logout}
+            onClick={handleLogout}
           >
             <span className="nav-icon">
               <FaSignOutAlt />

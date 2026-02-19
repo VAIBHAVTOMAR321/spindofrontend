@@ -46,7 +46,11 @@ import ContactUs from "./componets/contact/ContactUs";
 import VendorRequests from "./componets/vendor_dashboard/VendorRequests";
 import VendorProfile from "./componets/vendor_dashboard/VendorProfile";
 import CompletedRequests from "./componets/vendor_dashboard/CompletedRequests";
+
+
 import VendorAllBills from "./componets/vendor_dashboard/VendorAllBills";
+import GenerateVendorQuery from "./componets/vendor_dashboard/vendorpages/GenerateVendorQuery";
+import VendorAllQueries from "./componets/vendor_dashboard/vendorpages/VendorAllQueries";
 
 
 
@@ -82,6 +86,8 @@ function App() {
     "/StaffServicesRequest",
     "/StaffBill",
     "/AllBillsDetails",
+    "/GenerateVendorQuery",
+    "/VendorAllQueries",
   ]);
 
   const shouldHideNavbar = hiddenPaths.has(location.pathname);
@@ -326,6 +332,22 @@ function App() {
                 <VendorAllBills />
               </Protected>
             } 
+          />
+          <Route
+            path="/GenerateVendorQuery"
+            element={
+              <Protected allowedRoles={['vendor']}>
+                <GenerateVendorQuery />
+              </Protected>
+            }
+          />
+          <Route
+            path="/VendorAllQueries"
+            element={
+              <Protected allowedRoles={['vendor']}>
+                <VendorAllQueries />
+              </Protected>
+            }
           />
           
         </Routes>

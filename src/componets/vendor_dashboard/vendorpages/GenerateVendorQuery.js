@@ -1,33 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Container, Form, Button, Row, Col, Card, Spinner, Alert } from "react-bootstrap";
-import UserLeftNav from "./UserLeftNav";
-import UserHeader from "./UserHeader";
-import "../../assets/css/admindashboard.css";
-import { useAuth } from "../context/AuthContext";
+import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from "react-bootstrap";
+import { useAuth } from "../../context/AuthContext";
+import VendorHeader from "../VendorHeader";
+import VendorLeftNav from "../VendorLeftNav";
+import "../../../assets/css/admindashboard.css";
 
-const UserQuery = () => {
+const BASE_URL = "https://mahadevaaya.com/spindo/spindobackend";
+const API_URL = `${BASE_URL}/api/vendor/request/`;
+
+const GenerateVendorQuery = () => {
+  // Sidebar and device state
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [profileLoading, setProfileLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [imagePreview, setImagePreview] = useState("");
-  const fileInputRef = useRef();
-  // Ref for scrolling to top of form
-  const formTopRef = useRef();
-  const { user, tokens } = useAuth();
-
-  const [profileName, setProfileName] = useState("");
-  const [query, setQuery] = useState({
-    name: "",
-    unique_id: user?.uniqueId || "",
-    title: "",
-    issue: "",
-    issue_image: null,
-  });
-
   useEffect(() => {
     const checkDevice = () => {
       const width = window.innerWidth;
@@ -39,82 +24,75 @@ const UserQuery = () => {
     window.addEventListener("resize", checkDevice);
     return () => window.removeEventListener("resize", checkDevice);
   }, []);
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
-  // Fetch user profile to get the name
-  useEffect(() => {
-    if (!user?.uniqueId) {
-      setProfileLoading(false);
-      return;
-    }
-    setProfileLoading(true);
-    const apiUrl = `https://mahadevaaya.com/spindo/spindobackend/api/customer/register/?unique_id=${user.uniqueId}`;
-    fetch(apiUrl, {
-      headers: tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status && data.data) {
-          setProfileName(data.data.username || "");
-          setQuery((prev) => ({
-            ...prev,
-            name: data.data.username || "",
-            unique_id: user.uniqueId,
-          }));
-        } else {
-          setProfileName("");
-          setError("Failed to load user profile.");
-        }
-        setProfileLoading(false);
-      })
-      .catch(() => {
-        setProfileName("");
-        setError("Error fetching user profile.");
-        setProfileLoading(false);
-      });
-  }, [user?.uniqueId, tokens]);
+  // Auth
+  const { user, tokens } = useAuth();
+
+  // Form state
+  const [form, setForm] = useState({
+    vendor: user?.uniqueId || "",
+    username: user?.username || "",
+    title: "",
+    issue: "",
+    issue_image: null
+  });
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+  const [imagePreview, setImagePreview] = useState("");
+  const fileInputRef = useRef();
+  // Ref for scrolling to top of form
+  const formTopRef = useRef();
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setQuery((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setError("Image size should be less than 5MB");
-        return;
-      }
-      setImagePreview(URL.createObjectURL(file));
-      setQuery((prev) => ({ ...prev, issue_image: file }));
-      setError("");
+    const { name, value, files } = e.target;
+    if (name === "issue_image") {
+      const file = files[0];
+      setForm((prev) => ({ ...prev, issue_image: file }));
+      if (file) setImagePreview(URL.createObjectURL(file));
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }));
     }
   };
+
+  // Fetch username from vendor profile API (like UserQuery)
+  useEffect(() => {
+    setForm((prev) => ({
+      ...prev,
+      vendor: user?.uniqueId || "",
+    }));
+    if (user?.uniqueId && tokens?.access) {
+      const apiUrl = `https://mahadevaaya.com/spindo/spindobackend/api/vendor/register/?unique_id=${user.uniqueId}`;
+      fetch(apiUrl, {
+        headers: { Authorization: `Bearer ${tokens.access}` }
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status && data.data) {
+            setForm((prev) => ({ ...prev, username: data.data.username || "" }));
+          }
+        });
+    }
+  }, [user, tokens]);
 
   const validateForm = () => {
-    if (!query.name.trim()) {
-      setError("Name is required");
-      setTimeout(() => {
-        if (formTopRef.current) formTopRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 100);
-      return false;
-    }
-    if (!query.title.trim()) {
+    if (!form.title.trim()) {
       setError("Title is required");
+      // Scroll to top to show error
       setTimeout(() => {
         if (formTopRef.current) formTopRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
       return false;
     }
-    if (!query.issue.trim()) {
+    if (!form.issue.trim()) {
       setError("Issue description is required");
       setTimeout(() => {
         if (formTopRef.current) formTopRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
       return false;
     }
-    if (query.issue.trim().length < 10) {
+    if (form.issue.trim().length < 10) {
       setError("Issue description should be at least 10 characters long");
       setTimeout(() => {
         if (formTopRef.current) formTopRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -127,81 +105,49 @@ const UserQuery = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
     setLoading(true);
-    setError("");
     setSuccess("");
+    setError("");
     try {
-      let response, data;
-      if (query.issue_image) {
-        // Send as multipart/form-data if image is present
-        const formData = new FormData();
-        formData.append("name", profileName || user?.name || "");
-        formData.append("unique_id", query.unique_id);
-        formData.append("title", query.title);
-        formData.append("issue", query.issue);
-        formData.append("issue_image", query.issue_image);
-        response = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/customer/issue/", {
-          method: "POST",
-          headers: {
-            ...(tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}),
-          },
-          body: formData,
-        });
-      } else {
-        // Send as JSON if no image
-        const payload = {
-          name: profileName || user?.name || "",
-          unique_id: query.unique_id,
-          title: query.title,
-          issue: query.issue,
-          issue_image: null,
-        };
-        response = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/customer/issue/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}),
-          },
-          body: JSON.stringify(payload),
-        });
-      }
-      try {
-        data = await response.json();
-      } catch (jsonErr) {
-        setError("Server returned an invalid response.");
-        setTimeout(() => {
-          if (formTopRef.current) formTopRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-        }, 100);
-        setLoading(false);
-        return;
-      }
+      const formData = new FormData();
+      formData.set("vendor", form.vendor || "");
+      formData.set("username", form.username || "");
+      formData.set("title", form.title);
+      formData.set("issue", form.issue);
+      if (form.issue_image) formData.set("issue_image", form.issue_image);
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${tokens.access}`
+        },
+        body: formData
+      });
+      const data = await response.json();
+      // ...existing code...
       if (response.ok && data.status) {
-        setSuccess("Your query has been submitted successfully! We'll get back to you soon.");
-        setQuery({
-          name: profileName || user?.name || "",
-          unique_id: user?.uniqueId || "",
+        setSuccess("Query submitted successfully!");
+        setForm({
+          vendor: user?.uniqueId || "",
+          username: user?.username || "",
           title: "",
           issue: "",
-          issue_image: null,
+          issue_image: null
         });
         setImagePreview("");
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        // Scroll to top to show success
         setTimeout(() => {
           if (formTopRef.current) formTopRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
         }, 100);
       } else {
-        setError(data.message || "Failed to submit query. Please try again.");
+        setError(data.message || "Failed to submit query.");
         setTimeout(() => {
           if (formTopRef.current) formTopRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
         }, 100);
       }
     } catch (err) {
-      setError("Error submitting query. Please try again later.");
+      setError("Error submitting query.");
       setTimeout(() => {
         if (formTopRef.current) formTopRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
@@ -211,36 +157,33 @@ const UserQuery = () => {
   };
 
   const handleReset = () => {
-    setQuery({
-      name: user?.name || "",
-      unique_id: user?.uniqueId || "",
+    setForm({
+      vendor: user?.uniqueId || "",
+      username: user?.username || "",
       title: "",
       issue: "",
-      issue_image: null,
+      issue_image: null
     });
     setImagePreview("");
     setError("");
     setSuccess("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    // Scroll to top on reset
     setTimeout(() => {
       if (formTopRef.current) formTopRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 100);
   };
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
-
   return (
     <div className="dashboard-container">
-      <UserLeftNav
+      <VendorLeftNav
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         isMobile={isMobile}
         isTablet={isTablet}
       />
       <div className="main-content-dash">
-        <UserHeader toggleSidebar={toggleSidebar} />
+        <VendorHeader toggleSidebar={toggleSidebar} />
         <Container fluid className="dashboard-body dashboard-main-container">
           <Row className="justify-content-center mt-4">
             <Col xs={12} lg={12}>
@@ -253,18 +196,8 @@ const UserQuery = () => {
                       <i className="bi bi-chat-dots" style={{ marginRight: "10px" }}></i>
                       Submit Your Query
                     </h3>
-                    <p style={{ color: "#6c757d", fontSize: "14px" }}>We're here to help! Please describe your issue and we'll respond as soon as possible.</p>
+                    <p style={{ color: "#6c757d", fontSize: "14px" }}>Describe your issue and our team will respond as soon as possible.</p>
                   </div>
-
-                  {profileLoading && (
-                    <div className="text-center">
-                      <Spinner animation="border" variant="primary" />
-                      <p className="mt-2" style={{ color: "#6c757d" }}>Loading your profile...</p>
-                    </div>
-                  )}
-
-
-
                   {error && (
                     <Alert variant="danger" onClose={() => setError("")} dismissible>
                       <i className="bi bi-exclamation-circle me-2"></i>
@@ -277,66 +210,60 @@ const UserQuery = () => {
                       {success}
                     </Alert>
                   )}
-
-                  {!profileLoading && (
                   <Form onSubmit={handleSubmit} autoComplete="off">
                     <Row>
-                      <Col md={6}>
-                        <Form.Group className="mb-3" controlId="name">
+                      <Col md={3}>
+                        <Form.Group className="mb-3" controlId="vendor">
                           <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}>
-                            <i className="bi bi-person me-2"></i>Full Name
+                            <i className="bi bi-person-badge me-2"></i>Vendor ID
                           </Form.Label>
                           <Form.Control
                             type="text"
-                            name="name"
-                            value={query.name}
-                            onChange={handleChange}
+                            name="vendor"
+                            value={form.vendor}
                             disabled
                             className="border-2"
                             style={{ backgroundColor: "#e8f4f8", borderColor: "#52ab98" }}
-                            placeholder="Your full name"
+                            placeholder="Vendor ID"
                           />
-                          <Form.Text className="text-muted">Auto-filled from your profile</Form.Text>
                         </Form.Group>
                       </Col>
-
-                      <Col md={6}>
-                        <Form.Group className="mb-3" controlId="unique_id">
+                      <Col md={3}>
+                        <Form.Group className="mb-3" controlId="username">
                           <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}>
-                            <i className="bi bi-shield-check me-2"></i>Unique ID
+                            <i className="bi bi-person me-2"></i>Username
                           </Form.Label>
                           <Form.Control
                             type="text"
-                            name="unique_id"
-                            value={query.unique_id}
+                            name="username"
+                            value={form.username}
                             disabled
                             className="border-2"
                             style={{ backgroundColor: "#e8f4f8", borderColor: "#52ab98" }}
-                            placeholder="Your unique ID"
+                            placeholder="Username"
                           />
-                          <Form.Text className="text-muted">Auto-filled from your profile</Form.Text>
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="mb-3" controlId="title">
+                          <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}>
+                            <i className="bi bi-card-heading me-2"></i>Issue Title
+                          </Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="title"
+                            value={form.title}
+                            onChange={handleChange}
+                            required
+                            placeholder="e.g., Payment Delay, Service Problem, etc."
+                            className="border-2"
+                            style={{ borderColor: "#52ab98" }}
+                            maxLength="100"
+                          />
+                          <Form.Text className="text-muted">{form.title.length}/100 characters</Form.Text>
                         </Form.Group>
                       </Col>
                     </Row>
-
-                    <Form.Group className="mb-3" controlId="title">
-                      <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}>
-                        <i className="bi bi-card-heading me-2"></i>Issue Title
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="title"
-                        value={query.title}
-                        onChange={handleChange}
-                        required
-                        placeholder="e.g., Login Issue, Payment Problem, etc."
-                        className="border-2"
-                        style={{ borderColor: "#52ab98" }}
-                        maxLength="100"
-                      />
-                      <Form.Text className="text-muted">{query.title.length}/100 characters</Form.Text>
-                    </Form.Group>
-
                     <Form.Group className="mb-3" controlId="issue">
                       <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}>
                         <i className="bi bi-file-text me-2"></i>Describe Your Issue
@@ -345,7 +272,7 @@ const UserQuery = () => {
                         as="textarea"
                         rows={5}
                         name="issue"
-                        value={query.issue}
+                        value={form.issue}
                         onChange={handleChange}
                         required
                         placeholder="Please provide detailed information about your issue..."
@@ -355,10 +282,9 @@ const UserQuery = () => {
                         maxLength="1000"
                       />
                       <Form.Text className="text-muted">
-                        {query.issue.length}/1000 characters (minimum 10 required)
+                        {form.issue.length}/1000 characters (minimum 10 required)
                       </Form.Text>
                     </Form.Group>
-
                     <Form.Group className="mb-4" controlId="issue_image">
                       <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}>
                         <i className="bi bi-image me-2"></i>Attach Screenshot/Image (Optional)
@@ -374,23 +300,6 @@ const UserQuery = () => {
                           transition: "all 0.3s ease",
                         }}
                         onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                        onDragOver={(e) => {
-                          e.preventDefault();
-                          e.currentTarget.style.backgroundColor = "#e8f4f8";
-                          e.currentTarget.style.borderColor = "#2b6777";
-                        }}
-                        onDragLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = "#f0f9f9";
-                          e.currentTarget.style.borderColor = "#52ab98";
-                        }}
-                        onDrop={(e) => {
-                          e.preventDefault();
-                          const files = e.dataTransfer.files;
-                          if (files.length > 0) {
-                            const event = { target: { files } };
-                            handleImageChange(event);
-                          }
-                        }}
                       >
                         {imagePreview ? (
                           <div>
@@ -411,9 +320,8 @@ const UserQuery = () => {
                           <div>
                             <i className="bi bi-cloud-arrow-up" style={{ fontSize: "32px", color: "#52ab98", marginBottom: "10px", display: "block" }}></i>
                             <p style={{ color: "#2b6777", fontWeight: 600, marginBottom: "5px" }}>
-                              Drag and drop your image here
+                              Click to browse (Max 5MB)
                             </p>
-                            <small style={{ color: "#6c757d" }}>or click to browse (Max 5MB)</small>
                           </div>
                         )}
                       </div>
@@ -422,11 +330,10 @@ const UserQuery = () => {
                         accept="image/*"
                         ref={fileInputRef}
                         style={{ display: "none" }}
-                        onChange={handleImageChange}
+                        onChange={handleChange}
                       />
                       <Form.Text className="text-muted">Supported formats: JPG, PNG, GIF (Max 5MB)</Form.Text>
                     </Form.Group>
-
                     <div className="d-flex justify-content-center gap-3 mt-5">
                       <Button
                         variant="primary"
@@ -463,7 +370,6 @@ const UserQuery = () => {
                       </Button>
                     </div>
                   </Form>
-                  )}
                 </Card.Body>
               </Card>
             </Col>
@@ -474,4 +380,4 @@ const UserQuery = () => {
   );
 };
 
-export default UserQuery;
+export default GenerateVendorQuery;

@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Container, Card, Table, Spinner, Alert, Row, Col, Badge, Form, Button } from "react-bootstrap";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { Container, Card, Table, Spinner, Alert, Row, Col, Badge, Form, Button, Modal } from "react-bootstrap";
 import UserLeftNav from "../user_dashboard/UserLeftNav";
 import UserHeader from "../user_dashboard/UserHeader";
 import Footer from "../footer/Footer";
 import { useAuth } from "../context/AuthContext";
+import { useLocation } from "react-router-dom";
 import "../../assets/css/admindashboard.css";
 
 const statusColors = {
@@ -23,12 +26,97 @@ const ViewRequestService = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const entriesPerPage = 10;
+  // Filter state
+  const [filters, setFilters] = useState({
+    request_id: '',
+    username: '',
+    email: '',
+    contact_number: '',
+    alternate_contact_number: ''
+  });
+
   // Filtered and paginated data
-  const filteredRequests = statusFilter === "all"
+  const filteredRequests = (statusFilter === "all"
     ? requests
-    : requests.filter(r => (r.status || "").toLowerCase() === statusFilter);
+    : requests.filter(r => (r.status || "").toLowerCase() === statusFilter)
+  ).filter(r =>
+    (!filters.request_id || (r.request_id || '').toString().toLowerCase().includes(filters.request_id.toLowerCase())) &&
+    (!filters.username || (r.username || '').toLowerCase().includes(filters.username.toLowerCase())) &&
+    (!filters.email || (r.email || '').toLowerCase().includes(filters.email.toLowerCase())) &&
+    (!filters.contact_number || (r.contact_number || '').toString().toLowerCase().includes(filters.contact_number.toLowerCase())) &&
+    (!filters.alternate_contact_number || (r.alternate_contact_number || '').toString().toLowerCase().includes(filters.alternate_contact_number.toLowerCase()))
+  );
   const totalPages = Math.ceil(filteredRequests.length / entriesPerPage);
   const paginatedRequests = filteredRequests.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage);
+
+  // PDF preview and download
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null);
+  const [showPdfModal, setShowPdfModal] = useState(false);
+
+  const handleViewPDF = async () => {
+    const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    const headers = [["Request ID", "Name", "Email", "Contact", "Alternate Contact", "Address", "Service(s)", "Schedule", "Description", "Status"]];
+    const rows = filteredRequests.map(req => [
+      req.request_id,
+      req.username,
+      req.email,
+      req.contact_number,
+      req.alternate_contact_number || '-',
+      req.address,
+      Array.isArray(req.request_for_services) ? req.request_for_services.join(", ") : req.request_for_services,
+      `${req.schedule_date} ${req.schedule_time}`,
+      req.description,
+      req.status
+    ]);
+    autoTable(pdf, {
+      head: headers,
+      body: rows,
+      startY: 10,
+      margin: { top: 10, right: 10, left: 10, bottom: 10 },
+      theme: "grid",
+      headStyles: { fillColor: [99, 102, 241], textColor: [255, 255, 255], fontStyle: "bold" },
+      bodyStyles: { textColor: [30, 41, 59] },
+      alternateRowStyles: { fillColor: [248, 250, 252] }
+    });
+    const pdfBlob = pdf.output("blob");
+    const url = URL.createObjectURL(pdfBlob);
+    setPdfPreviewUrl(url);
+    setShowPdfModal(true);
+  };
+
+  const handleDownloadPDF = () => {
+    if (pdfPreviewUrl) {
+      const link = document.createElement("a");
+      link.href = pdfPreviewUrl;
+      link.download = "ServiceRequests.pdf";
+      link.click();
+    }
+    setShowPdfModal(false);
+    setPdfPreviewUrl(null);
+  };
+
+  const handleClosePdfModal = () => {
+    setShowPdfModal(false);
+    setPdfPreviewUrl(null);
+  };
+    // Handle filter change
+    const handleFilterChange = (e) => {
+      const { name, value } = e.target;
+      setFilters((prev) => ({ ...prev, [name]: value }));
+      setCurrentPage(1);
+    };
+  const location = useLocation();
+
+  // Set statusFilter from navigation state (e.g., from dashboard cards)
+  useEffect(() => {
+    if (location && location.state && location.state.filter) {
+      const filter = location.state.filter.toLowerCase();
+      if (["approved", "pending", "rejected"].includes(filter)) {
+        setStatusFilter(filter);
+      }
+    }
+    // eslint-disable-next-line
+  }, [location.state]);
 
   useEffect(() => {
     const checkDevice = () => {
@@ -88,6 +176,52 @@ const ViewRequestService = () => {
                   {error && <Alert variant="danger">{error}</Alert>}
                   {!loading && !error && (
                     <>
+                      {/* Filters Row */}
+                      <div className="mb-3 d-flex flex-wrap gap-2 align-items-center justify-content-between">
+                        <Form className="d-flex flex-wrap gap-2">
+                          <Form.Control
+                            name="request_id"
+                            value={filters.request_id}
+                            onChange={handleFilterChange}
+                            placeholder="Filter Request ID"
+                            style={{ maxWidth: 140, borderRadius: 8 }}
+                          />
+                          <Form.Control
+                            name="username"
+                            value={filters.username}
+                            onChange={handleFilterChange}
+                            placeholder="Filter Name"
+                            style={{ maxWidth: 140, borderRadius: 8 }}
+                          />
+                          <Form.Control
+                            name="email"
+                            value={filters.email}
+                            onChange={handleFilterChange}
+                            placeholder="Filter Email"
+                            style={{ maxWidth: 140, borderRadius: 8 }}
+                          />
+                          <Form.Control
+                            name="contact_number"
+                            value={filters.contact_number}
+                            onChange={handleFilterChange}
+                            placeholder="Filter Contact"
+                            style={{ maxWidth: 140, borderRadius: 8 }}
+                          />
+                          <Form.Control
+                            name="alternate_contact_number"
+                            value={filters.alternate_contact_number}
+                            onChange={handleFilterChange}
+                            placeholder="Filter Alternate Contact"
+                            style={{ maxWidth: 140, borderRadius: 8 }}
+                          />
+                        </Form>
+                        <div className="d-flex gap-2">
+                          <Button variant="success" onClick={handleViewPDF} style={{ borderRadius: 10, fontWeight: 600 }}>
+                            View Table as PDF
+                          </Button>
+                        </div>
+                      </div>
+                      {/* Status Filter and Pagination Info */}
                       <div className="d-flex flex-wrap align-items-center justify-content-between mb-3">
                         <div>
                           <Form.Select
@@ -108,9 +242,36 @@ const ViewRequestService = () => {
                           </span>
                         </div>
                       </div>
+                                            {/* PDF Preview Modal */}
+                                            <Modal show={showPdfModal} onHide={handleClosePdfModal} size="lg" centered>
+                                              <Modal.Header closeButton>
+                                                <Modal.Title>PDF Preview</Modal.Title>
+                                              </Modal.Header>
+                                              <Modal.Body style={{ minHeight: 500 }}>
+                                                {pdfPreviewUrl ? (
+                                                  <iframe
+                                                    src={pdfPreviewUrl}
+                                                    title="PDF Preview"
+                                                    width="100%"
+                                                    height="500px"
+                                                    style={{ border: "none" }}
+                                                  />
+                                                ) : (
+                                                  <div>Loading PDF...</div>
+                                                )}
+                                              </Modal.Body>
+                                              <Modal.Footer>
+                                                <Button variant="primary" onClick={handleDownloadPDF}>
+                                                  Download PDF
+                                                </Button>
+                                                <Button variant="secondary" onClick={handleClosePdfModal}>
+                                                  Close
+                                                </Button>
+                                              </Modal.Footer>
+                                            </Modal>
                       <div className="table-responsive">
                         <Table bordered hover className="align-middle text-center">
-                        <thead>
+                        <thead className="table-thead">
                           <tr style={{ background: 'linear-gradient(90deg, #2b6777 60%, #52ab98 100%)', color: '#fff', fontWeight: 600, fontSize: 16, letterSpacing: 1 }}>
                             <th style={{ borderRight: '1px solid #fff' }}>#</th>
                             <th style={{ borderRight: '1px solid #fff' }}>Request ID</th>
@@ -188,7 +349,6 @@ const ViewRequestService = () => {
             </Col>
           </Row>
         </Container>
-        <Footer />
       </div>
     </div>
   );
