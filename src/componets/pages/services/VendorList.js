@@ -5,10 +5,28 @@ import { useLocation, Link } from 'react-router-dom';
 function VendorList() {
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null); // Keep this for actual API/network errors
   const [debugInfo, setDebugInfo] = useState(null);
   const location = useLocation();
   const selectedService = location.state?.service;
+
+  // HELPER FUNCTION: Safely format any value for display
+  // This prevents the "Objects are not valid as a React child" error.
+  const formatDisplayValue = (value) => {
+    if (value === null || value === undefined || value === '') {
+      return 'Not specified';
+    }
+    if (Array.isArray(value)) {
+      // If it's an array, join its elements into a string
+      return value.length > 0 ? value.join(', ') : 'Not specified';
+    }
+    if (typeof value === 'object') {
+      // If it's an object (but not an array), stringify it as a safe fallback
+      return JSON.stringify(value);
+    }
+    // For strings, numbers, etc., return as is
+    return value;
+  };
 
   // Helper function to safely convert to lowercase string
   const toLowerCaseString = (value) => {
@@ -19,7 +37,7 @@ function VendorList() {
     const fetchVendors = async () => {
       try {
         setLoading(true);
-        setError(null);
+        setError(null); // Clear previous errors
         
         const response = await fetch('https://mahadevaaya.com/spindo/spindobackend/api/vendor/list/');
         if (!response.ok) {
@@ -28,49 +46,72 @@ function VendorList() {
         
         const data = await response.json();
         if (data.status) {
-          // Log the data for debugging
           console.log('Selected Service:', selectedService);
           console.log('All Vendors:', data.data);
           
-          // Safely get the selected product name
           const selectedProdName = toLowerCaseString(selectedService?.prod_name);
           
-          // Filter vendors where category matches the selected service prod_name
           const filteredVendors = data.data.filter(vendor => {
-            // Safely convert all vendor fields to lowercase strings
             const vendorCategory = toLowerCaseString(vendor.category);
             const vendorSubCategory = toLowerCaseString(vendor.sub_cate);
             const vendorService = toLowerCaseString(vendor.service);
             const vendorName = toLowerCaseString(vendor.username || vendor.name);
             const vendorCompany = toLowerCaseString(vendor.company_name);
             
-            // Match against multiple fields with strict comparison
-            return vendorCategory === selectedProdName || 
-                   vendorSubCategory === selectedProdName || 
-                   vendorService === selectedProdName ||
-                   vendorName === selectedProdName ||
-                   vendorCompany === selectedProdName ||
-                   vendorCategory.includes(selectedProdName) ||
-                   vendorSubCategory.includes(selectedProdName) ||
-                   vendorService.includes(selectedProdName) ||
-                   vendorName.includes(selectedProdName) ||
-                   vendorCompany.includes(selectedProdName);
+            let parsedCategories = [];
+            if (vendorCategory) {
+              try {
+                const parsed = JSON.parse(vendor.category || '');
+                if (Array.isArray(parsed)) {
+                  parsedCategories = parsed.map(category => toLowerCaseString(category));
+                } else if (typeof parsed === 'string') {
+                  parsedCategories = [toLowerCaseString(parsed)];
+                }
+              } catch (error) {
+                parsedCategories = [vendorCategory];
+              }
+            }
+            
+            const matchesCategory = parsedCategories.some(category => 
+              category === selectedProdName || category.includes(selectedProdName)
+            );
+            
+            const matchesOtherFields = vendorSubCategory === selectedProdName || 
+                                      vendorService === selectedProdName ||
+                                      vendorName === selectedProdName ||
+                                      vendorCompany === selectedProdName ||
+                                      vendorSubCategory.includes(selectedProdName) ||
+                                      vendorService.includes(selectedProdName) ||
+                                      vendorName.includes(selectedProdName) ||
+                                      vendorCompany.includes(selectedProdName);
+            
+            return matchesCategory || matchesOtherFields;
           });
           
-          // Set debug info
           setDebugInfo({
             totalVendors: data.data.length,
             filteredVendors: filteredVendors.length,
             selectedService: selectedService?.prod_name || 'N/A',
-            sampleVendor: data.data[0] // Show first vendor for debugging
+            selectedServiceLower: selectedProdName,
+            sampleVendor: data.data[0],
+            vendorCategoryInfo: data.data.slice(0, 3).map(vendor => ({
+              id: vendor.unique_id || vendor.id,
+              username: vendor.username,
+              rawCategory: vendor.category,
+              parsedCategories: (() => {
+                try {
+                  const parsed = JSON.parse(vendor.category || '');
+                  return Array.isArray(parsed) ? parsed : [vendor.category];
+                } catch (e) {
+                  return [vendor.category];
+                }
+              })()
+            }))
           });
           
+          // Set the vendors array. If it's empty, the UI will handle the message.
           setVendors(filteredVendors);
           
-          // If no vendors found after filtering, set a message
-          if (filteredVendors.length === 0) {
-            setError(`No vendors found for "${selectedService?.prod_name || 'Unknown Service'}"`);
-          }
         } else {
           setError('Failed to load vendors');
         }
@@ -108,11 +149,7 @@ function VendorList() {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h2>Vendors for {selectedService.prod_name}</h2>
-          {debugInfo && (
-            <small className="text-muted">
-              Found {debugInfo.filteredVendors} of {debugInfo.totalVendors} vendors
-            </small>
-          )}
+         
         </div>
         <Link to="/" className="btn btn-outline-secondary">← Back to Services</Link>
       </div>
@@ -128,28 +165,39 @@ function VendorList() {
         <Alert variant="danger">
           <Alert.Heading>Error Loading Vendors</Alert.Heading>
           <p>{error}</p>
-          {debugInfo && (
-            <div className="mt-3">
-              <details>
-                <summary className="cursor-pointer">Debug Information</summary>
-                <div className="mt-2">
-                  <small>
-                    <strong>Selected Service:</strong> {debugInfo.selectedService}<br />
-                    <strong>Total Vendors Available:</strong> {debugInfo.totalVendors}<br />
-                    <strong>Vendors Matching:</strong> {debugInfo.filteredVendors}<br />
-                    {debugInfo.sampleVendor && (
-                      <>
-                        <strong>Sample Vendor Structure:</strong><br />
-                        <pre className="mt-1 p-2 bg-light rounded">
-                          {JSON.stringify(debugInfo.sampleVendor, null, 2)}
-                        </pre>
-                      </>
-                    )}
-                  </small>
-                </div>
-              </details>
-            </div>
-          )}
+            {debugInfo && (
+              <div className="mt-3">
+                <details>
+                  <summary className="cursor-pointer">Debug Information</summary>
+                  <div className="mt-2">
+                    <small>
+                      <strong>Selected Service:</strong> {debugInfo.selectedService}<br />
+                      <strong>Selected Service (Lowercase):</strong> {debugInfo.selectedServiceLower}<br />
+                      <strong>Total Vendors Available:</strong> {debugInfo.totalVendors}<br />
+                      <strong>Vendors Matching:</strong> {debugInfo.filteredVendors}<br />
+                      <strong>Vendor Category Info (First 3 Vendors):</strong><br />
+                      {debugInfo.vendorCategoryInfo.map((vendor, index) => (
+                        <div key={index} className="mt-1">
+                          <strong>{vendor.username}:</strong><br />
+                          <small>
+                            Raw: {vendor.rawCategory}<br />
+                            Parsed: {JSON.stringify(vendor.parsedCategories)}
+                          </small>
+                        </div>
+                      ))}
+                      {debugInfo.sampleVendor && (
+                        <>
+                          <strong>Sample Vendor Structure:</strong><br />
+                          <pre className="mt-1 p-2 bg-light rounded">
+                            {JSON.stringify(debugInfo.sampleVendor, null, 2)}
+                          </pre>
+                        </>
+                      )}
+                    </small>
+                  </div>
+                </details>
+              </div>
+            )}
           <hr />
           <div className="d-flex justify-content-end">
             <Button 
@@ -161,11 +209,12 @@ function VendorList() {
           </div>
         </Alert>
       ) : vendors.length === 0 ? (
+        // This block now correctly shows when no vendors are found for a service
         <Alert variant="info">
-          <Alert.Heading>No Vendors Available</Alert.Heading>
+          <Alert.Heading>No Vendors Found</Alert.Heading>
           <p>
-            We couldn't find any vendors for "{selectedService.prod_name}" at the moment.
-            Please check back later or contact us for assistance.
+            Not found {selectedService.prod_name} at the moment.
+           
           </p>
           <hr />
           <div className="d-flex justify-content-between">
@@ -187,29 +236,18 @@ function VendorList() {
                   <Card.Body className="d-flex flex-column">
                     <div className="d-flex justify-content-between align-items-start mb-2">
                       <Card.Title as="h5" className="mb-0">
-                        {vendor.username || vendor.name || vendor.company_name || 'Vendor Name'}
+                        {formatDisplayValue(vendor.username || vendor.name || vendor.company_name)}
                       </Card.Title>
                       {vendor.verified && (
                         <Badge bg="success" className="ms-2">Verified</Badge>
                       )}
                     </div>
-                    <Card.Subtitle className="mb-3 text-muted">
-                      ID: {vendor.unique_id || vendor.id || 'N/A'}
-                    </Card.Subtitle>
+                   
                     <Card.Text className="flex-grow-1">
-                      <div className="mb-2">
-                        <strong>Category:</strong> 
-                        <span className="ms-1">{vendor.category || vendor.service || 'Not specified'}</span>
-                      </div>
-                      {vendor.sub_cate && (
-                        <div className="mb-2">
-                          <strong>Sub-Category:</strong> 
-                          <span className="ms-1">{vendor.sub_cate}</span>
-                        </div>
-                      )}
+                    
                       <div className="mb-2">
                         <strong>Address:</strong> 
-                        <span className="ms-1">{vendor.address || 'Not provided'}</span>
+                        <span className="ms-1">{formatDisplayValue(vendor.address)}</span>
                       </div>
                       {vendor.phone && (
                         <div className="mb-2">

@@ -472,48 +472,44 @@ const VendorRegistration = () => {
                       </div>
                       {/* Dropdown for selecting categories */}
                       <Dropdown>
-                        <Dropdown.Toggle variant="outline-primary" id="category-dropdown">
-                          {formData.category.length === 0 ? "Select Category" : "Add Category"}
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu style={{ maxHeight: 250, overflowY: 'auto' }}>
-                          {[
-                            "Plumbing", 
-                            "Home Cleaning", 
-                            "Home Service", 
-                            "Electronics", 
-                            "Beauty", 
-                            "Healthcare", 
-                            "Education", 
-                            "Other"
-                          ]
-                            .filter(category => !formData.category.includes(category))
-                            .map(category => (
-                              <Dropdown.Item
-                                key={category}
-                                onClick={() => {
-                                  setFormData(prev => ({
-                                    ...prev,
-                                    category: [...prev.category, category]
-                                  }));
-                                }}
-                              >
-                                {category}
-                              </Dropdown.Item>
-                            ))}
-                          {[
-                            "Plumbing", 
-                            "Home Cleaning", 
-                            "Home Service", 
-                            "Electronics", 
-                            "Beauty", 
-                            "Healthcare", 
-                            "Education", 
-                            "Other"
-                          ].filter(category => !formData.category.includes(category)).length === 0 && (
-                            <Dropdown.Item disabled>No more categories</Dropdown.Item>
-                          )}
-                        </Dropdown.Menu>
-                      </Dropdown>
+  <Dropdown.Toggle variant="outline-primary" id="category-dropdown">
+    {formData.category.length === 0 ? "Select Category" : "Add Category"}
+  </Dropdown.Toggle>
+  <Dropdown.Menu style={{ maxHeight: 250, overflowY: 'auto' }}>
+    {[
+      "Electrician",
+      "Plumber",
+      "Carpenter",
+      "Painting",
+      "Medical Services",
+      "Comprehensive Home Services"
+    ]
+      .filter(category => !formData.category.includes(category))
+      .map(category => (
+        <Dropdown.Item
+          key={category}
+          onClick={() => {
+            setFormData(prev => ({
+              ...prev,
+              category: [...prev.category, category]
+            }));
+          }}
+        >
+          {category}
+        </Dropdown.Item>
+      ))}
+    {[
+      "Electrician",
+      "Plumber",
+      "Carpenter",
+      "Painting",
+      "Medical Services",
+      "Comprehensive Home Services"
+    ].filter(category => !formData.category.includes(category)).length === 0 && (
+      <Dropdown.Item disabled>No more categories</Dropdown.Item>
+    )}
+  </Dropdown.Menu>
+</Dropdown>
                       {/* Custom category input */}
                       {formData.category.includes("Other") && (
                         <div className="mt-3">
