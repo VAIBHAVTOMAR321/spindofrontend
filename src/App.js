@@ -40,7 +40,10 @@ import StaffQueryView from "./componets/staff_dashboard/vendor_reg/StaffQueryVie
 import StaffServicesRequest from "./componets/staff_dashboard/staff_services_request/StaffServicesRequest";
 import StaffCompleteRequest from "./componets/staff_dashboard/staff_services_request/StaffCompleteRequest";
 import StaffBill from "./componets/staff_dashboard/staff_services_request/StaffBill";
-import AllBills from "./componets/admin_dashboard/pages/AllBills";
+import AllBillsDetails from "./componets/staff_dashboard/staff_services_request/AllBillsDetails";
+import Footer from "./componets/footer/Footer";
+import ContactUs from "./componets/contact/ContactUs";
+
 
 
 function App() {
@@ -69,10 +72,11 @@ function App() {
     "/StaffCompleteRequest",
     "/StaffServicesRequest",
     "/StaffBill",
-    "/AllBills"
+    "/AllBillsDetails"
   ]);
 
   const shouldHideNavbar = hiddenPaths.has(location.pathname);
+  const shouldHidefooter = hiddenPaths.has(location.pathname);
   
   return (
     <div className="app-container">
@@ -87,6 +91,7 @@ function App() {
           <Route path="/AboutUs" element={<AboutUs />} />
           <Route path="/ServicesPage" element={<ServicesPage />} />
           <Route path="/VendorList" element={<VendorList />} />
+          <Route path="/ContactUs" element={<ContactUs />} />
 
           {/* Protected Routes */}
           <Route 
@@ -274,16 +279,18 @@ function App() {
             } 
           />
             <Route
-            path="/AllBills"
+            path="/AllBillsDetails"
             element={
-              <Protected allowedRoles={['admin']}>
-                <AllBills />
+              <Protected allowedRoles={['staffadmin']}>
+                <AllBillsDetails />
               </Protected>
             } 
           />
           
+          
         </Routes>
       </main>
+       {!shouldHidefooter && <Footer />}
     </div>
   );
 }

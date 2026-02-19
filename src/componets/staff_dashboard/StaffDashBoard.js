@@ -537,16 +537,18 @@ const StaffDashBoard = () => {
                                     <td>{item.category?.type || 'N/A'}</td>
                                     <td>
                                       {item.aadhar_card ? (
-                                        <img 
-                                          src={item.aadhar_card} 
-                                          alt="Aadhar Card" 
-                                          style={{ 
-                                            width: '80px', 
-                                            height: 'auto', 
-                                            borderRadius: '4px',
-                                            objectFit: 'cover'
-                                          }} 
-                                        />
+                                       <img 
+      src={item.aadhar_card.startsWith('http') 
+        ? item.aadhar_card 
+        : `https://mahadevaaya.com/spindo/spindobackend${item.aadhar_card.startsWith('/') ? item.aadhar_card : '/' + item.aadhar_card}`} 
+      alt="Aadhar Card" 
+      style={{ 
+        width: '80px', 
+        height: 'auto', 
+        borderRadius: '4px',
+        objectFit: 'cover'
+      }} 
+    />
                                       ) : (
                                         <span className="text-muted">No Image</span>
                                       )}

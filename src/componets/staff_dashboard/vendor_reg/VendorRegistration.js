@@ -7,9 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 
 const VendorRegistration = () => {
   const { tokens, refreshAccessToken } = useAuth();
-  // File input ref
   const fileInputRef = useRef(null);
-  // Check device width
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -19,24 +17,32 @@ const VendorRegistration = () => {
     username: "",
     mobile_number: "",
     email: "",
-    state: "",
+    state: "Uttarakhand", // Pre-filled and disabled
     district: "",
     block: "",
     password: "",
     address: "",
     category: {
       type: "",
+      customType: "", // New field for custom category type
       subtype: ""
     },
     description: "",
-    aadhar_card: ""
+    aadhar_card: null
   });
   
   // UI state
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
-  
+
+  // --- NEW STATE FOR LOCATION DATA ---
+  const [allDistricts, setAllDistricts] = useState([]);
+  const [availableBlocks, setAvailableBlocks] = useState([]);
+  const [districtsLoading, setDistrictsLoading] = useState(false);
+  const [blocksLoading, setBlocksLoading] = useState(false);
+  const [locationError, setLocationError] = useState("");
+
   useEffect(() => {
     const checkDevice = () => {
       const width = window.innerWidth;
@@ -49,13 +55,69 @@ const VendorRegistration = () => {
     return () => window.removeEventListener("resize", checkDevice);
   }, []);
 
+  // --- USE EFFECT TO FETCH ALL DISTRICTS ON MOUNT ---
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      setDistrictsLoading(true);
+      setLocationError("");
+      try {
+        const response = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/district-blocks/");
+        if (!response.ok) throw new Error("Failed to fetch districts");
+        const data = await response.json();
+        if (data.status && data.data && data.data.districts) {
+          setAllDistricts(data.data.districts);
+        } else {
+          throw new Error("Invalid data format for districts");
+        }
+      } catch (err) {
+        setLocationError(err.message || "Could not load district data.");
+      } finally {
+        setDistrictsLoading(false);
+      }
+    };
+    fetchDistricts();
+  }, []); // Empty dependency array means this runs once on mount
+
+  // --- USE EFFECT TO FETCH BLOCKS WHEN DISTRICT CHANGES ---
+  useEffect(() => {
+    // Don't fetch if no district is selected
+    if (!formData.district) {
+      setAvailableBlocks([]); // Clear blocks if district is cleared
+      return;
+    }
+
+    const fetchBlocks = async () => {
+      setBlocksLoading(true);
+      setLocationError("");
+      try {
+        // Use encodeURIComponent to handle spaces in district names like "Udham Singh Nagar"
+        const query = encodeURIComponent(formData.district);
+        const response = await fetch(`https://mahadevaaya.com/spindo/spindobackend/api/district-blocks/?district=${query}`);
+        if (!response.ok) throw new Error("Failed to fetch blocks");
+        const data = await response.json();
+        if (data.status && data.data && data.data.blocks) {
+          setAvailableBlocks(data.data.blocks);
+        } else {
+          // If the API returns a valid response but no blocks (e.g., bad district name)
+          setAvailableBlocks([]);
+        }
+      } catch (err) {
+        setLocationError(err.message || "Could not load block data.");
+        setAvailableBlocks([]); // Clear blocks on error
+      } finally {
+        setBlocksLoading(false);
+      }
+    };
+
+    fetchBlocks();
+  }, [formData.district]); // This effect runs whenever formData.district changes
+
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     
-    if (name === "type" || name === "subtype") {
+    if (name === "type" || name === "subtype" || name === "customType") {
       setFormData(prev => ({
         ...prev,
         category: {
@@ -64,36 +126,31 @@ const VendorRegistration = () => {
         }
       }));
     } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
+      // When district changes, block should be reset
+      if (name === 'district') {
+        setFormData(prev => ({
+          ...prev,
+          [name]: value,
+          block: '' // Reset block
+        }));
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          [name]: value
+        }));
+      }
     }
   };
 
-  // Handle file input change
   const handleFileChange = (e) => {
     const { name, files } = e.target;
-    console.log("File input event target:", e.target);
-    console.log("Files selected:", files);
     if (files && files.length > 0) {
       const file = files[0];
-      console.log("Selected file details:", {
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        lastModified: file.lastModified
-      });
-      setFormData(prev => {
-        const newData = {
-          ...prev,
-          [name]: file
-        };
-        console.log("Updated formData.aadhar_card:", newData.aadhar_card);
-        return newData;
-      });
+      setFormData(prev => ({
+        ...prev,
+        [name]: file
+      }));
     } else {
-      console.log("No files selected");
       setFormData(prev => ({
         ...prev,
         [name]: null
@@ -101,7 +158,6 @@ const VendorRegistration = () => {
     }
   };
   
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -109,12 +165,20 @@ const VendorRegistration = () => {
     setSuccess(false);
     
     try {
-      // Debug: Check formData state
-      console.log("formData before submission:", formData);
-      console.log("aadhar_card in formData:", formData.aadhar_card);
+      const aadharFile = fileInputRef.current.files[0];
       
-      // Create FormData for file upload
+      if (!aadharFile) {
+        setError("Please select an Aadhar card file to upload");
+        setLoading(false);
+        return;
+      }
+      
       const formDataToSend = new FormData();
+      
+      // Determine the category type to send
+      const categoryTypeToSend = formData.category.type === "Other" 
+        ? formData.category.customType 
+        : formData.category.type;
       
       // Append all fields to FormData
       formDataToSend.append("username", formData.username);
@@ -125,59 +189,22 @@ const VendorRegistration = () => {
       formDataToSend.append("block", formData.block);
       formDataToSend.append("password", formData.password);
       formDataToSend.append("address", formData.address);
-      formDataToSend.append("category[type]", formData.category.type);
+      formDataToSend.append("category[type]", categoryTypeToSend);
       formDataToSend.append("category[subtype]", formData.category.subtype);
       formDataToSend.append("description", formData.description);
-      
-      // Get file directly from input ref for reliability
-      let aadharFile = null;
-      if (fileInputRef.current && fileInputRef.current.files && fileInputRef.current.files.length > 0) {
-        aadharFile = fileInputRef.current.files[0];
-        console.log("Appending aadhar_card file from ref:", aadharFile);
-        formDataToSend.append("aadhar_card", aadharFile);
-      } else if (formData.aadhar_card) {
-        // Fallback to state if ref is not available
-        console.log("Appending aadhar_card file from state:", formData.aadhar_card);
-        formDataToSend.append("aadhar_card", formData.aadhar_card);
-      } else {
-        console.error("No aadhar_card file selected");
-        setError("Please select an Aadhar card file to upload");
-        setLoading(false);
-        return;
-      }
-      
-      // Debug log to verify FormData contents
-      console.log("Sending FormData entries:");
-      for (let [key, value] of formDataToSend.entries()) {
-        console.log(`${key}:`, value);
-        if (key === "aadhar_card" && (value === null || value === undefined || value === "")) {
-          console.error("aadhar_card field is null or empty in FormData");
-        }
-      }
-      
-      // Verify aadhar_card is present and valid
-      if (!formDataToSend.get("aadhar_card")) {
-        console.error("aadhar_card field not found in FormData");
-        setError("Please select an Aadhar card file to upload");
-        setLoading(false);
-        return;
-      }
+      formDataToSend.append("aadhar_card", aadharFile);
       
       const response = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/vendor/register/", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${tokens.access}`,
-          // Don't set Content-Type header when using FormData
-          // The browser will set it automatically with the correct boundary
         },
         body: formDataToSend,
       });
       
       if (response.status === 401) {
-        // Access token expired, try to refresh
         const newAccessToken = await refreshAccessToken();
         if (newAccessToken) {
-          // Retry request with new access token
           const retryResponse = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/vendor/register/", {
             method: "POST",
             headers: {
@@ -190,31 +217,7 @@ const VendorRegistration = () => {
           
           if (retryResponse.ok) {
             setSuccess(true);
-            // Reset form
-            setFormData({
-              username: "",
-              mobile_number: "",
-              email: "",
-              state: "",
-              district: "",
-              block: "",
-              password: "",
-              address: "",
-              category: {
-                type: "",
-                subtype: ""
-              },
-              description: "",
-              aadhar_card: null
-            });
-            // Clear file input
-            if (fileInputRef.current) {
-              fileInputRef.current.value = "";
-            }
-            // Clear file input
-            if (fileInputRef.current) {
-              fileInputRef.current.value = "";
-            }
+            resetForm();
           } else {
             setError(retryData.message || "Registration failed. Please try again.");
           }
@@ -223,29 +226,11 @@ const VendorRegistration = () => {
         }
       } else {
         const data = await response.json();
-        console.log("Backend response:", data);
         
         if (response.ok) {
           setSuccess(true);
-          // Reset form
-          setFormData({
-            username: "",
-            mobile_number: "",
-            email: "",
-            state: "",
-            district: "",
-            block: "",
-            password: "",
-            address: "",
-            category: {
-              type: "",
-              subtype: ""
-            },
-            description: "",
-            aadhar_card: null
-          });
+          resetForm();
         } else {
-          // Display more detailed error information
           if (data.errors) {
             const errorMessages = Object.entries(data.errors)
               .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
@@ -254,7 +239,6 @@ const VendorRegistration = () => {
           } else {
             setError(data.message || "Registration failed. Please try again.");
           }
-          console.error("Backend error:", data);
         }
       }
     } catch (err) {
@@ -265,10 +249,35 @@ const VendorRegistration = () => {
     }
   };
 
+  const resetForm = () => {
+    setFormData({
+      username: "",
+      mobile_number: "",
+      email: "",
+      state: "Uttarakhand",
+      district: "",
+      block: "",
+      password: "",
+      address: "",
+      category: {
+        type: "",
+        customType: "",
+        subtype: ""
+      },
+      description: "",
+      aadhar_card: null
+    });
+    // Clear file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    // --- RESET LOCATION STATE ---
+    setAvailableBlocks([]);
+  };
+
   return (
     <>
       <div className="dashboard-container">
-        {/* Left Sidebar */}
         <StaffLeftNav
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
@@ -276,7 +285,6 @@ const VendorRegistration = () => {
           isTablet={isTablet}
         />
 
-        {/* Main Content */}
         <div className="main-content-dash">
           <StaffHeader toggleSidebar={toggleSidebar} />
 
@@ -294,10 +302,16 @@ const VendorRegistration = () => {
                 {error}
               </Alert>
             )}
+
+            {locationError && (
+              <Alert variant="warning" dismissible onClose={() => setLocationError("")}>
+                {locationError}
+              </Alert>
+            )}
             
             <Form onSubmit={handleSubmit}>
               <Row className="mb-3">
-                <Col md={6}>
+               <Col md={6} lg={4} sm={12}>
                   <Form.Group controlId="username">
                     <Form.Label>Username</Form.Label>
                     <Form.Control
@@ -310,7 +324,7 @@ const VendorRegistration = () => {
                     />
                   </Form.Group>
                 </Col>
-                <Col md={6}>
+               <Col md={6} lg={4} sm={12}>
                   <Form.Group controlId="mobile_number">
                     <Form.Label>Mobile Number</Form.Label>
                     <Form.Control
@@ -323,10 +337,10 @@ const VendorRegistration = () => {
                     />
                   </Form.Group>
                 </Col>
-              </Row>
+           
               
-              <Row className="mb-3">
-                <Col md={6}>
+        
+               <Col md={6} lg={4} sm={12}>
                   <Form.Group controlId="email">
                     <Form.Label>Email</Form.Label>
                     <Form.Control
@@ -339,7 +353,7 @@ const VendorRegistration = () => {
                     />
                   </Form.Group>
                 </Col>
-                <Col md={6}>
+               <Col md={6} lg={4} sm={12}>
                   <Form.Group controlId="password">
                     <Form.Label>Password</Form.Label>
                     <Form.Control
@@ -352,50 +366,61 @@ const VendorRegistration = () => {
                     />
                   </Form.Group>
                 </Col>
-              </Row>
               
-              <Row className="mb-3">
-                <Col md={4}>
+            
+               <Col md={6} lg={4} sm={12}>
                   <Form.Group controlId="state">
                     <Form.Label>State</Form.Label>
                     <Form.Control
                       type="text"
-                      placeholder="Enter state"
                       name="state"
                       value={formData.state}
-                      onChange={handleChange}
-                      required
+                      disabled // State is fixed
                     />
                   </Form.Group>
                 </Col>
-                <Col md={4}>
+               <Col md={6} lg={4} sm={12}>
                   <Form.Group controlId="district">
                     <Form.Label>District</Form.Label>
-                    <Form.Control
-                      type="text"
-                      placeholder="Enter district"
+                    <Form.Select
                       name="district"
                       value={formData.district}
                       onChange={handleChange}
+                      disabled={districtsLoading}
                       required
-                    />
+                    >
+                      <option value="">Select District</option>
+                      {districtsLoading && <option>Loading...</option>}
+                      {allDistricts.map((dist) => (
+                        <option key={dist.district} value={dist.district}>
+                          {dist.district}
+                        </option>
+                      ))}
+                    </Form.Select>
                   </Form.Group>
                 </Col>
-                <Col md={4}>
+               <Col md={6} lg={4} sm={12}>
                   <Form.Group controlId="block">
                     <Form.Label>Block</Form.Label>
-                    <Form.Control
-                      type="text"
-                      placeholder="Enter block"
+                    <Form.Select
                       name="block"
                       value={formData.block}
                       onChange={handleChange}
+                      disabled={!formData.district || blocksLoading}
                       required
-                    />
+                    >
+                      <option value="">Select Block</option>
+                      {blocksLoading && <option>Loading...</option>}
+                      {availableBlocks.map((block) => (
+                        <option key={block} value={block}>
+                          {block}
+                        </option>
+                      ))}
+                    </Form.Select>
                   </Form.Group>
                 </Col>
-              </Row>
-              
+            
+              <Col md={6} lg={8} sm={12}>
               <Form.Group className="mb-3" controlId="address">
                 <Form.Label>Address</Form.Label>
                 <Form.Control
@@ -408,9 +433,9 @@ const VendorRegistration = () => {
                   required
                 />
               </Form.Group>
-              
-              <Row className="mb-3">
-                <Col md={6}>
+              </Col>
+            
+               <Col md={6} lg={4} sm={12}>
                   <Form.Group controlId="type">
                     <Form.Label>Category Type</Form.Label>
                     <Form.Select
@@ -425,11 +450,29 @@ const VendorRegistration = () => {
                       <option value="Beauty">Beauty</option>
                       <option value="Healthcare">Healthcare</option>
                       <option value="Education">Education</option>
-                      <option value="Other">Other</option>
+                      <option value="Other">Other (Specify)</option>
                     </Form.Select>
                   </Form.Group>
                 </Col>
-                <Col md={6}>
+               <Col md={6} lg={4} sm={12}>
+                  {formData.category.type === "Other" && (
+                    <Form.Group controlId="customType">
+                      <Form.Label>Specify Category Type</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Enter category type"
+                        name="customType"
+                        value={formData.category.customType}
+                        onChange={handleChange}
+                        required={formData.category.type === "Other"}
+                      />
+                    </Form.Group>
+                  )}
+                </Col>
+            
+              
+         
+                <Col md={6} lg={4} sm={12}>
                   <Form.Group controlId="subtype">
                     <Form.Label>Category Subtype</Form.Label>
                     <Form.Control
@@ -442,8 +485,8 @@ const VendorRegistration = () => {
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-              
+          
+              <Col md={6} lg={4} sm={12}>
               <Form.Group className="mb-4" controlId="description">
                 <Form.Label>Description</Form.Label>
                 <Form.Control
@@ -455,7 +498,8 @@ const VendorRegistration = () => {
                   onChange={handleChange}
                 />
               </Form.Group>
-
+</Col>
+<Col md={6} lg={4} sm={12}>
               <Form.Group className="mb-4" controlId="aadhar_card">
                 <Form.Label>Aadhar Card</Form.Label>
                 <Form.Control
@@ -470,7 +514,8 @@ const VendorRegistration = () => {
                   Please upload a clear image of your Aadhar card (PNG, JPG, or JPEG format)
                 </Form.Text>
               </Form.Group>
-              
+              </Col>
+              </Row>
               <Button variant="primary" type="submit" disabled={loading}>
                 {loading ? (
                   <>

@@ -196,7 +196,7 @@ font-size: 12px;
   }
   
   .nav-link:hover::after {
-    width: 80%;
+    /* width: 80%; */
     left: 10%;
   }
   
@@ -236,7 +236,7 @@ font-size: 12px;
 }
 
 .nav-link:hover {
-  color: rgba(0,0,0,.7) !important;
+  /* color: rgba(0,0,0,.7) !important; */
 }
 
 .navbar-nav .nav-link.active {

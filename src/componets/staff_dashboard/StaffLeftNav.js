@@ -82,9 +82,7 @@ const menuItems = [
       ],
     },
 
-   
-    
-   
+  
 
     {
       icon: <FaCalendarAlt />,
@@ -115,7 +113,7 @@ const menuItems = [
     },
         {
           label: " View Bill ",
-          path: "/StaffBillView",
+          path: "/AllBillsDetails",
           icon: <FaListUl />,
         },
       ],

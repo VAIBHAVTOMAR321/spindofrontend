@@ -253,7 +253,7 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                   // Service Requests Table
                   <>
                     <Table className="align-middle mb-0" style={{ minWidth: 700 }}>
-                      <thead style={{ background: '#f1f5f9' }}>
+                      <thead className="table-thead">
                         <tr style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
                           <th>Request ID</th>
                           <th>Username</th>
@@ -344,7 +344,7 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                   // Vendors Table
                   <>
                     <Table className="align-middle mb-0" style={{ minWidth: 700 }}>
-                      <thead style={{ background: '#f1f5f9' }}>
+                      <thead className="table-thead">
                         <tr style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
                           <th>Vendor ID</th>
                           <th>Username</th>

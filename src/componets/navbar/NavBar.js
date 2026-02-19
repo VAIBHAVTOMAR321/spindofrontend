@@ -54,9 +54,9 @@ function NavBar() {
                 <NavDropdown.Divider />
                 <NavDropdown.Item href="#other">OTHER SERVICES</NavDropdown.Item>
               </NavDropdown>
-              <Nav.Link href="#contact">Get in Touch</Nav.Link>
+              <Nav.Link href="/ContactUs">Get in Touch</Nav.Link>
               <Nav.Link href="#payment">Payment</Nav.Link>
-              <Nav.Link href="#book">Book Services</Nav.Link>
+              <Nav.Link href="/Login">Book Services</Nav.Link>
             </Nav>
             </Container>
             {/* Right side - Only Register and Login buttons */}

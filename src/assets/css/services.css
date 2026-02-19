@@ -67,7 +67,7 @@
 }
 
 .service-card:hover .btn-book {
-  background: linear-gradient(90deg, #3498db, #2ecc71);
+  background-color: #3498db;
   transform: scale(1.05);
 }
 
@@ -132,7 +132,7 @@
 }
 
 .btn-book {
-  background: linear-gradient(90deg, #2ecc71, #27ae60);
+  background-color: #212529;
   color: white;
   border: none;
   padding: 10px 30px;
@@ -146,7 +146,7 @@
 }
 
 .btn-book:hover {
-  background: linear-gradient(90deg, #27ae60, #229954);
+  background-color: #3498db;
   color: white;
   transform: scale(1.05);
   box-shadow: 0 6px 12px rgba(46, 204, 113, 0.4);
