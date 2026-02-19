@@ -1462,7 +1462,7 @@ html, body {
 
 /* Cards Responsive */
 .card {
-    margin-bottom: clamp(8px, 2vw, 16px);
+    /* margin-bottom: clamp(8px, 2vw, 16px); */
     border-radius: clamp(8px, 2vw, 16px);
 }
 

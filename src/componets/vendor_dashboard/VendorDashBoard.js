@@ -170,7 +170,7 @@ const VendorDashBoard = () => {
         </div>
         <Container fluid className="dashboard-body dashboard-main-container">
           {/* Profile | Requests & Bills layout */}
-          <Row className="mt-2 g-2" style={{ margin: 0, width: '100%' }}>
+          <Row className=" g-2" style={{ margin: 0, width: '100%' }}>
             {/* Profile Card - left column */}
             <Col xs={12} sm={12} md={6} lg={4}>
               <Card className="shadow-sm border-0 rounded-3 p-2 h-100 animate__animated animate__fadeIn">
@@ -219,7 +219,10 @@ const VendorDashBoard = () => {
                       </Link>
                       {/* Quick Actions below profile */}
                       <div className="w-100 mt-3">
-                        <Card className="quick-actions-card h-100 border-0">
+                        <Card
+                          className="quick-actions-card h-100 border-0"
+                          style={(!isMobile && !isTablet) ? { marginTop: '60px' } : {}}
+                        >
                           <Card.Body className="d-flex flex-column align-items-center justify-content-center p-2">
                             <h6 className="mb-2 fw-bold" style={{ fontSize: 'clamp(12px, 2vw, 14px)' }}>Quick Actions</h6>
                             <Link to="/GenerateVendorQuery" className="w-100 mb-1" style={{ textDecoration: 'none' }}>
@@ -292,7 +295,7 @@ const VendorDashBoard = () => {
                       </Link>
                     </Col>
                   </Row>
-                  <Row className="mb-3 g-2 justify-content-center" style={{ margin: 0 }}>
+                  <Row className="mb-1 g-2 justify-content-center" style={{ margin: 0 }}>
                  
                     <Col xs={12} sm={6} md={6} lg={6} className="mb-0">
                       <Link to="/VendorRequests" style={{ textDecoration: 'none' }}>
