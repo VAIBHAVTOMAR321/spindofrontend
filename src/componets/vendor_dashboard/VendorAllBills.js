@@ -7,6 +7,7 @@ import VendorLeftNav from "./VendorLeftNav";
 import "../../assets/css/admindashboard.css";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { useLocation } from "react-router-dom";
 
 const BASE_URL = "https://mahadevaaya.com/spindo/spindobackend";
 
@@ -41,19 +42,22 @@ const VendorAllBills = ({ showCardOnly = false }) => {
   const [formError, setFormError] = useState("");
 
   // Filter state
+  const { state } = useLocation(); // For dashboard card filter
   const [filters, setFilters] = useState({
     bill_id: "",
     customer_name: "",
     cust_mobile: "",
     service_type: "",
     payment_type: "",
-    status: "",
+    status: state?.filter ? state.filter : "",
   });
+  const [cardFilter, setCardFilter] = useState(""); // Card click filter
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
     setCurrentPage(1);
+    if (name === "status") setCardFilter(""); // Reset card filter if dropdown used
   };
 
   // Filtered data
@@ -81,7 +85,9 @@ const VendorAllBills = ({ showCardOnly = false }) => {
           ?.toLowerCase()
           .includes(filters.payment_type.toLowerCase())) &&
       (!filters.status ||
-        bill.status?.toLowerCase().includes(filters.status.toLowerCase()))
+        (filters.status === "Paid" && bill.status?.toLowerCase() === "paid") ||
+        (filters.status === "Unpaid" && bill.status?.toLowerCase() === "unpaid") ||
+        (filters.status === ""))
   );
 
   // Handle view details button click
@@ -324,13 +330,16 @@ const VendorAllBills = ({ showCardOnly = false }) => {
                     placeholder="Filter Payment Type"
                     style={{ maxWidth: 140, borderRadius: 8 }}
                   />
-                  <Form.Control
+                  <Form.Select
                     name="status"
                     value={filters.status}
                     onChange={handleFilterChange}
-                    placeholder="Filter Status"
                     style={{ maxWidth: 140, borderRadius: 8 }}
-                  />
+                  >
+                    <option value="">All Bills</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Unpaid">Unpaid</option>
+                  </Form.Select>
                 </Form>
               </div>
 
@@ -383,7 +392,7 @@ const VendorAllBills = ({ showCardOnly = false }) => {
                 id="vendor-bills-table-pdf"
               >
                 <Table className="align-middle mb-0" style={{ minWidth: 1000 }}>
-                  <thead style={{ background: "#f1f5f9" }}>
+                  <thead className="table-thead" style={{ background: "#f1f5f9" }}>
                     <tr
                       style={{
                         fontWeight: 700,

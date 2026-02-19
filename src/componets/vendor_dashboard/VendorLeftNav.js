@@ -142,7 +142,7 @@ const menuItems = [
         <div className="sidebar-header">
           <div className="logo-container">
             <div className="logo">
-             Admin DashBoard
+             Vendor DashBoard
               {/* <span className="logo-text"><img src={BRLogo} alt="text"></img></span> */}
             </div>
           </div>

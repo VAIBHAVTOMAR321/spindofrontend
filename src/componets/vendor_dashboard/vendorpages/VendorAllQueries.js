@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Container, Row, Col, Card, Spinner, Alert, Table, Button, Modal } from "react-bootstrap";
 import VendorLeftNav from "../VendorLeftNav";
 import VendorHeader from "../VendorHeader";
@@ -6,6 +7,7 @@ import "../../../assets/css/admindashboard.css";
 import { useAuth } from "../../context/AuthContext";
 
 const VendorAllQueries = () => {
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -14,7 +16,17 @@ const VendorAllQueries = () => {
   const [queries, setQueries] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedQuery, setSelectedQuery] = useState(null);
-  const [filter, setFilter] = useState("all");
+  // Normalize filter from location.state if present
+  const normalizeFilter = (f) => {
+    if (!f) return "all";
+    const val = f.toLowerCase();
+    if (val === "approved" || val === "accepted") return "approved";
+    if (val === "pending") return "pending";
+    if (val === "rejected") return "rejected";
+    return "all";
+  };
+  const initialFilter = normalizeFilter(location.state?.filter);
+  const [filter, setFilter] = useState(initialFilter);
   const [currentPage, setCurrentPage] = useState(1);
   const queriesPerPage = 10;
   const { user, tokens } = useAuth();
@@ -63,6 +75,15 @@ const VendorAllQueries = () => {
     fetchQueries();
   }, [user, tokens]);
 
+  // Set filter from location.state on mount
+  useEffect(() => {
+    if (location.state?.filter) {
+      setFilter(normalizeFilter(location.state.filter));
+      setCurrentPage(1);
+    }
+    // eslint-disable-next-line
+  }, []);
+
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   const handleView = (query) => {
@@ -76,7 +97,13 @@ const VendorAllQueries = () => {
   };
 
   // Filtered and paginated queries
-  const filteredQueries = filter === 'all' ? queries : queries.filter(q => (q.status || 'Pending').toLowerCase() === filter.toLowerCase());
+  const filteredQueries = filter === 'all' ? queries : queries.filter(q => {
+    const status = (q.status || 'Pending').toLowerCase();
+    if (filter === 'approved') return status === 'approved';
+    if (filter === 'pending') return status === 'pending';
+    if (filter === 'rejected') return status === 'rejected';
+    return true;
+  });
   const totalPages = Math.ceil(filteredQueries.length / queriesPerPage);
   const paginatedQueries = filteredQueries.slice((currentPage - 1) * queriesPerPage, currentPage * queriesPerPage);
 
@@ -142,7 +169,7 @@ const VendorAllQueries = () => {
                         </Button>
                       </div>
                       <Table responsive bordered hover className="rounded-4 shadow-sm">
-                        <thead style={{ background: "linear-gradient(90deg, #2b6777 0%, #52ab98 100%)", color: "#fff" }}>
+                        <thead className="table-thead" style={{ background: "linear-gradient(90deg, #2b6777 0%, #52ab98 100%)", color: "#fff" }}>
                           <tr>
                             <th>#</th>
                             <th>Title</th>

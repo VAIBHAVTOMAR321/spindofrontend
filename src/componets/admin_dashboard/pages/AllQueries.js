@@ -387,7 +387,7 @@ const AllQueries = ({ showCardOnly = false }) => {
                   <Tab.Pane eventKey="user">
                     <div className="table-responsive rounded-4 shadow-sm" style={{ background: '#fff', padding: '0.5rem 0.5rem 1rem 0.5rem', marginTop: '1rem' }}>
                       <Table className="align-middle mb-0" style={{ minWidth: 700 }}>
-                        <thead style={{ background: '#f1f5f9' }}>
+                        <thead className="table-thead" style={{ background: '#f1f5f9' }}>
                           <tr style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
                             <th>Query ID</th>
                             <th>Name</th>
@@ -487,7 +487,7 @@ const AllQueries = ({ showCardOnly = false }) => {
                   <Tab.Pane eventKey="staff">
                     <div className="table-responsive rounded-4 shadow-sm" style={{ background: '#fff', padding: '0.5rem 0.5rem 1rem 0.5rem', marginTop: '1rem' }}>
                       <Table className="align-middle mb-0" style={{ minWidth: 700 }}>
-                        <thead style={{ background: '#f1f5f9' }}>
+                        <thead className="table-thead" style={{ background: '#f1f5f9' }}>
                           <tr style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
                             <th>Query ID</th>
                             <th>Name</th>
@@ -586,7 +586,7 @@ const AllQueries = ({ showCardOnly = false }) => {
                   <Tab.Pane eventKey="vendor">
                     <div className="table-responsive rounded-4 shadow-sm" style={{ background: '#fff', padding: '0.5rem 0.5rem 1rem 0.5rem', marginTop: '1rem' }}>
                       <Table className="align-middle mb-0" style={{ minWidth: 700 }}>
-                        <thead style={{ background: '#f1f5f9' }}>
+                        <thead className="table-thead" style={{ background: '#f1f5f9' }}>
                           <tr style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
                             <th>Vendor ID</th>
                             <th>Vendor Name</th>

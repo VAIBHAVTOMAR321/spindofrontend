@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Container, Row, Col, Card, Table, Button, Form, Modal } from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
@@ -16,6 +17,7 @@ const VendorRequests = ({ showCardOnly = false }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
+  const { state } = useLocation(); // For dashboard card filter
   useEffect(() => {
     const checkDevice = () => {
       const width = window.innerWidth;
@@ -49,7 +51,7 @@ const VendorRequests = ({ showCardOnly = false }) => {
     email: "",
     state: "",
     district: "",
-    status: "",
+    status: state?.filter ? state.filter.toLowerCase() : "",
   });
 
   const handleFilterChange = (e) => {
@@ -83,7 +85,7 @@ const VendorRequests = ({ showCardOnly = false }) => {
           ?.toLowerCase()
           .includes(filters.district.toLowerCase())) &&
       (!filters.status ||
-        request.status?.toLowerCase().includes(filters.status.toLowerCase()))
+        request.status?.toLowerCase() === filters.status.toLowerCase())
   );
 
   // Handle view details button click
@@ -330,13 +332,17 @@ const VendorRequests = ({ showCardOnly = false }) => {
                     placeholder="Filter District"
                     style={{ maxWidth: 140, borderRadius: 8 }}
                   />
-                  <Form.Control
+                  <Form.Select
                     name="status"
                     value={filters.status}
                     onChange={handleFilterChange}
-                    placeholder="Filter Status"
                     style={{ maxWidth: 140, borderRadius: 8 }}
-                  />
+                  >
+                    <option value="">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="assigned">Assigned</option>
+                    <option value="completed">Completed</option>
+                  </Form.Select>
                 </Form>
               </div>
 
@@ -389,7 +395,7 @@ const VendorRequests = ({ showCardOnly = false }) => {
                 id="vendor-requests-table-pdf"
               >
                 <Table className="align-middle mb-0" style={{ minWidth: 900 }}>
-                  <thead style={{ background: "#f1f5f9" }}>
+                  <thead className="table-thead" style={{ background: "#f1f5f9" }}>
                     <tr
                       style={{
                         fontWeight: 700,
