@@ -1,50 +1,136 @@
 import React, { useState, useEffect } from "react";
-import { Container, Table, Spinner, Alert, Row, Col, Card, Button, Dropdown, Modal, Form } from "react-bootstrap";
+import { Container, Row, Col, Card, Button, Spinner, Alert } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import "../../assets/css/admindashboard.css";
 import StaffLeftNav from "./StaffLeftNav";
 import StaffHeader from "./StaffHeader";
-import "../../assets/css/table.css";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
 
 const StaffDashBoard = () => {
-  // Check device width
+  // Device width state
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
-  
-  // Vendor and Customer data state
-  const [vendors, setVendors] = useState([]);
-  const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [showTable, setShowTable] = useState(false);
-  const [activeFilter, setActiveFilter] = useState("all");
-  const [activeTable, setActiveTable] = useState("vendors"); // "vendors" or "customers"
-  
-  // Modal states
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [currentVendor, setCurrentVendor] = useState(null);
-  const [editForm, setEditForm] = useState({
-    username: "",
-    mobile_number: "",
-    email: "",
-    state: "",
-    district: "",
-    block: "",
-    address: "",
-    description: "",
-    is_active: true,
-    category: []
-  });
-  
-  // Get auth context
-  const { tokens, isLoading: authLoading, refreshAccessToken, logout } = useAuth();
+  const [error, setError] = useState("");
+  const [profile, setProfile] = useState(null);
+  const [vendorCount, setVendorCount] = useState(0);
+  const [customerCount, setCustomerCount] = useState(0);
+  const [totalRequests, setTotalRequests] = useState(0);
+  const [pendingRequests, setPendingRequests] = useState(0);
+  const [completedRequests, setCompletedRequests] = useState(0);
+  const [totalStaffQueries, setTotalStaffQueries] = useState(0);
+  const [approvedStaffQueries, setApprovedStaffQueries] = useState(0);
+  const [pendingStaffQueries, setPendingStaffQueries] = useState(0);
+  const [rejectedStaffQueries, setRejectedStaffQueries] = useState(0);
+  const { user, tokens } = useAuth();
 
-  // API URLs
-  const VENDOR_API_URL = "https://mahadevaaya.com/spindo/spindobackend/api/vendor/register/";
-  const CUSTOMER_API_URL = "https://mahadevaaya.com/spindo/spindobackend/api/customer/register/";
-  const VENDOR_UPDATE_URL = "https://mahadevaaya.com/spindo/spindobackend/api/vendor/register/";
+  // Fetch counts from APIs
+  useEffect(() => {
+    if (!user?.uniqueId) {
+      setError("Staff not logged in or missing unique ID.");
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    
+    // Profile
+    fetch(`https://mahadevaaya.com/spindo/spindobackend/api/staffadmin/register/?unique_id=${user.uniqueId}`, {
+      headers: tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status && data.data) {
+          setProfile(data.data);
+        } else {
+          setError("Failed to load staff profile.");
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("Error fetching staff profile.");
+        setLoading(false);
+      });
+    
+    // Vendors count
+    fetch(`https://mahadevaaya.com/spindo/spindobackend/api/vendor/register/`, {
+      headers: tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status && Array.isArray(data.data)) {
+          setVendorCount(data.data.length);
+        } else {
+          setVendorCount(0);
+        }
+      })
+      .catch(() => {
+        setVendorCount(0);
+      });
+    
+    // Customers count
+    fetch(`https://mahadevaaya.com/spindo/spindobackend/api/customer/register/`, {
+      headers: tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status && Array.isArray(data.data)) {
+          setCustomerCount(data.data.length);
+        } else {
+          setCustomerCount(0);
+        }
+      })
+      .catch(() => {
+        setCustomerCount(0);
+      });
+    
+    // Service Requests
+    fetch(`https://mahadevaaya.com/spindo/spindobackend/api/customer/requestservices/`, {
+      headers: tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.data && Array.isArray(data.data)) {
+          setTotalRequests(data.data.length);
+          setPendingRequests(data.data.filter(r => (r.status || '').toLowerCase() === 'pending').length);
+          setCompletedRequests(data.data.filter(r => (r.status || '').toLowerCase() === 'completed').length);
+        } else {
+          setTotalRequests(0);
+          setPendingRequests(0);
+          setCompletedRequests(0);
+        }
+      })
+      .catch(() => {
+        setTotalRequests(0);
+        setPendingRequests(0);
+        setCompletedRequests(0);
+      });
+    
+    // Queries - Staff Queries
+    fetch(`https://mahadevaaya.com/spindo/spindobackend/api/staffadmin/request/`, {
+      headers: tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status && Array.isArray(data.data)) {
+          setTotalStaffQueries(data.data.length);
+          setApprovedStaffQueries(data.data.filter(q => (q.status || '').toLowerCase() === 'approved').length);
+          setPendingStaffQueries(data.data.filter(q => (q.status || '').toLowerCase() === 'pending').length);
+          setRejectedStaffQueries(data.data.filter(q => (q.status || '').toLowerCase() === 'rejected').length);
+        } else {
+          setTotalStaffQueries(0);
+          setApprovedStaffQueries(0);
+          setPendingStaffQueries(0);
+          setRejectedStaffQueries(0);
+        }
+      })
+      .catch(() => {
+        setTotalStaffQueries(0);
+        setApprovedStaffQueries(0);
+        setPendingStaffQueries(0);
+        setRejectedStaffQueries(0);
+      });
+  }, [user, tokens]);
 
   useEffect(() => {
     const checkDevice = () => {
@@ -60,722 +146,224 @@ const StaffDashBoard = () => {
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
-  // Fetch vendor and customer data from APIs
-  const fetchData = async () => {
-    if (!tokens?.access || !tokens?.refresh) {
-      setLoading(false);
-      setError("Authentication required. Please log in.");
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Set up authorization headers
-      const headers = {
-        headers: { Authorization: `Bearer ${tokens.access}` }
-      };
-
-      // Fetch vendors using axios
-      const vendorResponse = await axios.get(VENDOR_API_URL, headers);
-      
-      if (vendorResponse.data.status) {
-        setVendors(vendorResponse.data.data || []);
-      } else {
-        throw new Error("Failed to fetch vendor data");
-      }
-
-      // Fetch customers using axios
-      const customerResponse = await axios.get(CUSTOMER_API_URL, headers);
-      
-      if (customerResponse.data.status) {
-        setCustomers(customerResponse.data.data || []);
-      } else {
-        throw new Error("Failed to fetch customer data");
-      }
-    } catch (err) {
-      console.error("FETCH ERROR:", err.response?.data || err.message);
-      
-      // Check if access token is expired (status code 401)
-      if (err.response?.status === 401) {
-        console.log("Access token expired, attempting to refresh...");
-        const newAccessToken = await refreshAccessToken(tokens.refresh);
-        
-        if (newAccessToken) {
-          // Retry fetch with new access token
-          return fetchData();
-        } else {
-          setError("Session expired. Please log in again.");
-        }
-      } else {
-        setError(err.response?.data?.detail || err.message || "Failed to fetch data");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!authLoading) {
-      fetchData();
-    }
-  }, [tokens.access, authLoading]);
-
-  // Calculate counts for cards
-  const totalVendors = vendors.length;
-  const activeVendors = vendors.filter(vendor => vendor.is_active).length;
-  const inactiveVendors = totalVendors - activeVendors;
-  
-  const totalCustomers = customers.length;
-  const activeCustomers = customers.filter(customer => customer.is_active).length;
-  const inactiveCustomers = totalCustomers - activeCustomers;
-  
-  // Handle card click
-  const handleCardClick = (tableType) => {
-    setActiveTable(tableType);
-    setShowTable(true);
-    setActiveFilter("all"); // Reset filter when switching tables
-  };
-  
-  // Handle filter change
-  const handleFilterChange = (filter) => {
-    setActiveFilter(filter);
-    setShowTable(true);
-  };
-  
-  // Filter data based on active filter and table type
-  const filteredData = activeTable === "vendors" 
-    ? (activeFilter === "all" 
-       ? vendors 
-       : activeFilter === "active"
-       ? vendors.filter(vendor => vendor.is_active)
-       : vendors.filter(vendor => !vendor.is_active))
-    : (activeFilter === "all" 
-       ? customers 
-       : activeFilter === "active"
-       ? customers.filter(customer => customer.is_active)
-       : customers.filter(customer => !customer.is_active));
-
-  // Refresh data function
-  const handleRefresh = () => {
-    fetchData();
-  };
-
-  // Handle edit button click
-  const handleEditClick = (vendor) => {
-    setCurrentVendor(vendor);
-    setEditForm({
-      username: vendor.username,
-      mobile_number: vendor.mobile_number,
-      email: vendor.email,
-      state: vendor.state,
-      district: vendor.district,
-      block: vendor.block,
-      address: vendor.address || "",
-      description: vendor.description || "",
-      is_active: vendor.is_active,
-      category: Array.isArray(vendor.category) ? vendor.category : []
-    });
-    setShowEditModal(true);
-  };
-
-  // Handle form input changes
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setEditForm(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-
-  // Handle category changes
-  const handleCategoryChange = (e) => {
-    const { value, checked } = e.target;
-    setEditForm(prev => {
-      let newCategories = [...prev.category];
-      if (checked) {
-        newCategories.push(value);
-      } else {
-        newCategories = newCategories.filter(cat => cat !== value);
-      }
-      return { ...prev, category: newCategories };
-    });
-  };
-
-  // Handle save changes in edit modal
-  const handleSaveChanges = async () => {
-    if (!currentVendor) return;
-    
-    try {
-      const headers = {
-        headers: { Authorization: `Bearer ${tokens.access}` }
-      };
-      
-      // Send unique_id in request body for PUT request
-      const response = await axios.put(
-        `${VENDOR_UPDATE_URL}`, 
-        { ...editForm, unique_id: currentVendor.unique_id }, 
-        headers
-      );
-      
-      if (response.data.status) {
-        // Update vendor in state
-        setVendors(prev => prev.map(vendor => 
-          vendor.unique_id === currentVendor.unique_id 
-            ? { ...vendor, ...editForm }
-            : vendor
-        ));
-        
-        setShowEditModal(false);
-        // Show success message
-        alert("Vendor updated successfully!");
-      } else {
-        throw new Error("Failed to update vendor");
-      }
-    } catch (err) {
-      console.error("UPDATE ERROR:", err.response?.data || err.message);
-      
-      // Check if access token is expired (status code 401)
-      if (err.response?.status === 401) {
-        console.log("Access token expired, attempting to refresh...");
-        const newAccessToken = await refreshAccessToken(tokens.refresh);
-        
-        if (newAccessToken) {
-          // Retry update with new access token
-          return handleSaveChanges();
-        } else {
-          setError("Session expired. Please log in again.");
-        }
-      } else {
-        setError(err.response?.data?.detail || err.message || "Failed to update vendor");
-      }
-    }
-  };
-
-  // Available categories (you can get this from API or define it statically)
-  const availableCategories = [
-    "Plumber",
-    "Painting",
-    "Electrician",
-    "Carpenter",
-    "Painting",
-    "Medical Services",
-    "Comprehensive Home Services",
-   
-  ];
-
   return (
-    <>
-      <style type="text/css">
-        {`
-          .dashboard-card {
-            border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            overflow: hidden;
-            position: relative;
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-            border: none;
-          }
-          
-          .dashboard-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-          }
-          
-          .dashboard-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, #4e73df 0%, #224abe 100%);
-          }
-          
-          .card-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #5a5c69;
-            margin-bottom: 0.5rem;
-          }
-          
-          .card-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #4e73df;
-            margin: 0.5rem 0;
-          }
-          
-          .action-btn {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.8rem;
-            margin: 0 0.25rem;
-          }
-          
-          .table-thead {
-            background-color: #4e73df;
-            color: white;
-          }
-          
-          .cursor-pointer {
-            cursor: pointer;
-          }
-          
-          .vendor-card-icon {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 2rem;
-            opacity: 0.2;
-            color: #4e73df;
-          }
-          
-          .customer-card-icon {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 2rem;
-            opacity: 0.2;
-            color: #36b9cc;
-          }
-          
-          .customer-card::before {
-            background: linear-gradient(90deg, #36b9cc 0%, #258391 100%);
-          }
-          
-          .customer-card .card-number {
-            color: #36b9cc;
-          }
-          
-          .table-responsive {
-            max-height: 600px;
-            overflow-y: auto;
-          }
-          
-          .category-badge {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            margin: 0.1rem;
-            background-color: #e9ecef;
-            border-radius: 0.25rem;
-            font-size: 0.85rem;
-          }
-        `}
-      </style>
-      
-      <div className="dashboard-container">
-        {/* Left Sidebar */}
-        <StaffLeftNav
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-          isMobile={isMobile}
-          isTablet={isTablet}
-        />
-
-        {/* Main Content */}
-        <div className="main-content-dash">
-          <StaffHeader toggleSidebar={toggleSidebar} />
-
-          <Container fluid className="dashboard-body dashboard-main-container">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <h2>Staff Dashboard</h2>
-              <Button variant="outline-primary" size="sm" onClick={handleRefresh}>
-                <i className="bi bi-arrow-clockwise me-2"></i>
-                Refresh Data
-              </Button>
-            </div>
-            
-            {/* Auth Loading State */}
-            {authLoading && (
-              <div className="d-flex justify-content-center align-items-center" style={{ height: '200px' }}>
-                <Spinner animation="border" variant="primary" />
-                <span style={{ marginLeft: '10px' }}>Loading session...</span>
-              </div>
-            )}
-
-            {/* Data Loading State */}
-            {!authLoading && loading && (
-              <div className="d-flex justify-content-center align-items-center" style={{ height: '200px' }}>
-                <Spinner animation="border" variant="primary" />
-                <span style={{ marginLeft: '10px' }}>Loading data...</span>
-              </div>
-            )}
-
-            {/* Error State */}
-            {error && (
-              <Alert variant="danger" className="mt-4">
-                <Alert.Heading>Error fetching data</Alert.Heading>
-                <p>{error}</p>
-                <hr />
-                <div className="d-flex justify-content-end">
-                  <Button onClick={handleRefresh} variant="outline-danger">
-                    Try Again
-                  </Button>
-                </div>
-              </Alert>
-            )}
-
-            {/* Dashboard Cards with Filter Dropdown */}
-            {!authLoading && !loading && !error && (
-              <>
-                <Row className="mb-4">
-                  <Col md={6} className="mb-3">
-                    <Card 
-                      className="dashboard-card h-100 cursor-pointer"
-                      onClick={() => handleCardClick("vendors")}
-                    >
-                      <i className="bi bi-shop vendor-card-icon"></i>
-                      <Card.Body className="text-center">
-                        <Card.Title className="card-title">Total Vendors</Card.Title>
-                        <h2 className="card-number">{totalVendors}</h2>
-                        <div className="mt-2">
-                          <span className="text-success me-3">Active: {activeVendors}</span>
-                          <span className="text-danger">Inactive: {inactiveVendors}</span>
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                  
-                  <Col md={6} className="mb-3">
-                    <Card 
-                      className="dashboard-card customer-card h-100 cursor-pointer"
-                      onClick={() => handleCardClick("customers")}
-                    >
-                      <i className="bi bi-people customer-card-icon"></i>
-                      <Card.Body className="text-center">
-                        <Card.Title className="card-title">Total Customers</Card.Title>
-                        <h2 className="card-number">{totalCustomers}</h2>
-                        <div className="mt-2">
-                          <span className="text-success me-3">Active: {activeCustomers}</span>
-                          <span className="text-danger">Inactive: {inactiveCustomers}</span>
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                </Row>
-                
-                <Row className="mb-4">
-                  <Col md={6} className="mb-3">
-                    <Dropdown>
-                      <Dropdown.Toggle variant="primary" id="filter-dropdown">
-                        Filter: {activeFilter === "all" ? `All ${activeTable === "vendors" ? "Vendors" : "Customers"}` : 
-                               activeFilter === "active" ? `Active ${activeTable === "vendors" ? "Vendors" : "Customers"}` : `Inactive ${activeTable === "vendors" ? "Vendors" : "Customers"}`}
-                      </Dropdown.Toggle>
-                      <Dropdown.Menu>
-                        <Dropdown.Item onClick={() => handleFilterChange("all")}>
-                          All {activeTable === "vendors" ? "Vendors" : "Customers"}
-                        </Dropdown.Item>
-                        <Dropdown.Item onClick={() => handleFilterChange("active")}>
-                          Active {activeTable === "vendors" ? "Vendors" : "Customers"}
-                        </Dropdown.Item>
-                        <Dropdown.Item onClick={() => handleFilterChange("inactive")}>
-                          Inactive {activeTable === "vendors" ? "Vendors" : "Customers"}
-                        </Dropdown.Item>
-                      </Dropdown.Menu>
-                    </Dropdown>
-                  </Col>
-                </Row>
-
-                {/* Data Table */}
-                {showTable && (
-                  <>
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                      <h3>
-                        {activeFilter === "all" && `All ${activeTable === "vendors" ? "Vendors" : "Customers"}`}
-                        {activeFilter === "active" && `Active ${activeTable === "vendors" ? "Vendors" : "Customers"}`}
-                        {activeFilter === "inactive" && `Inactive ${activeTable === "vendors" ? "Vendors" : "Customers"}`}
-                      </h3>
-                      <Button 
-                        variant="outline-secondary" 
-                        size="sm"
-                        onClick={() => setShowTable(false)}
-                      >
-                        Close Table
-                      </Button>
-                    </div>
-                    
-                    {filteredData.length > 0 ? (
-                      <div className="table-responsive">
-                        <Table striped bordered hover responsive>
-                          <thead className="table-thead sticky-top">
-                            <tr>
-                              <th>#</th>
-                              <th>Unique ID</th>
-                              <th>Username</th>
-                              <th>Mobile Number</th>
-                              <th>Email</th>
-                              <th>State</th>
-                              <th>District</th>
-                              <th>Block</th>
-                              <th>Address</th>
-                              <th>Description</th>
-                              {activeTable === "vendors" && (
-                                <>
-                                  <th>Vendor Image</th>
-                                  <th>Aadhar Card</th>
-                                  <th>Categories</th>
-                                  <th>Created At</th>
-                                  <th>Updated At</th>
-                                  {/* <th>Actions</th> */}
-                                </>
-                              )}
-                              <th>Active</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {filteredData.map((item, index) => (
-                              <tr key={item.unique_id}>
-                                <td>{index + 1}</td>
-                                <td>{item.unique_id}</td>
-                                <td>{item.username}</td>
-                                <td>{item.mobile_number}</td>
-                                <td>{item.email || 'N/A'}</td>
-                                <td>{item.state}</td>
-                                <td>{item.district}</td>
-                                <td>{item.block}</td>
-                                <td>{item.address || 'N/A'}</td>
-                                <td>{item.description || 'N/A'}</td>
-                                {activeTable === "vendors" && (
-                                  <>
-                                    <td>
-                                      {item.vendor_image ? (
-                                        <img 
-                                          src={item.vendor_image.startsWith('http') 
-                                            ? item.vendor_image 
-                                            : `https://mahadevaaya.com/spindo/spindobackend${item.vendor_image.startsWith('/') ? item.vendor_image : '/' + item.vendor_image}`} 
-                                          alt="Vendor" 
-                                          style={{ 
-                                            width: '60px', 
-                                            height: '60px', 
-                                            borderRadius: '4px',
-                                            objectFit: 'cover'
-                                          }} 
-                                        />
-                                      ) : (
-                                        <span className="text-muted">No Image</span>
-                                      )}
-                                    </td>
-                                    <td>
-                                      {item.aadhar_card ? (
-                                        <img 
-                                          src={item.aadhar_card.startsWith('http') 
-                                            ? item.aadhar_card 
-                                            : `https://mahadevaaya.com/spindo/spindobackend${item.aadhar_card.startsWith('/') ? item.aadhar_card : '/' + item.aadhar_card}`} 
-                                          alt="Aadhar Card" 
-                                          style={{ 
-                                            width: '60px', 
-                                            height: '60px', 
-                                            borderRadius: '4px',
-                                            objectFit: 'cover'
-                                          }} 
-                                        />
-                                      ) : (
-                                        <span className="text-muted">No Image</span>
-                                      )}
-                                    </td>
-                                    <td>
-                                      {Array.isArray(item.category) && item.category.length > 0 ? (
-                                        item.category.map((cat, idx) => (
-                                          <span key={idx} className="category-badge">
-                                            {typeof cat === 'string' ? cat : cat.type || cat}
-                                          </span>
-                                        ))
-                                      ) : (
-                                        <span className="text-muted">N/A</span>
-                                      )}
-                                    </td>
-                                    <td>{new Date(item.created_at).toLocaleDateString()}</td>
-                                    <td>{new Date(item.updated_at).toLocaleDateString()}</td>
-                                    {/* <td>
-                                      <Button 
-                                        variant="primary" 
-                                        size="sm" 
-                                        className="action-btn"
-                                        onClick={() => handleEditClick(item)}
-                                      >
-                                        <i className="bi bi-pencil"></i> Edit
-                                      </Button>
-                                    </td> */}
-                                  </>
-                                )}
-                                <td>
-                                  <span className={`badge ${item.is_active ? 'bg-success' : 'bg-danger'}`}>
-                                    {item.is_active ? 'Yes' : 'No'}
-                                  </span>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </Table>
-                      </div>
-                    ) : (
-                      <Alert variant="info">
-                        No {activeTable === "vendors" ? "vendors" : "customers"} found for the selected filter.
-                      </Alert>
-                    )}
-                  </>
-                )}
-              </>
-            )}
-          </Container>
+    <div className="dashboard-container">
+      <StaffLeftNav
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        isMobile={isMobile}
+        isTablet={isTablet}
+      />
+      <div className="main-content-dash">
+        <StaffHeader toggleSidebar={toggleSidebar} />
+        {/* Minimal Header Row */}
+        <div style={{ width: '100%', borderBottom: '1px solid #e0e0e0', marginBottom: 12, padding: '2px 0 2px 0', background: 'transparent', minHeight: 0, display: 'flex', alignItems: 'center' }} className="responsive-admin-header">
+          <span style={{ fontSize: 'clamp(12px, 5vw, 18px)', fontWeight: 600, color: '#222', letterSpacing: '0.5px', paddingLeft: 4 }}>Staff</span>
         </div>
-      </div>
+        <Container fluid className="dashboard-body dashboard-main-container">
+          {/* Profile | Vendors & Customers layout */}
+          <Row className="g-2" style={{ margin: 0, width: '100%' }}>
+            {/* Profile Card - left column */}
+            <Col xs={12} sm={12} md={6} lg={4}>
+              <Card className="shadow-sm border-0 rounded-3 p-2 h-100 animate__animated animate__fadeIn">
+                <Card.Body className="d-flex flex-column align-items-center p-2">
+                  {loading ? (
+                    <Spinner animation="border" variant="primary" size="sm" />
+                  ) : error ? (
+                    <Alert variant="danger" className="mb-2" style={{ fontSize: 'clamp(11px, 2vw, 13px)' }}>{error}</Alert>
+                  ) : profile ? (
+                    <>
+                      <div style={{ width: 'clamp(50px, 12vw, 70px)', height: 'clamp(50px, 12vw, 70px)', borderRadius: '50%', overflow: 'hidden', border: '2px solid #2b6777', marginBottom: 8 }}>
+                        {profile.staff_image ? (
+                          <img
+                            src={
+                              profile.staff_image.startsWith('http')
+                                ? profile.staff_image
+                                : profile.staff_image.startsWith('/media/')
+                                  ? `https://mahadevaaya.com/spindo/spindobackend${profile.staff_image}`
+                                  : `https://mahadevaaya.com/spindo/spindobackend/media/staff_images/${profile.staff_image}`
+                            }
+                            alt="Profile"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                        ) : (
+                          <span className="d-flex align-items-center justify-content-center h-100 w-100" style={{ color: '#aaa', fontSize: 32 }}>
+                            <i className="bi bi-person-circle"></i>
+                          </span>
+                        )}
+                      </div>
+                      <h6 className="fw-bold mb-1 text-center" style={{ fontSize: 'clamp(13px, 2vw, 15px)' }}>Welcome, {profile.username || "Staff"}!</h6>
+                      <div className="text-muted mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>{profile.email}</div>
+                      <div className="mb-0" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}><b>Mobile:</b> {profile.mobile_number}</div>
+                      <div className="mb-2" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}><b>Location:</b> {profile.state}, {profile.district}, {profile.block}</div>
+                      <Link to="/StaffProfile">
+                        <Button variant="outline-primary" size="sm" className="mt-1" style={{ fontSize: 'clamp(11px, 2vw, 13px)' }}>View Profile</Button>
+                      </Link>
+                    </>
+                  ) : null}
+                </Card.Body>
+              </Card>
+            </Col>
 
-      {/* Edit Vendor Modal */}
-      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="xl" scrollable>
-        <Modal.Header closeButton>
-          <Modal.Title>Edit Vendor</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Username</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="username"
-                    value={editForm.username}
-                    onChange={handleInputChange}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Mobile Number</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="mobile_number"
-                    value={editForm.mobile_number}
-                    onChange={handleInputChange}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Email</Form.Label>
-                  <Form.Control
-                    type="email"
-                    name="email"
-                    value={editForm.email}
-                    onChange={handleInputChange}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>State</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="state"
-                    value={editForm.state}
-                    onChange={handleInputChange}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>District</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="district"
-                    value={editForm.district}
-                    onChange={handleInputChange}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Block</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="block"
-                    value={editForm.block}
-                    onChange={handleInputChange}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
-              <Col md={12}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Address</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={2}
-                    name="address"
-                    value={editForm.address}
-                    onChange={handleInputChange}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
-              <Col md={12}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Description</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="description"
-                    value={editForm.description}
-                    onChange={handleInputChange}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
-              <Col md={12}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Categories</Form.Label>
-                  <div className="d-flex flex-wrap">
-                    {availableCategories.map(category => (
-                      <Form.Check
-                        key={category}
-                        type="checkbox"
-                        id={`category-${category}`}
-                        label={category}
-                        value={category}
-                        checked={editForm.category.includes(category)}
-                        onChange={handleCategoryChange}
-                        className="me-3 mb-2"
-                      />
-                    ))}
-                  </div>
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
-              <Col md={12}>
-                <Form.Group className="mb-3">
-                  <Form.Check
-                    type="checkbox"
-                    name="is_active"
-                    label="Active Status"
-                    checked={editForm.is_active}
-                    onChange={handleInputChange}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleSaveChanges}>
-            Save Changes
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </>
+            {/* Vendors & Requests stacked in right column */}
+            <Col xs={12} sm={12} md={6} lg={8}>
+              {/* Vendors Section */}
+              <div className="mb-3">
+                <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Users Management</h6>
+                <Row className="g-2 mb-2" style={{ margin: 0 }}>
+                  <Col xs={12} sm={6} md={6} lg={6}>
+                    <Link to="/VendorRegistration" state={{ viewType: 'vendors' }} style={{ textDecoration: 'none' }}>
+                      <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#28a745', width: 28, height: 28, borderRadius: '50%' }}>
+                            <i className="bi bi-shop" style={{ fontSize: 14 }}></i>
+                          </div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Total Vendors</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{vendorCount}</div>
+                        </Card.Body>
+                      </Card>
+                    </Link>
+                  </Col>
+                  <Col xs={12} sm={6} md={6} lg={6}>
+                    <Link to="/AllCustomers" style={{ textDecoration: 'none' }}>
+                      <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#fff3cd', color: '#ff9800', width: 28, height: 28, borderRadius: '50%' }}>
+                            <i className="bi bi-people" style={{ fontSize: 14 }}></i>
+                          </div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Total Customers</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{customerCount}</div>
+                        </Card.Body>
+                      </Card>
+                    </Link>
+                  </Col>
+                </Row>
+              </div>
+
+              {/* Requests Section */}
+              <div className="mb-3">
+                <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Service Requests</h6>
+                <Row className="g-2 mb-2" style={{ margin: 0 }}>
+                  <Col xs={12} sm={6} md={6} lg={4}>
+                    <Link to="/StaffServicesRequest" style={{ textDecoration: 'none' }}>
+                      <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#fff3cd', color: '#ff9800', width: 28, height: 28, borderRadius: '50%' }}>
+                            <i className="bi bi-list-task" style={{ fontSize: 14 }}></i>
+                          </div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Total Requests</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{totalRequests}</div>
+                        </Card.Body>
+                      </Card>
+                    </Link>
+                  </Col>
+                  <Col xs={12} sm={6} md={6} lg={4}>
+                    <Link to="/StaffServicesRequest" state={{ filter: 'Pending' }} style={{ textDecoration: 'none' }}>
+                      <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#c7d2fe', color: '#3730a3', width: 28, height: 28, borderRadius: '50%' }}>
+                            <i className="bi bi-hourglass-split" style={{ fontSize: 14 }}></i>
+                          </div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Pending</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{pendingRequests}</div>
+                        </Card.Body>
+                      </Card>
+                    </Link>
+                  </Col>
+                  <Col xs={12} sm={6} md={6} lg={4}>
+                    <Link to="/StaffCompleteRequest" style={{ textDecoration: 'none' }}>
+                      <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#28a745', width: 28, height: 28, borderRadius: '50%' }}>
+                            <i className="bi bi-check-circle" style={{ fontSize: 14 }}></i>
+                          </div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Completed</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{completedRequests}</div>
+                        </Card.Body>
+                      </Card>
+                    </Link>
+                  </Col>
+                </Row>
+              </div>
+
+              {/* Queries Section */}
+              <div>
+                <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Staff Queries</h6>
+                <Row className="g-2" style={{ margin: 0 }}>
+                  <Col xs={12} sm={6} md={4}>
+                    <Link to="/StaffQueryView" state={{ filter: 'Approved' }} style={{ textDecoration: 'none' }}>
+                      <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#28a745', width: 28, height: 28, borderRadius: '50%' }}>
+                            <i className="bi bi-check-circle" style={{ fontSize: 14 }}></i>
+                          </div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Approved</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{approvedStaffQueries}</div>
+                        </Card.Body>
+                      </Card>
+                    </Link>
+                  </Col>
+                  <Col xs={12} sm={6} md={4}>
+                    <Link to="/StaffQueryView" state={{ filter: 'Pending' }} style={{ textDecoration: 'none' }}>
+                      <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#fff3cd', color: '#ff9800', width: 28, height: 28, borderRadius: '50%' }}>
+                            <i className="bi bi-hourglass-split" style={{ fontSize: 14 }}></i>
+                          </div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Pending</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{pendingStaffQueries}</div>
+                        </Card.Body>
+                      </Card>
+                    </Link>
+                  </Col>
+                  <Col xs={12} sm={6} md={4}>
+                    <Link to="/StaffQueryView" state={{ filter: 'Rejected' }} style={{ textDecoration: 'none' }}>
+                      <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#ffe3e3', color: '#e53935', width: 28, height: 28, borderRadius: '50%' }}>
+                            <i className="bi bi-x-circle" style={{ fontSize: 14 }}></i>
+                          </div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Rejected</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{rejectedStaffQueries}</div>
+                        </Card.Body>
+                      </Card>
+                    </Link>
+                  </Col>
+                </Row>
+              </div>
+            </Col>
+          </Row>
+
+          {/* Quick Stats Summary */}
+          <Row className="mt-3 g-2" style={{ margin: 0 }}>
+            <Col xs={12}>
+              <Card className="border-0 shadow-sm" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
+                <Card.Body className="p-3">
+                  <Row className="text-center">
+                    <Col xs={6} sm={6} md={3} className="mb-2 mb-md-0">
+                      <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600 }}>Vendors Managed</div>
+                      <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700 }}>{vendorCount}</div>
+                    </Col>
+                    <Col xs={6} sm={6} md={3} className="mb-2 mb-md-0">
+                      <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600 }}>Customers</div>
+                      <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700 }}>{customerCount}</div>
+                    </Col>
+                    <Col xs={6} sm={6} md={3} className="mb-2 mb-md-0">
+                      <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600 }}>Requests</div>
+                      <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700 }}>{totalRequests}</div>
+                    </Col>
+                    <Col xs={6} sm={6} md={3}>
+                      <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600 }}>Queries</div>
+                      <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700 }}>{totalStaffQueries}</div>
+                    </Col>
+                  </Row>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </Container>
+      </div>
+    </div>
   );
 };
 
