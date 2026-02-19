@@ -151,11 +151,11 @@ const AdminDashBoard = () => {
         <div className="main-content-dash">
           <AdminHeader toggleSidebar={toggleSidebar} />
 
+
           <Container fluid className="dashboard-body dashboard-main-container">
-            {/* Header Section */}
-            <div className="dashboard-header-section">
-              <h1 className="dashboard-main-title">📊 Dashboard Overview</h1>
-              <p className="dashboard-subtitle">Welcome to Admin Dashboard - System Statistics & Management</p>
+            {/* Minimal Header Row */}
+            <div style={{ width: '100%', borderBottom: '1px solid #e0e0e0', marginBottom: 12, padding: '2px 0 2px 0', background: 'transparent', minHeight: 0, display: 'flex', alignItems: 'center' }} className="responsive-admin-header">
+              <span style={{ fontSize: 'clamp(12px, 5vw, 18px)', fontWeight: 600, color: '#222', letterSpacing: '0.5px', paddingLeft: 4 }}>Admin</span>
             </div>
 
             {/* Primary Statistics Row */}
@@ -213,9 +213,9 @@ const AdminDashBoard = () => {
 
             {/* Services Section */}
             <div className="dashboard-section">
-              <Row className="g-4">
-                {/* Left Column - 8 cols */}
-                <Col lg={8} md={12}>
+              <Row className="g-4" style={{ margin: 0, width: '100%' }}>
+                {/* Left Column - 8 cols on large, full width on mobile */}
+                <Col lg={8} md={12} sm={12} xs={12}>
                   <h2 className="section-title">Service Management</h2>
                   <div className="dashboard-cards-grid">
                     {/* Services Card */}
@@ -251,8 +251,8 @@ const AdminDashBoard = () => {
                   </div>
                 </Col>
 
-                {/* Right Column - 4 cols - Bills Card */}
-                <Col lg={4} md={12}>
+                {/* Right Column - 4 cols on large, full width on mobile */}
+                <Col lg={4} md={12} sm={12} xs={12}>
                   <h2 className="section-title">Bills</h2>
                   <div className="card-wrapper" onClick={() => navigate('/AllBills')}>
                     <div className="dashboard-card card-bills">

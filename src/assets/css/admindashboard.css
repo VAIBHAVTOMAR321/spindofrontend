@@ -1,3 +1,131 @@
+/* --- Compact Card Size and Font --- */
+.dashboard-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    width: 100%;
+}
+
+.dashboard-card {
+    min-height: 110px !important;
+    height: auto;
+    padding: 14px 10px 10px 10px !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    border-radius: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    border: 1px solid #f0f0f0;
+    background: #fff;
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+    overflow: hidden;
+    text-align: center;
+}
+.dashboard-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-color: #e0e0e0;
+}
+
+.dashboard-card-icon {
+    width: 20px !important;
+    height: 20px !important;
+    margin-bottom: 2px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.dashboard-card-title,
+.dashboard-card-value,
+.card-footer-text {
+    font-size: 14px !important;
+    line-height: 1.35;
+    word-break: break-word;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: initial;
+}
+
+.dashboard-card-title {
+    font-weight: 500;
+    margin-bottom: 2px;
+    min-height: 16px;
+}
+.dashboard-card-value {
+    font-weight: 600;
+    color: #1a73e8;
+    margin-bottom: 2px;
+    min-height: 16px;
+}
+.card-footer-text {
+    color: #888;
+    font-weight: 400;
+    margin-top: 4px;
+    min-height: 16px;
+}
+/* Ensure card content is always visible and wrapped */
+.dashboard-card > * {
+    min-width: 0;
+}
+
+@media (max-width: 1200px) {
+    .dashboard-cards-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+    }
+}
+
+@media (max-width: 900px) {
+    .dashboard-cards-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+    }
+    .dashboard-card {
+        min-height: 90px !important;
+        padding: 8px 4px 6px 4px !important;
+    }
+    .dashboard-card-title,
+    .dashboard-card-value,
+    .card-footer-text {
+        font-size: 13px !important;
+    }
+    .dashboard-card-icon {
+        width: 16px !important;
+        height: 16px !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .dashboard-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
+    .dashboard-card {
+        min-height: 70px !important;
+        padding: 5px 2px 4px 2px !important;
+    }
+    .dashboard-card-title,
+    .dashboard-card-value,
+    .card-footer-text {
+        font-size: 12px !important;
+    }
+    .dashboard-card-icon {
+        width: 13px !important;
+        height: 13px !important;
+    }
+}
+/* Reduce heading sizes to 14px */
+.dashboard-main-title,
+.section-title,
+.dashboard-header-section h1,
+.dashboard-header-section h2 {
+    font-size: 14px !important;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
 /* Dashboard Cards Row */
 .dashboard-cards-row {
     display: flex;
@@ -793,7 +921,8 @@ border: none !important;
 
 /* Dashboard Sections */
 .dashboard-section {
-    margin-bottom: 50px;
+    margin-bottom: 4px;
+    margin-top: 8px;
     padding: 0 10px;
 }
 
@@ -801,18 +930,10 @@ border: none !important;
     font-size: 1.5rem;
     font-weight: 700;
     color: #2c3e50;
-    margin-bottom: 25px;
-    padding-bottom: 10px;
+    margin-bottom: 4px;
+    padding-bottom: 4px;
     border-bottom: 3px solid #667eea;
     display: inline-block;
-}
-
-/* Grid Layout for Cards */
-.dashboard-cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 25px;
-    margin-bottom: 20px;
 }
 
 @media (max-width: 1200px) {
@@ -1066,7 +1187,7 @@ border: none !important;
 
     .section-title {
         font-size: 1.3rem;
-        margin-bottom: 20px;
+        margin-bottom: 4px;
     }
 }
 
@@ -1121,3 +1242,183 @@ border: none !important;
 .dashboard-card:nth-child(4) { animation-delay: 0.4s; }
 .dashboard-card:nth-child(5) { animation-delay: 0.5s; }
 .dashboard-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* ===== COMPREHENSIVE MOBILE & TABLET RESPONSIVE STYLES ===== */
+
+/* Tablets (768px - 1199px) */
+@media (min-width: 768px) and (max-width: 1199px) {
+    .dashboard-body {
+        padding: 8px 4px;
+    }
+    .dashboard-main-container {
+        padding: 0 4px !important;
+    }
+    .dashboard-cards-grid {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 10px;
+    }
+    .dashboard-card {
+        min-height: 90px !important;
+        padding: 10px 8px 8px 8px !important;
+    }
+    .dashboard-card-icon {
+        width: 18px !important;
+        height: 18px !important;
+    }
+    .dashboard-card-title,
+    .dashboard-card-value,
+    .card-footer-text {
+        font-size: 12px !important;
+    }
+    .section-title {
+        font-size: 1.1rem !important;
+    }
+}
+
+/* Small Tablets & Large Phones (576px - 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
+    .dashboard-body {
+        padding: 6px 2px;
+    }
+    .dashboard-main-container {
+        padding: 0 2px !important;
+    }
+    .dashboard-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    .dashboard-card {
+        min-height: 75px !important;
+        padding: 8px 6px 6px 6px !important;
+    }
+    .dashboard-card-icon {
+        width: 16px !important;
+        height: 16px !important;
+    }
+    .dashboard-card-title,
+    .dashboard-card-value,
+    .card-footer-text {
+        font-size: 11px !important;
+    }
+    .section-title {
+        font-size: 0.95rem !important;
+    }
+}
+
+/* Mobile Phones (< 576px) */
+@media (max-width: 575px) {
+    body {
+        font-size: 14px;
+    }
+    .dashboard-body {
+        padding: 4px 0;
+    }
+    .dashboard-main-container {
+        padding: 0 !important;
+    }
+    .dashboard-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
+    .dashboard-card {
+        min-height: 65px !important;
+        padding: 6px 4px 4px 4px !important;
+        border-radius: 12px;
+    }
+    .dashboard-card-icon {
+        width: 14px !important;
+        height: 14px !important;
+    }
+    .dashboard-card-title,
+    .dashboard-card-value,
+    .card-footer-text {
+        font-size: 10px !important;
+        line-height: 1.2;
+    }
+    .section-title {
+        font-size: 0.85rem !important;
+        margin-bottom: 2px;
+        padding-bottom: 2px;
+    }
+}
+
+/* Very Small Mobile (< 400px) */
+@media (max-width: 399px) {
+    .dashboard-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+    .dashboard-card {
+        min-height: 50px !important;
+        padding: 4px 3px 3px 3px !important;
+    }
+    .dashboard-card-icon {
+        width: 12px !important;
+        height: 12px !important;
+    }
+    .dashboard-card-title,
+    .dashboard-card-value,
+    .card-footer-text {
+        font-size: 9px !important;
+    }
+    .section-title {
+        font-size: 0.75rem !important;
+        margin-bottom: 1px;
+    }
+}
+
+/* Container & Layout Responsiveness */
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: row;
+    width: 100%;
+}
+
+.main-content-dash {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 8px;
+    width: 100%;
+}
+
+@media (max-width: 767px) {
+    .main-content-dash {
+        padding: 4px 2px;
+        width: 100%;
+    }
+}
+
+/* Bootstrap Grid Responsive */
+.dashboard-section .row {
+    margin: 0;
+    width: 100%;
+}
+
+@media (max-width: 992px) {
+    .g-4 {
+        --bs-gutter-x: 10px !important;
+        --bs-gutter-y: 8px !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .g-4 {
+        --bs-gutter-x: 6px !important;
+        --bs-gutter-y: 6px !important;
+    }
+}
+
+/* Prevent Horizontal Scroll */
+html, body {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.dashboard-main-container,
+.dashboard-cards-grid,
+.dashboard-section {
+    width: 100%;
+    overflow-x: hidden;
+}
