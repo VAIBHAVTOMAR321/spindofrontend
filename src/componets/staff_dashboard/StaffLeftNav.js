@@ -5,25 +5,16 @@ import {
   FaSignOutAlt,
   FaChevronDown,
   FaChevronRight,
-  FaImages,
   FaUsers,
-  FaBook,
-  FaBuilding,
-  FaImage,
   FaTools,
   FaComments,
-  FaCube,
-  FaProjectDiagram,
-  FaServer,
   FaUserCircle,
-  FaCalendarAlt,
   FaPlusSquare,
   FaListUl,
-  FaEdit,
-  FaMusic,
-  FaGlassCheers,
-  FaChalkboardTeacher,
-  FaIndustry
+  FaTasks,
+  FaCheckSquare,
+  FaFileInvoiceDollar,
+  FaCommentDots
 } from "react-icons/fa";
 import axios from "axios";
 import "../../assets/css/admindashboard.css";
@@ -31,7 +22,6 @@ import { Link } from "react-router-dom";
 import {
   FaInfoCircle,
   FaBullseye,
-  FaTasks
 } from "react-icons/fa";
 
 // import BRLogo from "../../assets/images/brainrock_logo.png";
@@ -48,76 +38,76 @@ const StaffLeftNav = ({ sidebarOpen, setSidebarOpen, isMobile, isTablet }) => {
   };
 
 const menuItems = [
-    {
-      icon: <FaTachometerAlt />,
-      label: "Dashboard",
-      path: "/StaffDashBoard",
-      active: true,
-    },
-   
-     {
-      icon: <FaTachometerAlt />,
-      label: "Vendor Registration",
-      path: "/VendorRegistration",
-      active: true,
-    },
-   
-
-    
-     {
-      icon: <FaCalendarAlt />,
-      label: "Services Request",
-      submenu: [
-         {
-      icon: <FaTachometerAlt />,
-      label: "Staff Services Request",
-      path: "/StaffServicesRequest",
-      active: true,
-    },
-        {
-          label: "Staff Complete Request",
-          path: "/StaffCompleteRequest",
-          icon: <FaListUl />,
-        },
-      ],
-    },
-
   
-
-    {
-      icon: <FaCalendarAlt />,
-      label: "Contact with Admin",
-      submenu: [
-         {
-      icon: <FaTachometerAlt />,
-      label: "Staff Query",
-      path: "/StaffQuery",
-      active: true,
-    },
-        {
-          label: "Staff Query View",
-          path: "/StaffQueryView",
-          icon: <FaListUl />,
-        },
-      ],
-    },
+  {
+    icon: <FaTachometerAlt />, // Dashboard
+    label: "Dashboard",
+    path: "/StaffDashBoard",
+    active: true,
+  },
+  {
+    icon: <FaUsers />, // Vendor Registration
+    label: "Vendor Registration",
+    path: "/VendorRegistration",
+    active: true,
+  },
+  {
+    icon: <FaTools />, // Services Request
+    label: "Services Request",
+    submenu: [
       {
-      icon: <FaCalendarAlt />,
-      label: "Bills",
-      submenu: [
-         {
-      icon: <FaTachometerAlt />,
-      label: "Add Bill",
-      path: "/StaffBill",
-      active: true,
-    },
-        {
-          label: " View Bill ",
-          path: "/AllBillsDetails",
-          icon: <FaListUl />,
-        },
-      ],
-    },
+        icon: <FaTasks />, // Staff Services Request
+        label: "Staff Services Request",
+        path: "/StaffServicesRequest",
+        active: true,
+      },
+      {
+        icon: <FaCheckSquare />, // Staff Complete Request
+        label: "Staff Complete Request",
+        path: "/StaffCompleteRequest",
+      },
+    ],
+  },
+  {
+    icon: <FaFileInvoiceDollar />, // Bills
+    label: "Bills",
+    submenu: [
+      {
+        icon: <FaPlusSquare />, // Add Bill
+        label: "Add Bill",
+        path: "/StaffBill",
+        active: true,
+      },
+      {
+        icon: <FaListUl />, // View Bill
+        label: "View Bill",
+        path: "/AllBillsDetails",
+      },
+    ],
+  },
+  {
+    icon: <FaComments />, // Contact with Admin
+    label: "Contact with Admin",
+    submenu: [
+      {
+        icon: <FaCommentDots />, // Staff Query
+        label: "Staff Query",
+        path: "/StaffQuery",
+        active: true,
+      },
+      {
+        icon: <FaListUl />, // Staff Query View
+        label: "Staff Query View",
+        path: "/StaffQueryView",
+      },
+    ],
+  },
+  {
+    icon: <FaUserCircle />, // Staff Profile
+    label: "Staff Profile",
+    path: "/StaffProfile",
+    active: true,
+  },
 
     
   ];

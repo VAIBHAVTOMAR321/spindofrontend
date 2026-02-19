@@ -26,54 +26,49 @@ function StaffHeader({ toggleSidebar }) {
   // Use AuthContext for authentication (like UserHeader)
   const { user, tokens, logout } = useAuth();
 
-  // State for user details
-  const [userDetails, setUserDetails] = useState({
-    username: "",
-    image: null,
+
+
+  // State for staff profile (VendorHeader style)
+  const [staffData, setStaffData] = useState({
+    can_name: "Staff",
+    staff_image: ""
   });
-  
-  // State for loading and error handling
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [authError, setAuthError] = useState(null);
   const [imageError, setImageError] = useState(false);
 
-  // Fetch user profile logic (like UserProfile)
+  // Fetch staff profile from staffadmin endpoint (VendorHeader logic)
+  const fetchStaffProfile = async () => {
+    if (!user?.uniqueId || !tokens?.access) return;
+    try {
+      const apiUrl = `${BASE_URL}/api/staffadmin/register/?unique_id=${user.uniqueId}`;
+      const response = await fetch(apiUrl, {
+        headers: { Authorization: `Bearer ${tokens.access}` }
+      });
+      const data = await response.json();
+      if (data.status && data.data) {
+        setStaffData({
+          can_name: data.data.can_name || "Staff",
+          staff_image: data.data.staff_image || ""
+        });
+        setImageError(false);
+      }
+    } catch (error) {
+      setImageError(true);
+    }
+  };
+
+  // Fetch on mount and refetch every 5s (VendorHeader logic)
   useEffect(() => {
     let isMounted = true;
-    const fetchUserProfile = async () => {
-      if (!user?.uniqueId || !tokens?.access) {
-        setAuthError("Not authenticated");
-        setIsLoading(false);
-        return;
-      }
-      try {
-        const apiUrl = `${BASE_URL}/api/customer/register/?unique_id=${user.uniqueId}`;
-        const response = await fetch(apiUrl, {
-          headers: { Authorization: `Bearer ${tokens.access}` }
-        });
-        const data = await response.json();
-        if (data.status && data.data) {
-          // Staff data is returned directly as an object (not an array)
-          setUserDetails(data.data);
-          setError(null);
-        } else {
-          setError("Failed to fetch user profile");
-        }
-      } catch (err) {
-        console.error("Error fetching user data:", err);
-        if (err.response?.status === 401) {
-          setError("Session expired. Please log in again.");
-        } else {
-          setError(err.message || "Failed to load profile. Please try again later.");
-        }
-      } finally {
-        setIsLoading(false);
+    const loadStaffProfile = async () => {
+      if (isMounted && user?.uniqueId && tokens?.access) {
+        await fetchStaffProfile();
       }
     };
-    fetchUserProfile();
+    loadStaffProfile();
     const interval = setInterval(() => {
-      if (isMounted) fetchUserProfile();
+      if (isMounted && user?.uniqueId && tokens?.access) {
+        loadStaffProfile();
+      }
     }, 5000);
     return () => {
       isMounted = false;
@@ -81,39 +76,28 @@ function StaffHeader({ toggleSidebar }) {
     };
   }, [user, tokens]);
 
-  // Function to get display name from state
-  const getDisplayName = () => {
-    return userDetails.username || "Admin";
-  };
-
-  // Get the full URL for the user's profile photo
-  const getUserPhotoUrl = () => {
-    const profilePhoto = userDetails.image;
-    
-    if (profilePhoto && !imageError) {
-      if (profilePhoto.startsWith('http')) {
-        return profilePhoto;
-      } else if (profilePhoto.startsWith("/media/customer_images/")) {
-        return `${BASE_URL}${profilePhoto}`;
+  // Get staff image URL (VendorHeader logic)
+  const getStaffImageUrl = () => {
+    if (staffData.staff_image && !imageError) {
+      if (staffData.staff_image.startsWith("http")) {
+        return staffData.staff_image;
+      } else if (staffData.staff_image.startsWith("/media/")) {
+        return `${BASE_URL}${staffData.staff_image}`;
       } else {
-        return `${BASE_URL}/media/customer_images/${profilePhoto}`;
+        return `${BASE_URL}/media/staff_images/${staffData.staff_image}`;
       }
     }
     return null;
   };
-  
-  // Fallback if the profile image fails to load
-  const handleImageError = (e) => {
-    console.error('Error loading profile image:', e);
+
+  // Handle image loading error (VendorHeader logic)
+  const handleImageError = () => {
     setImageError(true);
-    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(getDisplayName())}&background=0d6efd&color=fff&size=40`;
   };
-  
-  // Handle user logout
+
+  // Handle logout
   const handleLogout = () => {
-    // Call the logout function from AuthContext to clear global state
     logout();
-    // Then navigate to the login page
     navigate("/", { replace: true });
   };
 
@@ -131,51 +115,35 @@ function StaffHeader({ toggleSidebar }) {
             </Button>
           </Col>
 
-          <Col>
-            {authError && (
-              <Alert variant="danger" className="mb-0 py-1">
-                <small>{authError}</small>
-              </Alert>
-            )}
-            {error && (
-              <Alert variant="warning" className="mb-0 py-1">
-                <small>{error}</small>
-              </Alert>
-            )}
-          </Col>
+          <Col></Col>
 
           <Col xs="auto">
             <div className="header-actions d-flex align-items-center">
-              {/* Show a spinner while loading user data */}
-              {isLoading ? (
-                <Spinner animation="border" variant="primary" size="sm" />
-              ) : (
-                <Dropdown align="end">
-                  <Dropdown.Toggle variant="light" className="user-profile-btn" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    {getUserPhotoUrl() ? (
-                      <Image
-                        src={getUserPhotoUrl()}
-                        roundedCircle
-                        className="user-avatar"
-                        onError={handleImageError}
-                        style={{ width: 40, height: 40, objectFit: "cover", border: "2px solid #e5e7eb" }}
-                        alt="Staff"
-                      />
-                    ) : (
-                      <FaUserCircle style={{ fontSize: 40, color: "#6366f1" }} />
-                    )}
-                    <span style={{ fontWeight: 600, color: "#1e293b" }}>
-                      {getDisplayName()}
-                    </span>
-                  </Dropdown.Toggle>
+              <Dropdown align="end">
+                <Dropdown.Toggle variant="light" className="user-profile-btn" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  {getStaffImageUrl() ? (
+                    <Image
+                      src={getStaffImageUrl()}
+                      roundedCircle
+                      className="user-avatar"
+                      onError={handleImageError}
+                      style={{ width: 40, height: 40, objectFit: "cover", border: "2px solid #e5e7eb" }}
+                      alt="Staff"
+                    />
+                  ) : (
+                    <FaUserCircle style={{ fontSize: 40, color: "#6366f1" }} />
+                  )}
+                  <span style={{ fontWeight: 600, color: "#1e293b" }}>
+                    {staffData.can_name}
+                  </span>
+                </Dropdown.Toggle>
 
-                  <Dropdown.Menu>
-                    <Dropdown.Item onClick={handleLogout}>
-                      <FaSignOutAlt className="me-2" /> Logout
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-              )}
+                <Dropdown.Menu>
+                  <Dropdown.Item onClick={handleLogout}>
+                    <FaSignOutAlt className="me-2" /> Logout
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
             </div>
           </Col>
         </Row>

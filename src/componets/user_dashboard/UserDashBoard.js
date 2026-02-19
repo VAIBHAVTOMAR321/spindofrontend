@@ -135,6 +135,10 @@ const UserDashBoard = () => {
       />
       <div className="main-content-dash">
         <UserHeader toggleSidebar={toggleSidebar} />
+        {/* Minimal Header Row */}
+        <div style={{ width: '100%', borderBottom: '1px solid #e0e0e0', marginBottom: 12, padding: '2px 0 2px 0', background: 'transparent', minHeight: 0, display: 'flex', alignItems: 'center' }} className="responsive-admin-header">
+          <span style={{ fontSize: 'clamp(12px, 5vw, 18px)', fontWeight: 600, color: '#222', letterSpacing: '0.5px', paddingLeft: 4 }}>User</span>
+        </div>
         <Container fluid className="dashboard-body dashboard-main-container">
           {/* Profile | Services & Queries layout */}
           <Row className="mt-2 g-2" style={{ margin: 0, width: '100%' }}>

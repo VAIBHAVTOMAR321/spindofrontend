@@ -27,19 +27,19 @@ import {
 } from "react-icons/fa";
 import axios from "axios";
 import "../../assets/css/admindashboard.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FaInfoCircle,
   FaBullseye,
   FaTasks
 } from "react-icons/fa";
+import { useAuth } from '../context/AuthContext';
 
 // import BRLogo from "../../assets/images/brainrock_logo.png";
 
 const AdminLeftNav = ({ sidebarOpen, setSidebarOpen, isMobile, isTablet }) => {
-    // const { logout } = useContext(AuthContext);
-    // const { user } = useContext(AuthContext);
-// const emp_id = user?.unique_id;  // This is the correct value
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
     const [userRole, setUserRole] = useState(null);
   const [openSubmenu, setOpenSubmenu] = useState(null);
@@ -165,7 +165,10 @@ const menuItems = [
         <div className="sidebar-footer">
           <Nav.Link
             className="nav-item logout-btn"
-        //    onClick={logout}
+            onClick={() => {
+              logout();
+              navigate("/", { replace: true });
+            }}
           >
             <span className="nav-icon">
               <FaSignOutAlt />

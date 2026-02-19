@@ -240,6 +240,10 @@ const VendorRequests = ({ showCardOnly = false }) => {
         {/* Main Content */}
         <div className="main-content-dash">
           <VendorHeader toggleSidebar={toggleSidebar} />
+          {/* Breadcrumb: Back to Dashboard */}
+          <div style={{ width: '100%', borderBottom: '1px solid #e0e0e0', marginBottom: 8, padding: '2px 0', background: 'transparent', minHeight: 0, display: 'flex', alignItems: 'center' }}>
+            <a href="/VendorDashBoard" style={{ fontSize: 'clamp(12px, 2vw, 15px)', color: '#1976d2', textDecoration: 'none', fontWeight: 500 }}>&larr; Back to Dashboard</a>
+          </div>
           <Container fluid className="dashboard-body dashboard-main-container">
             <div className="p-3">
               {/* Modern Responsive Header Row */}
