@@ -33,6 +33,7 @@ import {
   FaBullseye,
   FaTasks
 } from "react-icons/fa";
+import { FaCodePullRequest, FaReceipt } from "react-icons/fa6";
 
 // import BRLogo from "../../assets/images/brainrock_logo.png";
 
@@ -54,7 +55,34 @@ const menuItems = [
       path: "/VendorDashBoard",
       active: true,
     },
-   
+    
+   {
+      icon: <FaCodePullRequest />,
+      label: "Requests",
+      submenu: [
+        {
+          label: "My Requests",
+          path: "/VendorRequests",
+          icon: <FaListUl />,
+        },
+        {
+          label: "Completed Requests",
+          path: "/CompletedRequests",
+          icon: <FaListUl />,
+        },
+      ],
+    },
+    {
+      icon: <FaReceipt />,
+      label: "Bills",
+      path: "/VendorAllBills",
+    },
+    {
+      icon: <FaUserCircle />,
+      label: "My Profile",
+      path: "/VendorProfile",
+    },
+
 
    
     

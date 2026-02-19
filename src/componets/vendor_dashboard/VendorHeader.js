@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Row,
@@ -19,107 +19,96 @@ import {
   FaSearch,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 
-// 1. Accept searchTerm and setSearchTerm as props
-function VendorHeader({ toggleSidebar, searchTerm, setSearchTerm }) {
-  
+const BASE_URL = "https://mahadevaaya.com/spindo/spindobackend";
+const API_URL = `${BASE_URL}/api/vendor/register/`;
+
+// Accept toggleSidebar as prop
+function VendorHeader({ toggleSidebar }) {
   const navigate = useNavigate();
+  const { user, tokens } = useAuth();
 
-  // Get auth data from localStorage
-  const getAuthData = () => {
-    const storedAuth = localStorage.getItem('auth');
-    return storedAuth ? JSON.parse(storedAuth) : null;
-  };
-
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      text: "New employee joined - Rahul Sharma",
-      time: "10 min ago",
-      read: false,
-    },
-    {
-      id: 2,
-      text: "HR meeting scheduled at 4 PM",
-      time: "1 hour ago",
-      read: false,
-    },
-    {
-      id: 3,
-      text: "Payroll processed successfully",
-      time: "3 hours ago",
-      read: true,
-    },
-  ]);
-
-  const [unreadCount, setUnreadCount] = useState(2);
-  
-  // State for user details
-  const [userDetails, setUserDetails] = useState({
-    first_name: "",
-    last_name: "",
-    profile_photo: null,
+  // Vendor profile data state
+  const [vendorData, setVendorData] = useState({
+    username: "Vendor",
+    vendor_image: ""
   });
-  
-  // State for loading and error handling
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [authError, setAuthError] = useState(null);
   const [imageError, setImageError] = useState(false);
 
-  // Function to get display name
-  const getDisplayName = () => {
-    if (userDetails.first_name && userDetails.last_name) {
-      return `${userDetails.first_name} ${userDetails.last_name}`;
-    } else if (userDetails.first_name) {
-      return userDetails.first_name;
-    } else {
-      return "Admin";
+  // Fetch vendor profile data
+  const fetchVendorProfile = async () => {
+    if (!user?.uniqueId || !tokens?.access) return;
+    try {
+      const apiUrl = `${API_URL}?unique_id=${user.uniqueId}`;
+      const response = await fetch(apiUrl, {
+        headers: { Authorization: `Bearer ${tokens.access}` }
+      });
+      const data = await response.json();
+      // Only log once if needed, or remove this log entirely to avoid repeated logs
+      // console.log("[VendorHeader] Vendor profile data:", data); // Remove or comment out
+      if (data.status && data.data) {
+        setVendorData({
+          username: data.data.username || "Vendor",
+          vendor_image: data.data.vendor_image || ""
+        });
+        setImageError(false);
+      }
+    } catch (error) {
+      console.error("[VendorHeader] Error fetching vendor profile:", error);
     }
   };
 
-  // Function to fetch user data with auth handling
+  // Fetch on mount and setup refetch interval
+  useEffect(() => {
+    let isMounted = true;
 
-
-  // Fetch user data when component mounts
- 
-
-  const markAsRead = (id) => {
-    setNotifications(
-      notifications.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-    setUnreadCount((prev) => prev - 1);
-  };
-  
-  // Get user photo URL
-  const getUserPhotoUrl = () => {
-    const profilePhoto = userDetails.profile_photo;
-    
-    console.log('Profile photo from state:', profilePhoto);
-    
-    if (profilePhoto && !imageError) {
-      if (profilePhoto.startsWith('http')) {
-        console.log('Full URL profile photo:', profilePhoto);
-        return profilePhoto;
+    const loadVendorProfile = async () => {
+      if (isMounted && user?.uniqueId && tokens?.access) {
+        await fetchVendorProfile();
       }
-      const fullUrl = `https://mahadevaaya.com/eventmanagement/eventmanagement_backend/${profilePhoto}`;
-      console.log('Constructed profile photo URL:', fullUrl);
-      return fullUrl;
+    };
+
+    // Fetch immediately on mount
+    loadVendorProfile();
+
+    // Set up interval to refetch every 5 seconds
+    const interval = setInterval(() => {
+      if (isMounted && user?.uniqueId && tokens?.access) {
+        loadVendorProfile();
+      }
+    }, 5000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []); // Empty dependency array - runs only once on mount
+
+  // Get vendor image URL with proper path construction
+  const getVendorImageUrl = () => {
+    if (vendorData.vendor_image && !imageError) {
+      if (vendorData.vendor_image.startsWith("http")) {
+        return vendorData.vendor_image;
+      } else if (vendorData.vendor_image.startsWith("/media/")) {
+        return `${BASE_URL}${vendorData.vendor_image}`;
+      } else {
+        return `${BASE_URL}/media/vendor_images/${vendorData.vendor_image}`;
+      }
     }
     return null;
   };
-  
+
   // Handle image loading error
-  const handleImageError = (e) => {
-    console.error('Error loading profile image:', e);
+  const handleImageError = () => {
+    console.error("Error loading vendor image");
     setImageError(true);
-    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(getDisplayName())}&background=0d6efd&color=fff&size=40`;
   };
-  
+
   // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem('auth');
+    localStorage.removeItem("auth");
     navigate("/", { replace: true });
   };
   return (
@@ -136,66 +125,43 @@ function VendorHeader({ toggleSidebar, searchTerm, setSearchTerm }) {
             </Button>
           </Col>
 
-          <Col>
-            {authError && (
-              <Alert variant="danger" className="mb-0 py-1">
-                <small>{authError}</small>
-              </Alert>
-            )}
-            {error && (
-              <Alert variant="warning" className="mb-0 py-1">
-                <small>{error}</small>
-              </Alert>
-            )}
-          </Col>
+          <Col></Col>
+
           <Col xs="auto">
             <div className="header-actions">
               <Dropdown align="end">
-                {/* <Dropdown.Toggle variant="light" className="notification-btn">
-                  <FaBell />
-                  {unreadCount > 0 && (
-                    <Badge pill bg="danger" className="notification-badge">
-                      {unreadCount}
-                    </Badge>
+                <Dropdown.Toggle
+                  variant="light"
+                  className="user-profile-btn"
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  {getVendorImageUrl() ? (
+                    <Image
+                      src={getVendorImageUrl()}
+                      roundedCircle
+                      className="user-avatar"
+                      onError={handleImageError}
+                      style={{
+                        width: 40,
+                        height: 40,
+                        objectFit: "cover",
+                        border: "2px solid #e5e7eb"
+                      }}
+                      alt="Vendor"
+                    />
+                  ) : (
+                    <FaUserCircle style={{ fontSize: 40, color: "#6366f1" }} />
                   )}
-                </Dropdown.Toggle> */}
-
-                {/* <Dropdown.Menu className="notification-dropdown">
-                  <div className="notification-header">
-                    <h6>Notifications</h6>
-                  </div>
-
-                  {notifications.map((notif) => (
-                    <Dropdown.Item
-                      key={notif.id}
-                      className={`notification-item ${
-                        !notif.read ? "unread" : ""
-                      }`}
-                      onClick={() => markAsRead(notif.id)}
-                    >
-                      <p>{notif.text}</p>
-                      <small>{notif.time}</small>
-                    </Dropdown.Item>
-                  ))}
-                </Dropdown.Menu> */}
+                  <span style={{ fontWeight: 600, color: "#1e293b" }}>
+                    {vendorData.username}
+                  </span>
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                  <Dropdown.Item onClick={handleLogout}>
+                    <FaSignOutAlt className="me-2" /> Logout
+                  </Dropdown.Item>
+                </Dropdown.Menu>
               </Dropdown>
-
-              <Dropdown align="end">
-  <Dropdown.Toggle variant="light" className="user-profile-btn">
-    {/* <Image
-      src={getUserPhotoUrl()}
-      roundedCircle
-      className="user-avatar"
-      onError={handleImageError}
-    /> */}
-    Admin
-  </Dropdown.Toggle>
-  <Dropdown.Menu>
-    <Dropdown.Item onClick={handleLogout}>
-      <FaSignOutAlt className="me-2" /> Logout
-    </Dropdown.Item>
-  </Dropdown.Menu>
-</Dropdown>
             </div>
           </Col>
         </Row>
