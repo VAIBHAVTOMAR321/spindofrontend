@@ -43,6 +43,15 @@ import StaffBill from "./componets/staff_dashboard/staff_services_request/StaffB
 import AllBillsDetails from "./componets/staff_dashboard/staff_services_request/AllBillsDetails";
 import Footer from "./componets/footer/Footer";
 import ContactUs from "./componets/contact/ContactUs";
+import VendorRequests from "./componets/vendor_dashboard/VendorRequests";
+import VendorProfile from "./componets/vendor_dashboard/VendorProfile";
+import CompletedRequests from "./componets/vendor_dashboard/CompletedRequests";
+
+
+import VendorAllBills from "./componets/vendor_dashboard/VendorAllBills";
+import GenerateVendorQuery from "./componets/vendor_dashboard/vendorpages/GenerateVendorQuery";
+import VendorAllQueries from "./componets/vendor_dashboard/vendorpages/VendorAllQueries";
+
 
 
 
@@ -54,7 +63,11 @@ function App() {
     "/UserDashBoard",
     "/StaffDashBoard",
     "/VendorDashBoard",
+    "/VendorProfile",
     "/VendorRegistration",
+    "/VendorRequests",
+    "/CompletedRequests",
+    "/VendorAllBills",
     "/TotalRegistration",
     "/ServiceCategory",
     "/ManageServiceCategory",
@@ -72,7 +85,9 @@ function App() {
     "/StaffCompleteRequest",
     "/StaffServicesRequest",
     "/StaffBill",
-    "/AllBillsDetails"
+    "/AllBillsDetails",
+    "/GenerateVendorQuery",
+    "/VendorAllQueries",
   ]);
 
   const shouldHideNavbar = hiddenPaths.has(location.pathname);
@@ -286,7 +301,54 @@ function App() {
               </Protected>
             } 
           />
-          
+          <Route
+            path="/VendorProfile"
+            element={
+              <Protected allowedRoles={['vendor']}>
+                <VendorProfile />
+              </Protected>
+            } 
+          />
+          <Route
+            path="/VendorRequests"
+            element={
+              <Protected allowedRoles={['vendor']}>
+                <VendorRequests />
+              </Protected>
+            } 
+          />
+          <Route
+            path="/CompletedRequests"
+            element={
+              <Protected allowedRoles={['vendor']}>
+                <CompletedRequests />
+              </Protected>
+            } 
+          />
+          <Route
+            path="/VendorAllBills"
+            element={
+              <Protected allowedRoles={['vendor']}>
+                <VendorAllBills />
+              </Protected>
+            } 
+          />
+          <Route
+            path="/GenerateVendorQuery"
+            element={
+              <Protected allowedRoles={['vendor']}>
+                <GenerateVendorQuery />
+              </Protected>
+            }
+          />
+          <Route
+            path="/VendorAllQueries"
+            element={
+              <Protected allowedRoles={['vendor']}>
+                <VendorAllQueries />
+              </Protected>
+            }
+          />
           
         </Routes>
       </main>

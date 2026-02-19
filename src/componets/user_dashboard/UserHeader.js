@@ -20,17 +20,16 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 // 1. Accept searchTerm and setSearchTerm as props
 function UserHeader({ toggleSidebar, searchTerm, setSearchTerm }) {
   
   const navigate = useNavigate();
 
-  // Get auth data from localStorage
-  const getAuthData = () => {
-    const storedAuth = localStorage.getItem('auth');
-    return storedAuth ? JSON.parse(storedAuth) : null;
-  };
+
+  // Use AuthContext for authentication (like VendorHeader)
+  const { user, tokens } = useAuth();
 
   const [notifications, setNotifications] = useState([
     {
@@ -61,18 +60,70 @@ function UserHeader({ toggleSidebar, searchTerm, setSearchTerm }) {
     last_name: "",
     profile_photo: null,
   });
-  
   // State for loading and error handling
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [authError, setAuthError] = useState(null);
   const [imageError, setImageError] = useState(false);
 
+  // Fetch user profile logic (like VendorHeader)
+  useEffect(() => {
+    let isMounted = true;
+    const fetchUserProfile = async () => {
+      if (!user?.uniqueId || !tokens?.access) {
+        setAuthError("Not authenticated");
+        setIsLoading(false);
+        return;
+      }
+      try {
+        // Use the same endpoint and logic as UserProfile
+        const apiUrl = `https://mahadevaaya.com/spindo/spindobackend/api/customer/register/?unique_id=${user.uniqueId}`;
+        const response = await fetch(apiUrl, {
+          headers: { Authorization: `Bearer ${tokens.access}` }
+        });
+        const data = await response.json();
+        if (data.status && data.data) {
+          // Map to userDetails structure for header
+          setUserDetails({
+            first_name: data.data.username || "",
+            last_name: "", // No last_name in this API, so leave blank
+            profile_photo: (() => {
+              if (data.data.image) {
+                if (data.data.image.startsWith("http")) {
+                  return data.data.image;
+                } else if (data.data.image.startsWith("/media/customer_images/")) {
+                  return `https://mahadevaaya.com/spindo/spindobackend${data.data.image}`;
+                } else {
+                  return `https://mahadevaaya.com/spindo/spindobackend/media/customer_images/${data.data.image}`;
+                }
+              }
+              return null;
+            })()
+          });
+          setError(null);
+        } else {
+          setError("Failed to fetch user profile");
+        }
+      } catch (err) {
+        setError("Error fetching user profile");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchUserProfile();
+    const interval = setInterval(() => {
+      if (isMounted) fetchUserProfile();
+    }, 5000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [user, tokens]);
+
   // Function to get display name
   const getDisplayName = () => {
-    if (userDetails.first_name && userDetails.last_name) {
-      return `${userDetails.first_name} ${userDetails.last_name}`;
-    } else if (userDetails.first_name) {
+    // Use username from userDetails (from UserProfile API)
+    if (userDetails.first_name) {
       return userDetails.first_name;
     } else {
       return "User";
@@ -95,17 +146,8 @@ function UserHeader({ toggleSidebar, searchTerm, setSearchTerm }) {
   // Get user photo URL
   const getUserPhotoUrl = () => {
     const profilePhoto = userDetails.profile_photo;
-    
-    console.log('Profile photo from state:', profilePhoto);
-    
     if (profilePhoto && !imageError) {
-      if (profilePhoto.startsWith('http')) {
-        console.log('Full URL profile photo:', profilePhoto);
-        return profilePhoto;
-      }
-      const fullUrl = `https://mahadevaaya.com/eventmanagement/eventmanagement_backend/${profilePhoto}`;
-      console.log('Constructed profile photo URL:', fullUrl);
-      return fullUrl;
+      return profilePhoto;
     }
     return null;
   };
@@ -181,14 +223,22 @@ function UserHeader({ toggleSidebar, searchTerm, setSearchTerm }) {
               </Dropdown>
 
               <Dropdown align="end">
-  <Dropdown.Toggle variant="light" className="user-profile-btn">
-    {/* <Image
-      src={getUserPhotoUrl()}
-      roundedCircle
-      className="user-avatar"
-      onError={handleImageError}
-    /> */}
-    User
+  <Dropdown.Toggle variant="light" className="user-profile-btn" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+    {getUserPhotoUrl() ? (
+      <Image
+        src={getUserPhotoUrl()}
+        roundedCircle
+        className="user-avatar"
+        onError={handleImageError}
+        style={{ width: 40, height: 40, objectFit: "cover", border: "2px solid #e5e7eb" }}
+        alt="User"
+      />
+    ) : (
+      <FaUserCircle style={{ fontSize: 40, color: "#6366f1" }} />
+    )}
+    <span style={{ fontWeight: 600, color: "#1e293b" }}>
+      {getDisplayName()}
+    </span>
   </Dropdown.Toggle>
   <Dropdown.Menu>
     <Dropdown.Item onClick={handleLogout}>

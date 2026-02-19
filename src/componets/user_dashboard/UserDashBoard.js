@@ -187,37 +187,43 @@ const UserDashBoard = () => {
                 <h4 className="fw-bold mb-3" style={{ color: '#2b6777', letterSpacing: 1 }}>Services</h4>
                 <Row className="g-4 mb-2">
                   <Col xs={12} md={6} lg={4}>
-                    <Card className="stat-card text-center animate__animated animate__fadeIn" style={{ cursor: 'pointer', minHeight: 120 }}>
-                      <Card.Body className="d-flex flex-column align-items-center justify-content-center p-2">
-                        <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#28a745', width: 36, height: 36, borderRadius: '50%' }}>
-                          <i className="bi bi-check-circle" style={{ fontSize: 20 }}></i>
-                        </div>
-                        <div className="stat-title fw-semibold mb-1" style={{ fontSize: 14 }}>Approved Services</div>
-                        <div className="stat-value fw-bold" style={{ fontSize: 20 }}>{serviceLoading ? <Spinner size="sm" /> : approvedServices}</div>
-                      </Card.Body>
-                    </Card>
+                    <Link to="/ViewRequestService" state={{ filter: 'Approved' }} style={{ textDecoration: 'none' }}>
+                      <Card className="stat-card text-center animate__animated animate__fadeIn" style={{ cursor: 'pointer', minHeight: 120 }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-2">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#28a745', width: 36, height: 36, borderRadius: '50%' }}>
+                            <i className="bi bi-check-circle" style={{ fontSize: 20 }}></i>
+                          </div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 14 }}>Approved Services</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 20 }}>{serviceLoading ? <Spinner size="sm" /> : approvedServices}</div>
+                        </Card.Body>
+                      </Card>
+                    </Link>
                   </Col>
                   <Col xs={12} md={6} lg={4}>
-                    <Card className="stat-card text-center animate__animated animate__fadeIn" style={{ cursor: 'pointer', minHeight: 120 }}>
-                      <Card.Body className="d-flex flex-column align-items-center justify-content-center p-2">
-                        <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#fff3cd', color: '#ff9800', width: 36, height: 36, borderRadius: '50%' }}>
-                          <i className="bi bi-hourglass-split" style={{ fontSize: 20 }}></i>
-                        </div>
-                        <div className="stat-title fw-semibold mb-1" style={{ fontSize: 14 }}>Pending Services</div>
-                        <div className="stat-value fw-bold" style={{ fontSize: 20 }}>{serviceLoading ? <Spinner size="sm" /> : pendingServices}</div>
-                      </Card.Body>
-                    </Card>
+                    <Link to="/ViewRequestService" state={{ filter: 'Pending' }} style={{ textDecoration: 'none' }}>
+                      <Card className="stat-card text-center animate__animated animate__fadeIn" style={{ cursor: 'pointer', minHeight: 120 }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-2">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#fff3cd', color: '#ff9800', width: 36, height: 36, borderRadius: '50%' }}>
+                            <i className="bi bi-hourglass-split" style={{ fontSize: 20 }}></i>
+                          </div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 14 }}>Pending Services</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 20 }}>{serviceLoading ? <Spinner size="sm" /> : pendingServices}</div>
+                        </Card.Body>
+                      </Card>
+                    </Link>
                   </Col>
                   <Col xs={12} md={6} lg={4}>
-                    <Card className="stat-card text-center animate__animated animate__fadeIn" style={{ cursor: 'pointer', minHeight: 120 }}>
-                      <Card.Body className="d-flex flex-column align-items-center justify-content-center p-2">
-                        <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#ffe3e3', color: '#e53935', width: 36, height: 36, borderRadius: '50%' }}>
-                          <i className="bi bi-x-circle" style={{ fontSize: 20 }}></i>
-                        </div>
-                        <div className="stat-title fw-semibold mb-1" style={{ fontSize: 14 }}>Rejected Services</div>
-                        <div className="stat-value fw-bold" style={{ fontSize: 20 }}>{serviceLoading ? <Spinner size="sm" /> : rejectedServices}</div>
-                      </Card.Body>
-                    </Card>
+                    <Link to="/ViewRequestService" state={{ filter: 'Rejected' }} style={{ textDecoration: 'none' }}>
+                      <Card className="stat-card text-center animate__animated animate__fadeIn" style={{ cursor: 'pointer', minHeight: 120 }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-2">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#ffe3e3', color: '#e53935', width: 36, height: 36, borderRadius: '50%' }}>
+                            <i className="bi bi-x-circle" style={{ fontSize: 20 }}></i>
+                          </div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 14 }}>Rejected Services</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 20 }}>{serviceLoading ? <Spinner size="sm" /> : rejectedServices}</div>
+                        </Card.Body>
+                      </Card>
+                    </Link>
                   </Col>
                 </Row>
                 <Row className="mb-4">

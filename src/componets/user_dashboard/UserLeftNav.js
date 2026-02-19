@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Nav, Offcanvas, Collapse } from "react-bootstrap";
 import {
   FaTachometerAlt,
@@ -36,12 +36,12 @@ import {
   FaTasks
 } from "react-icons/fa";
 
-// import BRLogo from "../../assets/images/brainrock_logo.png";
+
+import { useAuth } from "../context/AuthContext";
+
 
 const UserLeftNav = ({ sidebarOpen, setSidebarOpen, isMobile, isTablet }) => {
-    // const { logout } = useContext(AuthContext);
-    // const { user } = useContext(AuthContext);
-// const emp_id = user?.unique_id;  // This is the correct value
+  const { logout } = useAuth();
 
     const [userRole, setUserRole] = useState(null);
   const [openSubmenu, setOpenSubmenu] = useState(null);
@@ -194,7 +194,11 @@ const menuItems = [
         <div className="sidebar-footer">
           <Nav.Link
             className="nav-item logout-btn"
-        //    onClick={logout}
+            onClick={() => {
+              if (typeof logout === "function") {
+                logout();
+              }
+            }}
           >
             <span className="nav-icon">
               <FaSignOutAlt />
