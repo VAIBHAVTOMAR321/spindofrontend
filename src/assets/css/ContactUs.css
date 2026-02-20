@@ -1,0 +1,56 @@
+.Contact-banner {
+    background-image: url("../../assets/images/electrician-services.jpeg");
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    height: 250px;
+}
+
+.site-breadcrumb-wpr {
+    color: #fff;
+    padding: 40px;
+    position: relative;
+    text-align: center;
+    z-index: 1;
+}
+
+.breadcrumb-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.breadcrumb-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.breadcrumb-menu li {
+    margin: 0;
+}
+
+.breadcrumb-menu a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.breadcrumb-menu a:hover {
+    color: #f8f9fa;
+}
+
+.px-2 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+.clearfix::after {
+    content: "";
+    display: table;
+    clear: both;
+}

@@ -20,7 +20,7 @@ const StaffDashBoard = () => {
   const [pendingRequests, setPendingRequests] = useState(0);
   const [completedRequests, setCompletedRequests] = useState(0);
   const [totalStaffQueries, setTotalStaffQueries] = useState(0);
-  const [approvedStaffQueries, setApprovedStaffQueries] = useState(0);
+  const [acceptedStaffQueries, setAcceptedStaffQueries] = useState(0);
   const [pendingStaffQueries, setPendingStaffQueries] = useState(0);
   const [rejectedStaffQueries, setRejectedStaffQueries] = useState(0);
   const { user, tokens } = useAuth();
@@ -107,26 +107,30 @@ const StaffDashBoard = () => {
       });
     
     // Queries - Staff Queries
-    fetch(`https://mahadevaaya.com/spindo/spindobackend/api/staffadmin/request/`, {
+    fetch(`https://mahadevaaya.com/spindo/spindobackend/api/staffadmin/issue/?unique_id=${user.uniqueId}`, {
       headers: tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}
     })
       .then(res => res.json())
       .then(data => {
-        if (data.status && Array.isArray(data.data)) {
-          setTotalStaffQueries(data.data.length);
-          setApprovedStaffQueries(data.data.filter(q => (q.status || '').toLowerCase() === 'approved').length);
-          setPendingStaffQueries(data.data.filter(q => (q.status || '').toLowerCase() === 'pending').length);
-          setRejectedStaffQueries(data.data.filter(q => (q.status || '').toLowerCase() === 'rejected').length);
+        // Check if data is an array or has data property
+        let queriesData = [];
+        if (Array.isArray(data)) {
+          queriesData = data;
+        } else if (data.status && Array.isArray(data.data)) {
+          queriesData = data.data;
         } else {
-          setTotalStaffQueries(0);
-          setApprovedStaffQueries(0);
-          setPendingStaffQueries(0);
-          setRejectedStaffQueries(0);
+          // If single object is returned, wrap in array
+          queriesData = [data];
         }
+        
+        setTotalStaffQueries(queriesData.length);
+                setAcceptedStaffQueries(queriesData.filter(q => (q.status || '').toLowerCase() === 'accepted').length);
+        setPendingStaffQueries(queriesData.filter(q => (q.status || '').toLowerCase() === 'pending').length);
+        setRejectedStaffQueries(queriesData.filter(q => (q.status || '').toLowerCase() === 'rejected').length);
       })
       .catch(() => {
         setTotalStaffQueries(0);
-        setApprovedStaffQueries(0);
+         setAcceptedStaffQueries(0);
         setPendingStaffQueries(0);
         setRejectedStaffQueries(0);
       });
@@ -199,6 +203,11 @@ const StaffDashBoard = () => {
                       <Link to="/StaffProfile">
                         <Button variant="outline-primary" size="sm" className="mt-1" style={{ fontSize: 'clamp(11px, 2vw, 13px)' }}>View Profile</Button>
                       </Link>
+                       <Link to="/VendorRegistration">
+                    <Button variant="primary" size="sm" style={{ fontSize: 'clamp(11px, 2vw, 13px)' }} className="mt-4">
+                      <i className="bi bi-plus-circle me-1"></i> Add Vendor
+                    </Button>
+                  </Link>
                     </>
                   ) : null}
                 </Card.Body>
@@ -211,11 +220,7 @@ const StaffDashBoard = () => {
               <div className="mb-3">
                 <div className="d-flex justify-content-between align-items-center mb-2">
                   <h6 className="fw-bold" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Users Management</h6>
-                  <Link to="/VendorRegistration">
-                    <Button variant="primary" size="sm" style={{ fontSize: 'clamp(11px, 2vw, 13px)' }}>
-                      <i className="bi bi-plus-circle me-1"></i> Add Vendor
-                    </Button>
-                  </Link>
+                 
                 </div>
                 <Row className="g-2 mb-2" style={{ margin: 0 }}>
                   <Col xs={12} sm={6} md={6} lg={6}>
@@ -297,15 +302,15 @@ const StaffDashBoard = () => {
               <div>
                 <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Staff Queries</h6>
                 <Row className="g-2" style={{ margin: 0 }}>
-                  <Col xs={12} sm={6} md={4}>
-                    <Link to="/StaffQueryView" state={{ filter: 'Approved' }} style={{ textDecoration: 'none' }}>
+                   <Col xs={12} sm={6} md={4}>
+                    <Link to="/StaffQueryView" state={{ filter: 'Accepted' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
                           <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#28a745', width: 28, height: 28, borderRadius: '50%' }}>
                             <i className="bi bi-check-circle" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Approved</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{approvedStaffQueries}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Accepted</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{acceptedStaffQueries}</div>
                         </Card.Body>
                       </Card>
                     </Link>
@@ -347,28 +352,28 @@ const StaffDashBoard = () => {
               <Card className="border-0 shadow-sm" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
                 <Card.Body className="p-3">
                   <Row className="text-center">
-                    <Col xs={6} sm={6} md={3} className="mb-2 mb-md-0">
-                      <Link to="/AllVendors" state={{ viewType: 'vendors' }} style={{ textDecoration: 'none', color: 'inherit' }}>
-                        <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600, cursor: 'pointer' }}>Vendors Managed</div>
-                        <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700, cursor: 'pointer' }}>{vendorCount}</div>
-                      </Link>
-                    </Col>
-                    <Col xs={6} sm={6} md={3} className="mb-2 mb-md-0">
-                      <Link to="/AllCustomers" style={{ textDecoration: 'none', color: 'inherit' }}>
-                        <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600, cursor: 'pointer' }}>Customers</div>
-                        <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700, cursor: 'pointer' }}>{customerCount}</div>
-                      </Link>
-                    </Col>
-                    <Col xs={6} sm={6} md={3} className="mb-2 mb-md-0">
-                      <Link to="/StaffServicesRequest" style={{ textDecoration: 'none', color: 'inherit' }}>
-                        <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600, cursor: 'pointer' }}>Requests</div>
-                        <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700, cursor: 'pointer' }}>{totalRequests}</div>
+                    <Col xs={6} sm={6} md={3}>
+                      <Link to="/StaffQueryView" state={{ filter: 'all' }} style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600, cursor: 'pointer' }}>All Queries</div>
+                        <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700, cursor: 'pointer' }}>{totalStaffQueries}</div>
                       </Link>
                     </Col>
                     <Col xs={6} sm={6} md={3}>
-                      <Link to="/StaffQueryView" state={{ filter: 'all' }} style={{ textDecoration: 'none', color: 'inherit' }}>
-                        <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600, cursor: 'pointer' }}>Queries</div>
-                        <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700, cursor: 'pointer' }}>{totalStaffQueries}</div>
+                      <Link to="/StaffQueryView" state={{ filter: 'pending' }} style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600, cursor: 'pointer' }}>Pending</div>
+                        <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700, cursor: 'pointer' }}>{pendingStaffQueries}</div>
+                      </Link>
+                    </Col>
+                    <Col xs={6} sm={6} md={3}>
+                      <Link to="/StaffQueryView" state={{ filter: 'accepted' }} style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600, cursor: 'pointer' }}>Accepted</div>
+                        <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700, cursor: 'pointer' }}>{acceptedStaffQueries}</div>
+                      </Link>
+                    </Col>
+                    <Col xs={6} sm={6} md={3}>
+                      <Link to="/StaffQueryView" state={{ filter: 'rejected' }} style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600, cursor: 'pointer' }}>Rejected</div>
+                        <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700, cursor: 'pointer' }}>{rejectedStaffQueries}</div>
                       </Link>
                     </Col>
                   </Row>

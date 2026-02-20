@@ -1,12 +1,69 @@
 /* NavBar.css */
 
+/* Custom Nav Link Styles */
+.custom-nav-link {
+  color: #000 !important
+;
+  font-weight: 500;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  /* padding: 8px 15px !important; */
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.custom-nav-link:hover {
+  color: #0d6efd !important;
+  background-color: transparent !important;
+}
+
+.custom-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background-color: #0d6efd;
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.custom-nav-link:hover::after {
+  width: 80%;
+}
+
+.custom-nav-link.active {
+  color: #0d6efd !important;
+}
+
+/* Dropdown Toggle Styles */
+.custom-nav-link.dropdown-toggle {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.custom-nav-link.dropdown-toggle::after {
+  margin-left: 0.5rem;
+  border-top: 0.3em solid #000;
+  border-right: 0.3em solid transparent;
+  border-bottom: 0;
+  border-left: 0.3em solid transparent;
+  transition: all 0.3s ease;
+}
+
+.custom-nav-link.dropdown-toggle:hover::after {
+  border-top-color: #0d6efd;
+}
+
 /* General Navbar Styles */
 .navbar {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   transition: all 0.3s ease;
   padding: 0px !important;
-  background-color: 
-#14549d !important;
+  background-color: #fff !important;
 }
 
 .navbar-brand {
@@ -16,14 +73,16 @@
 
 /* Top Bar Styles */
 .top-bar {
-  background-color: #FBE6AB  !important;
+  background-color: #1b4a8f  !important;
   color: white;
   padding: 8px 0;
   font-size: 0.9rem;
 }
-.navbar-nav{
-font-size: 12px;
+
+.navbar-nav {
+  font-size: 12px;
 }
+
 .contact-info span {
   display: inline-flex;
   align-items: center;
@@ -41,21 +100,6 @@ font-size: 12px;
   color: #adb5bd;
 }
 
-/* Dropdown Styles */
-.dropdown-toggle {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-}
-
-.dropdown-toggle::after {
-  margin-left: 0.5rem;
-  border-top: 0.3em solid;
-  border-right: 0.3em solid transparent;
-  border-bottom: 0;
-  border-left: 0.3em solid transparent;
-}
-
 /* Right side navigation buttons */
 .navbar-nav .btn {
   padding: 0.375rem 0.75rem;
@@ -67,29 +111,32 @@ font-size: 12px;
 }
 
 .navbar-nav .btn-outline-primary {
-  border-color: #212529;
+  border-color: #1b4a8f;
   color: #fff;
-  background-color: #212529;
-
+  background-color: #1b4a8f;
 }
 
 .navbar-nav .btn-outline-primary:hover {
   background-color: #212529;
   border-color: #212529;
 }
-.spi-logo{
+
+.spi-logo {
     width: 100px !important;
     margin-left: 12px;
 }
-.navbar-nav{
+
+.navbar-nav {
     padding-right: 12px !important;
 }
-.nav-p{
+
+.nav-p {
     padding: 0px 22px 0px 22px;
 }
+
 .navbar-nav .btn-primary {
-  background-color:#212529;
-  border-color: #212529;
+  background-color:#1b4a8f;
+  border-color: #1b4a8f;
 }
 
 .navbar-nav .btn-primary:hover {
@@ -106,9 +153,15 @@ font-size: 12px;
     border-top: 1px solid #dee2e6;
     margin-top: 10px;
   }
-  .navbar-nav{
+  
+  .navbar-nav {
     padding-right: 0px !important;
   }
+  
+  .nav .nav-link {
+    color: #000 !important;
+  }
+  
   .mobile-contact .nav-link {
     padding: 5px 15px;
     display: flex;
@@ -179,25 +232,9 @@ font-size: 12px;
   }
   
   /* Add hover effects to nav links */
-  .nav-link {
+  .custom-nav-link {
     position: relative;
     transition: color 0.3s ease;
-  }
-  
-  .nav-link::after {
-    content: '';
-   
-    width: 0;
-    height: 2px;
-    bottom: 0;
-    left: 50%;
-   
-    transition: all 0.3s ease;
-  }
-  
-  .nav-link:hover::after {
-    /* width: 80%; */
-    left: 10%;
   }
   
   /* Style dropdown menu */
@@ -230,13 +267,13 @@ font-size: 12px;
 }
 
 /* Common Styles */
-.nav-link {
+/* .nav-link {
   color: #ffffff !important;
   font-weight: 500;
-}
+} */
 
 .nav-link:hover {
-  /* color: rgba(0,0,0,.7) !important; */
+  color: rgba(0,0,0,.7) !important;
 }
 
 .navbar-nav .nav-link.active {

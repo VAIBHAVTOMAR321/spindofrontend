@@ -84,10 +84,10 @@ function NavBar() {
           <Navbar.Collapse id="basic-navbar-nav">
             {/* Left side navigation items */}
             <Nav className="me-auto">
-              <Nav.Link href="/">HOME</Nav.Link>
-              <Nav.Link href="/AboutUs">ABOUT</Nav.Link>
+              <Nav.Link href="/" className='custom-nav-link'>HOME</Nav.Link>
+              <Nav.Link href="/AboutUs" className='custom-nav-link'>ABOUT</Nav.Link>
               
-              <NavDropdown title="SERVICES" id="basic-nav-dropdown">
+              <NavDropdown title="SERVICES" id="basic-nav-dropdown" className='custom-nav-link'>
                 {loading ? (
                   <NavDropdown.Item>Loading...</NavDropdown.Item>
                 ) : error ? (
@@ -108,9 +108,9 @@ function NavBar() {
                 </NavDropdown.Item>
               </NavDropdown>
 
-              <Nav.Link href="/ContactUs">Get in Touch</Nav.Link>
-              <Nav.Link href="#payment">Payment</Nav.Link>
-              <Nav.Link href="/Login">Book Services</Nav.Link>
+              <Nav.Link href="/ContactUs" className='custom-nav-link'>Get in Touch</Nav.Link>
+              <Nav.Link href="#payment" className='custom-nav-link'>Payment</Nav.Link>
+              <Nav.Link href="/Login" className='custom-nav-link'>Book Services</Nav.Link>
             </Nav>
             
             {/* Right side - Only Register and Login buttons */}
@@ -129,8 +129,8 @@ function NavBar() {
             
             {/* Mobile contact info - only shows in mobile view */}
             <Nav className="mobile-contact d-lg-none">
-              <Nav.Link href="mailto:contact@example.com"><FaEnvelope /> Email</Nav.Link>
-              <Nav.Link href="tel:+11234567890"><FaPhone /> Phone</Nav.Link>
+              <Nav.Link href="mailto:contact@example.com" className='custom-nav-link'><FaEnvelope /> Email</Nav.Link>
+              <Nav.Link href="tel:+11234567890" className='custom-nav-link'><FaPhone /> Phone</Nav.Link>
             </Nav>
           </Navbar.Collapse>
         </Container>

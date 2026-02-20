@@ -69,3 +69,28 @@ body {
   --spi-space-1200: 48px;
 }
 
+.card-header{
+  background-color: #1b4a8f !important;
+  color: #fff !important;
+}
+.btn-book{
+  background-color: #1b4a8f !important;
+  color: white;
+  border: none;
+  width: 160px !important;
+  padding: 10px 30px;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.container-box{
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.a.nav-item.nav-link {
+    color: #fff !important;
+}

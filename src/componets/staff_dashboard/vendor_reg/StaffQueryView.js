@@ -29,7 +29,7 @@ const StaffQueryView = () => {
   useEffect(() => {
     // If navigation state changes (e.g., user clicks a dashboard card), update filter
     if (location.state && location.state.filter && location.state.filter !== filter) {
-      setFilter(location.state.filter);
+      setFilter(location.state.filter.toLowerCase());
       setCurrentPage(1);
     }
     const checkDevice = () => {
@@ -41,7 +41,7 @@ const StaffQueryView = () => {
     checkDevice();
     window.addEventListener("resize", checkDevice);
     return () => window.removeEventListener("resize", checkDevice);
-  }, []);
+  }, [location.state]);
 
   useEffect(() => {
     if (!user?.uniqueId) {
@@ -147,7 +147,7 @@ const StaffQueryView = () => {
                         <select id="query-filter" className="form-select w-auto" value={filter} onChange={handleFilterChange}>
                           <option value="all">All</option>
                           <option value="pending">Pending</option>
-                          <option value="approved">Approved</option>
+                          <option value="accepted">Accepted</option>
                           <option value="rejected">Rejected</option>
                         </select>
                       </div>
@@ -183,8 +183,8 @@ const StaffQueryView = () => {
                                     <span style={{ color: '#999', fontStyle: 'italic' }}>No remark</span>
                                   )}
                                 </td>
-                                <td>
-                                  <span style={{ fontWeight: 600, color: q.status === 'Approved' ? '#52ab98' : q.status === 'Rejected' ? '#e53935' : '#2b6777' }}>
+                                 <td>
+                                  <span style={{ fontWeight: 600, color: q.status === 'Accepted' ? '#52ab98' : q.status === 'Rejected' ? '#e53935' : '#2b6777' }}>
                                     {q.status || 'Pending'}
                                   </span>
                                 </td>
@@ -234,7 +234,7 @@ const StaffQueryView = () => {
                               <p><strong>Title:</strong> {selectedQuery.title}</p>
                             </Col>
                             <Col md={6}>
-                              <p><strong>Status:</strong> <span style={{ fontWeight: 600, color: selectedQuery.status === 'resolved' ? '#52ab98' : '#2b6777' }}>{selectedQuery.status || 'Pending'}</span></p>
+                              <p><strong>Status:</strong> <span style={{ fontWeight: 600, color: selectedQuery.status === 'Accepted' ? '#52ab98' : selectedQuery.status === 'Rejected' ? '#e53935' : '#2b6777' }}>{selectedQuery.status || 'Pending'}</span></p>
                             </Col>
                           </Row>
                           <Row>
