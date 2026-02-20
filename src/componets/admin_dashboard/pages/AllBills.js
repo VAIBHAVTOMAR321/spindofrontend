@@ -275,7 +275,7 @@ const AllBills = () => {
               {/* Modern Table */}
               <div className="table-responsive rounded-4 shadow-sm" style={{ background: '#fff', padding: '0.5rem 0.5rem 1rem 0.5rem' }}>
                 <Table className="align-middle mb-0" style={{ minWidth: 700 }}>
-                  <thead style={{ background: '#f1f5f9' }}>
+                  <thead className="table-thead" style={{ background: '#f1f5f9' }}>
                     <tr style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
                       <th>Bill ID</th>
                       <th>Vendor ID</th>
