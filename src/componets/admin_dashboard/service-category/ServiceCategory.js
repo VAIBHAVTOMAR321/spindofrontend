@@ -3,6 +3,7 @@ import { Container, Table, Button, Modal, Form, Alert, Spinner, Row, Col } from 
 import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { useNavigate } from "react-router-dom";
 import "../../../assets/css/admindashboard.css";
 import AdminHeader from "../AdminHeader";
 import AdminLeftNav from "../AdminLeftNav";
@@ -15,6 +16,7 @@ const API_URL = `${BASE_URL}/api/service-category/`;
 
 const ServiceCategory = () => {
   const { tokens } = useAuth();
+  const navigate = useNavigate();
   
   // Check device width
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -339,7 +341,15 @@ const ServiceCategory = () => {
         {/* Main Content */}
         <div className="main-content-dash">
           <AdminHeader toggleSidebar={toggleSidebar} />
-
+          <div className="p-3">
+            <Button 
+              variant="outline-secondary" 
+              onClick={() => navigate('/AdminDashBoard')}
+              className="me-2"
+            >
+              <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+            </Button>
+          </div>
           <Container fluid className="dashboard-body dashboard-main-container">
             <div className="d-flex justify-content-between align-items-center mb-4">
               <h2>Service Categories</h2>

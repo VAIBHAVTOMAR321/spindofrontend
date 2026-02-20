@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Table, Button, Form, Modal, Nav, Tab } from "react-bootstrap";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import AdminHeader from "../AdminHeader";
@@ -14,6 +14,7 @@ const VENDOR_QUERIES_API = `${BASE_URL}/api/vendor/request/`;
 
 const AllQueries = ({ showCardOnly = false }) => {
   // Get location state for tab routing
+  const navigate = useNavigate();
   const location = useLocation();
   const initialTab = location.state?.tab || "user";
 
@@ -290,6 +291,15 @@ const AllQueries = ({ showCardOnly = false }) => {
         {/* Main Content */}
         <div className="main-content-dash">
           <AdminHeader toggleSidebar={toggleSidebar} />
+          <div className="p-3">
+            <Button 
+              variant="outline-secondary" 
+              onClick={() => navigate('/AdminDashBoard')}
+              className="me-2"
+            >
+              <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+            </Button>
+          </div>
           <Container fluid className="dashboard-body dashboard-main-container">
             <div className="p-3">
               {/* Modern Responsive Header Row */}

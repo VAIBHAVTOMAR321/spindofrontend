@@ -113,6 +113,15 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
         <div className="main-content-dash">
           <StaffHeader toggleSidebar={toggleSidebar} />
           <Container fluid className="dashboard-body dashboard-main-container">
+            <div className="mb-3">
+              <Button 
+                variant="outline-secondary" 
+                onClick={() => navigate('/StaffDashBoard')}
+                className="me-2"
+              >
+                <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+              </Button>
+            </div>
             <div className="p-3">
               {/* Header Row - Simplified to show only Assigned Requests count */}
               <div

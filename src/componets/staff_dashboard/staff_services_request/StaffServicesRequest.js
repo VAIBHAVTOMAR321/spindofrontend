@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Table, Button, Form, Modal, Alert } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
@@ -18,6 +19,7 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
+  const navigate = useNavigate();
   useEffect(() => {
     const checkDevice = () => {
       const width = window.innerWidth;
@@ -226,6 +228,15 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
         <div className="main-content-dash">
           <StaffHeader toggleSidebar={toggleSidebar} />
           <Container fluid className="dashboard-body dashboard-main-container">
+            <div className="mb-3">
+              <Button 
+                variant="outline-secondary" 
+                onClick={() => navigate('/StaffDashBoard')}
+                className="me-2"
+              >
+                <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+              </Button>
+            </div>
             <div className="p-3">
               {/* Modern Responsive Header Row */}
               <div

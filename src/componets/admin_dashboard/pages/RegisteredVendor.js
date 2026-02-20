@@ -259,6 +259,15 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
         />
         <div className="main-content-dash">
           <AdminHeader toggleSidebar={toggleSidebar} />
+          <div className="p-3">
+            <Button 
+              variant="outline-secondary" 
+              onClick={() => navigate('/AdminDashBoard')}
+              className="me-2"
+            >
+              <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+            </Button>
+          </div>
           <Container fluid className="dashboard-body dashboard-main-container">
             <div className="p-3">
               <div

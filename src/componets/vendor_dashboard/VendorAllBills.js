@@ -7,12 +7,13 @@ import VendorLeftNav from "./VendorLeftNav";
 import "../../assets/css/admindashboard.css";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const BASE_URL = "https://mahadevaaya.com/spindo/spindobackend";
 
 const VendorAllBills = ({ showCardOnly = false }) => {
   // Sidebar and device state
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -245,9 +246,14 @@ const VendorAllBills = ({ showCardOnly = false }) => {
         {/* Main Content */}
         <div className="main-content-dash">
           <VendorHeader toggleSidebar={toggleSidebar} />
-          {/* Breadcrumb: Back to Dashboard */}
-          <div style={{ width: '100%', borderBottom: '1px solid #e0e0e0', marginBottom: 8, padding: '2px 0', background: 'transparent', minHeight: 0, display: 'flex', alignItems: 'center' }}>
-            <a href="/VendorDashBoard" style={{ fontSize: 'clamp(12px, 2vw, 15px)', color: '#1976d2', textDecoration: 'none', fontWeight: 500 }}>&larr; Back to Dashboard</a>
+          <div className="p-3">
+            <Button 
+              variant="outline-secondary" 
+              onClick={() => navigate('/VendorDashBoard')}
+              className="me-2"
+            >
+              <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+            </Button>
           </div>
           <Container fluid className="dashboard-body dashboard-main-container">
             <div className="p-3">

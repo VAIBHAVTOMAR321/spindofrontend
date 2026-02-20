@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Table, Button, Form, Modal } from "react-bootstrap";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useAuth } from "../../context/AuthContext";
@@ -13,6 +14,7 @@ const API_URL = `${BASE_URL}/api/customer/requestservices/`;
 
 const RequestServices = ({ showCardOnly = false }) => {
   // Sidebar and device state
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -181,6 +183,15 @@ const RequestServices = ({ showCardOnly = false }) => {
         {/* Main Content */}
         <div className="main-content-dash">
           <AdminHeader toggleSidebar={toggleSidebar} />
+          <div className="p-3">
+            <Button 
+              variant="outline-secondary" 
+              onClick={() => navigate('/AdminDashBoard')}
+              className="me-2"
+            >
+              <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+            </Button>
+          </div>
           <Container fluid className="dashboard-body dashboard-main-container">
             <div className="p-3">
               {/* Modern Responsive Header Row */}
