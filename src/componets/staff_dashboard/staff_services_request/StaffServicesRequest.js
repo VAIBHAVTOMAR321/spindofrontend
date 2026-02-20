@@ -46,7 +46,7 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
   // Assign vendor state
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
-  const [vendorUniqueId, setVendorUniqueId] = useState("");
+  const [selectedVendors, setSelectedVendors] = useState([]);
   const [assignLoading, setAssignLoading] = useState(false);
   const [assignSuccess, setAssignSuccess] = useState("");
   const [assignError, setAssignError] = useState("");
@@ -60,8 +60,27 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
       const res = await axios.get(API_URL, {
         headers: { Authorization: `Bearer ${tokens.access}` },
       });
-      setRequestData(res.data.data || []);
-      setCount(res.data.data?.length || 0);
+      // Sanitize request_for_services to ensure it's always string or array
+      const sanitizedData = (res.data.data || []).map(request => {
+        let { request_for_services } = request;
+        // Convert non-string/non-array values to appropriate format
+        if (!Array.isArray(request_for_services) && typeof request_for_services !== 'string') {
+          // If it's an object, convert to string or array
+          if (typeof request_for_services === 'object') {
+            request_for_services = JSON.stringify(request_for_services);
+          } else {
+            // For other types (number, boolean, null, undefined), convert to string
+            request_for_services = String(request_for_services);
+          }
+        }
+        // Ensure empty values are handled
+        if (!request_for_services) {
+          request_for_services = '--';
+        }
+        return { ...request, request_for_services };
+      });
+      setRequestData(sanitizedData);
+      setCount(sanitizedData.length);
     } catch (error) {
       setRequestData([]);
       setCount(0);
@@ -108,8 +127,8 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
 
   // Assign vendor function
   const assignVendor = async () => {
-    if (!selectedRequest || !vendorUniqueId.trim()) {
-      setAssignError("Please select a vendor");
+    if (!selectedRequest || selectedVendors.length === 0) {
+      setAssignError("Please select at least one vendor");
       return;
     }
 
@@ -122,15 +141,15 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
         ASSIGN_VENDOR_API,
         {
           request_id: selectedRequest.request_id,
-          vendor_unique_id: vendorUniqueId.trim(),
+          vendor_unique_id: selectedVendors,
         },
         {
           headers: { Authorization: `Bearer ${tokens.access}` },
         }
       );
 
-      setAssignSuccess("Vendor assigned successfully!");
-      setVendorUniqueId("");
+      setAssignSuccess("Vendors assigned successfully!");
+      setSelectedVendors([]);
       
       // Refresh the request data to show the updated assigned vendor
       setTimeout(() => {
@@ -141,7 +160,7 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
       setAssignError(
         error.response?.data?.message ||
         error.response?.data?.error ||
-        "Failed to assign vendor. Please try again."
+        "Failed to assign vendors. Please try again."
       );
     } finally {
       setAssignLoading(false);
@@ -151,7 +170,7 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
   // Open assign vendor modal
   const openAssignModal = (request) => {
     setSelectedRequest(request);
-    setVendorUniqueId("");
+    setSelectedVendors([]);
     setAssignSuccess("");
     setAssignError("");
     setShowAssignModal(true);
@@ -253,22 +272,23 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                   // Service Requests Table
                   <>
                     <Table className="align-middle mb-0" style={{ minWidth: 700 }}>
-                      <thead className="table-thead">
-                        <tr style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
-                          <th>Request ID</th>
-                          <th>Username</th>
-                          <th>Contact Number</th>
-                          <th>Email</th>
-                          <th>State</th>
-                          <th>District</th>
-                          <th>Schedule Date</th>
-                          <th>Assigned To</th>
-                          <th>Assigned By</th>
-                          <th>Status</th>
-                          <th>Created</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
+                       <thead className="table-thead">
+                          <tr style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
+                            <th>Request ID</th>
+                            <th>Username</th>
+                            <th>Contact Number</th>
+                            <th>Email</th>
+                            <th>State</th>
+                            <th>District</th>
+                            <th>Request for Services</th>
+                            <th>Schedule Date</th>
+                            <th>Assigned To</th>
+                            <th>Assigned By</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
                       <tbody>
                         {requestData
                           .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
@@ -280,6 +300,19 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                               <td>{typeof request.email === 'string' ? request.email : '--'}</td>
                               <td>{typeof request.state === 'string' ? request.state : '--'}</td>
                               <td>{typeof request.district === 'string' ? request.district : '--'}</td>
+                              <td>
+                                {(() => {
+                                  const services = request.request_for_services;
+                                  if (Array.isArray(services)) {
+                                    return services.length > 0 ? services.join(", ") : '--';
+                                  }
+                                  if (typeof services === 'string') {
+                                    return services.trim() || '--';
+                                  }
+                                  // Handle other types (number, boolean, object, null, undefined)
+                                  return '--';
+                                })()}
+                              </td>
                               <td>{typeof request.schedule_date === 'string' ? new Date(request.schedule_date).toLocaleDateString() : '--'}</td>
                               <td>{typeof request.assigned_to_name === 'string' ? request.assigned_to_name : '--'}</td>
                               <td>{typeof request.assigned_by_name === 'string' ? request.assigned_by_name : '--'}</td>
@@ -472,7 +505,7 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
               <Form>
                 <Form.Group className="mb-4">
                   <Form.Label style={{ color: '#475569', fontWeight: 600 }}>
-                    Select Vendor <span style={{ color: '#ef4444' }}>*</span>
+                    Select Vendors <span style={{ color: '#ef4444' }}>*</span>
                   </Form.Label>
                   {vendorListLoading ? (
                     <div className="d-flex justify-content-center align-items-center py-3">
@@ -481,30 +514,49 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                       </div>
                     </div>
                   ) : (
-                    <Form.Select
-                      value={vendorUniqueId}
-                      onChange={(e) => setVendorUniqueId(e.target.value)}
-                      style={{
-                        borderRadius: 8,
-                        border: '1px solid #e5e7eb',
-                        padding: '0.75rem',
-                        fontSize: 14,
-                      }}
-                      autoFocus
-                    >
-                      <option value="">Select a vendor</option>
+                    <div className="border rounded-lg p-3 bg-light max-height-300 overflow-y-auto">
                       {vendorList.map((vendor) => (
-                        <option key={vendor.unique_id} value={vendor.unique_id}>
-                          {typeof vendor.username === 'string' ? vendor.username : 'Unknown'} 
-                          ({typeof vendor.unique_id === 'string' || typeof vendor.unique_id === 'number' ? vendor.unique_id : 'N/A'}) - 
-                          {typeof vendor.category === 'string' ? vendor.category : 'N/A'}
-                        </option>
+                        <div key={vendor.unique_id} className="mb-2">
+                          <Form.Check
+                            type="checkbox"
+                            id={`vendor-${vendor.unique_id}`}
+                             label={
+                              <span style={{ fontSize: '14px' }}>
+                                {typeof vendor.username === 'string' ? vendor.username : 'Unknown'} 
+                                ({typeof vendor.unique_id === 'string' || typeof vendor.unique_id === 'number' ? vendor.unique_id : 'N/A'}) - 
+                                {(() => {
+                                  const category = vendor.category;
+                                  if (typeof category === 'string') {
+                                    return category;
+                                  } else if (typeof category === 'object' && category !== null) {
+                                    return JSON.stringify(category);
+                                  } else {
+                                    return 'N/A';
+                                  }
+                                })()}
+                              </span>
+                            }
+                            checked={selectedVendors.includes(vendor.unique_id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedVendors([...selectedVendors, vendor.unique_id]);
+                              } else {
+                                setSelectedVendors(selectedVendors.filter(id => id !== vendor.unique_id));
+                              }
+                            }}
+                          />
+                        </div>
                       ))}
-                    </Form.Select>
+                    </div>
                   )}
                   {vendorList.length === 0 && !vendorListLoading && (
                     <div className="text-muted mt-2 text-sm">
                       No vendors available. Please register vendors first.
+                    </div>
+                  )}
+                  {selectedVendors.length > 0 && (
+                    <div className="mt-2 text-sm text-success">
+                      Selected {selectedVendors.length} vendor(s)
                     </div>
                   )}
                 </Form.Group>
@@ -534,7 +586,7 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                       borderRadius: 8,
                     }}
                   >
-                    {assignLoading ? 'Assigning...' : 'Assign Vendor'}
+                    {assignLoading ? 'Assigning...' : 'Assign Vendors'}
                   </Button>
                   <Button
                     variant="secondary"
