@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Table, Button, Form, Modal, Alert } from "react-bootstrap";
+import Select from "react-select";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 
@@ -46,12 +47,14 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
   // Assign vendor state
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
-  const [selectedVendors, setSelectedVendors] = useState([]);
+  const [selectedVendor, setSelectedVendor] = useState("");
   const [assignLoading, setAssignLoading] = useState(false);
   const [assignSuccess, setAssignSuccess] = useState("");
   const [assignError, setAssignError] = useState("");
   const [vendorList, setVendorList] = useState([]);
   const [vendorListLoading, setVendorListLoading] = useState(false);
+  // New state for selected services in modal
+  const [selectedServices, setSelectedServices] = useState([]);
 
   // Fetch request services
   const fetchRequestServices = async () => {
@@ -127,10 +130,15 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
 
   // Assign vendor function
   const assignVendor = async () => {
-    if (!selectedRequest || selectedVendors.length === 0) {
-      setAssignError("Please select at least one vendor");
+    if (!selectedRequest || !selectedVendor) {
+      setAssignError("Please select a vendor");
       return;
     }
+    // Optionally, you can require at least one service to be selected:
+    // if (!selectedServices.length) {
+    //   setAssignError("Please select at least one service");
+    //   return;
+    // }
 
     setAssignLoading(true);
     setAssignSuccess("");
@@ -141,16 +149,17 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
         ASSIGN_VENDOR_API,
         {
           request_id: selectedRequest.request_id,
-          vendor_unique_id: selectedVendors,
+          vendor_unique_id: selectedVendor,
+          request_for_services: selectedServices,
         },
         {
           headers: { Authorization: `Bearer ${tokens.access}` },
         }
       );
 
-      setAssignSuccess("Vendors assigned successfully!");
-      setSelectedVendors([]);
-      
+      setAssignSuccess("Vendor assigned successfully!");
+      setSelectedVendor("");
+      setSelectedServices([]);
       // Refresh the request data to show the updated assigned vendor
       setTimeout(() => {
         fetchRequestServices();
@@ -160,7 +169,7 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
       setAssignError(
         error.response?.data?.message ||
         error.response?.data?.error ||
-        "Failed to assign vendors. Please try again."
+        "Failed to assign vendor. Please try again."
       );
     } finally {
       setAssignLoading(false);
@@ -170,7 +179,8 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
   // Open assign vendor modal
   const openAssignModal = (request) => {
     setSelectedRequest(request);
-    setSelectedVendors([]);
+    setSelectedVendor("");
+    setSelectedServices([]);
     setAssignSuccess("");
     setAssignError("");
     setShowAssignModal(true);
@@ -514,49 +524,76 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                       </div>
                     </div>
                   ) : (
-                    <div className="border rounded-lg p-3 bg-light max-height-300 overflow-y-auto">
-                      {vendorList.map((vendor) => (
-                        <div key={vendor.unique_id} className="mb-2">
-                          <Form.Check
-                            type="checkbox"
-                            id={`vendor-${vendor.unique_id}`}
-                             label={
-                              <span style={{ fontSize: '14px' }}>
-                                {typeof vendor.username === 'string' ? vendor.username : 'Unknown'} 
-                                ({typeof vendor.unique_id === 'string' || typeof vendor.unique_id === 'number' ? vendor.unique_id : 'N/A'}) - 
-                                {(() => {
-                                  const category = vendor.category;
-                                  if (typeof category === 'string') {
-                                    return category;
-                                  } else if (typeof category === 'object' && category !== null) {
-                                    return JSON.stringify(category);
-                                  } else {
-                                    return 'N/A';
-                                  }
-                                })()}
-                              </span>
-                            }
-                            checked={selectedVendors.includes(vendor.unique_id)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSelectedVendors([...selectedVendors, vendor.unique_id]);
-                              } else {
-                                setSelectedVendors(selectedVendors.filter(id => id !== vendor.unique_id));
-                              }
-                            }}
-                          />
-                        </div>
-                      ))}
-                    </div>
+                    <Form.Select
+                      value={selectedVendor}
+                      onChange={e => setSelectedVendor(e.target.value)}
+                      className="border rounded-lg p-3 bg-light"
+                      style={{ maxHeight: 300, overflowY: 'auto' }}
+                    >
+                      <option value="">Select a vendor</option>
+                      {vendorList.map((vendor) => {
+                        let categories = '';
+                        if (Array.isArray(vendor.category)) {
+                          categories = vendor.category.join(', ');
+                        } else if (typeof vendor.category === 'string') {
+                          categories = vendor.category;
+                        } else if (typeof vendor.category === 'object' && vendor.category !== null) {
+                          categories = Object.values(vendor.category).join(', ');
+                        }
+                        return (
+                          <option key={vendor.unique_id} value={vendor.unique_id}>
+                            {typeof vendor.username === 'string' ? vendor.username : 'Unknown'}
+                            {categories && categories !== 'N/A' && categories !== '{}' ? ` - ${categories}` : ''}
+                          </option>
+                        );
+                      })}
+                    </Form.Select>
                   )}
                   {vendorList.length === 0 && !vendorListLoading && (
                     <div className="text-muted mt-2 text-sm">
                       No vendors available. Please register vendors first.
                     </div>
                   )}
-                  {selectedVendors.length > 0 && (
+                </Form.Group>
+
+                {/* New: Multi-select for services using react-select */}
+                <Form.Group className="mb-4">
+                  <Form.Label style={{ color: '#475569', fontWeight: 600 }}>
+                    Select Services
+                  </Form.Label>
+                  <Select
+                    isMulti
+                    closeMenuOnSelect={false}
+                    options={(() => {
+                      let services = [];
+                      if (selectedRequest) {
+                        if (Array.isArray(selectedRequest.request_for_services)) {
+                          services = selectedRequest.request_for_services;
+                        } else if (typeof selectedRequest.request_for_services === 'string') {
+                          // Try to parse as JSON array, fallback to comma split
+                          try {
+                            const parsed = JSON.parse(selectedRequest.request_for_services);
+                            if (Array.isArray(parsed)) {
+                              services = parsed;
+                            } else {
+                              services = selectedRequest.request_for_services.split(',').map(s => s.trim()).filter(Boolean);
+                            }
+                          } catch {
+                            services = selectedRequest.request_for_services.split(',').map(s => s.trim()).filter(Boolean);
+                          }
+                        }
+                      }
+                      return services.map((service) => ({ value: service, label: service }));
+                    })()}
+                    value={selectedServices.map(s => ({ value: s, label: s }))}
+                    onChange={selected => setSelectedServices(selected ? selected.map(opt => opt.value) : [])}
+                    classNamePrefix="react-select"
+                    placeholder="Select services..."
+                    styles={{ menu: base => ({ ...base, zIndex: 9999 }) }}
+                  />
+                  {selectedServices.length > 0 && (
                     <div className="mt-2 text-sm text-success">
-                      Selected {selectedVendors.length} vendor(s)
+                      Selected {selectedServices.length} service(s)
                     </div>
                   )}
                 </Form.Group>
