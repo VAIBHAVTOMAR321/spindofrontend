@@ -9,7 +9,7 @@ import {
   Route,
   useLocation,
 } from "react-router-dom";
-
+import "../src/componets/custom/style.css";
 import Home from "./componets/pages/Home";
 import AdminDashBoard from "./componets/admin_dashboard/AdminDashBoard";
 import NavBar from "./componets/navbar/NavBar";
@@ -54,6 +54,7 @@ import CompletedRequests from "./componets/vendor_dashboard/CompletedRequests";
 import VendorAllBills from "./componets/vendor_dashboard/VendorAllBills";
 import GenerateVendorQuery from "./componets/vendor_dashboard/vendorpages/GenerateVendorQuery";
 import VendorAllQueries from "./componets/vendor_dashboard/vendorpages/VendorAllQueries";
+import AllBills from "./componets/admin_dashboard/pages/AllBills";
 
 
 
@@ -94,6 +95,7 @@ function App() {
 	"/GenerateVendorQuery",
     "/VendorAllQueries",
     "/StaffProfile",
+    "/AllBills"
   ]);
 
   const shouldHideNavbar = hiddenPaths.has(location.pathname);
@@ -264,6 +266,14 @@ function App() {
             element={
               <Protected allowedRoles={['admin']}>
                 <AllQueries />
+              </Protected>
+            } 
+          />
+           <Route 
+            path="/AllBills" 
+            element={
+              <Protected allowedRoles={['admin']}>
+                <AllBills />
               </Protected>
             } 
           />
