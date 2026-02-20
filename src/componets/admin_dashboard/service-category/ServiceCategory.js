@@ -585,20 +585,14 @@ const ServiceCategory = () => {
               <Col md={6}>
                 <Form.Group controlId="prod_cate">
                   <Form.Label>Category</Form.Label>
-                  <Form.Select
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter category"
                     name="prod_cate"
                     value={formData.prod_cate}
                     onChange={handleChange}
                     required
-                  >
-                    <option value="">Select category</option>
-                    <option value="Home Services">Home Services</option>
-                    <option value="Electronics">Electronics</option>
-                    <option value="Beauty">Beauty</option>
-                    <option value="Healthcare">Healthcare</option>
-                    <option value="Education">Education</option>
-                    <option value="Other">Other</option>
-                  </Form.Select>
+                  />
                 </Form.Group>
               </Col>
             </Row>
@@ -715,20 +709,14 @@ const ServiceCategory = () => {
               <Col md={6}>
                 <Form.Group controlId="edit_prod_cate">
                   <Form.Label>Category</Form.Label>
-                  <Form.Select
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter category"
                     name="prod_cate"
                     value={formData.prod_cate}
                     onChange={handleChange}
                     required
-                  >
-                    <option value="">Select category</option>
-                    <option value="Home Services">Home Services</option>
-                    <option value="Electronics">Electronics</option>
-                    <option value="Beauty">Beauty</option>
-                    <option value="Healthcare">Healthcare</option>
-                    <option value="Education">Education</option>
-                    <option value="Other">Other</option>
-                  </Form.Select>
+                  />
                 </Form.Group>
               </Col>
             </Row>

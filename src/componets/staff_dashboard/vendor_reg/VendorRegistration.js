@@ -520,27 +520,43 @@ const VendorRegistration = () => {
                           {categoriesError && <Dropdown.Item disabled className="text-danger">{categoriesError}</Dropdown.Item>}
                           {!categoriesLoading && categories.length > 0 ? (
                             categories.map((catItem) => {
-                              const subcategoriesStr = Array.isArray(catItem.subcategories)
-                                ? catItem.subcategories.join(", ")
-                                : "";
-                              const displayText = subcategoriesStr
-                                ? `${catItem.category} - ${subcategoriesStr}`
-                                : catItem.category;
-                              return (
-                                <Dropdown.Item
-                                  key={catItem.category}
-                                  onClick={() => {
-                                    setFormData(prev => ({
-                                      ...prev,
-                                      category: [...prev.category, displayText]
-                                    }));
-                                  }}
-                                  disabled={formData.category.some(cat => cat.startsWith(catItem.category))}
-                                >
-                                  {displayText}
-                                </Dropdown.Item>
-                              );
-                            })
+                              // If category has subcategories, create separate items for each
+                              if (Array.isArray(catItem.subcategories) && catItem.subcategories.length > 0) {
+                                return catItem.subcategories.map((subcategory) => {
+                                  const displayText = `${catItem.category} - ${subcategory}`;
+                                  return (
+                                    <Dropdown.Item
+                                      key={displayText}
+                                      onClick={() => {
+                                        setFormData(prev => ({
+                                          ...prev,
+                                          category: [...prev.category, displayText]
+                                        }));
+                                      }}
+                                      disabled={formData.category.includes(displayText)}
+                                    >
+                                      {displayText}
+                                    </Dropdown.Item>
+                                  );
+                                });
+                              } else {
+                                // If no subcategories, just show the category name
+                                return (
+                                  <Dropdown.Item
+                                    key={catItem.category}
+                                    onClick={() => {
+                                      setFormData(prev => ({
+                                        ...prev,
+                                        category: [...prev.category, catItem.category]
+                                      }));
+                                    }}
+                                    disabled={formData.category.includes(catItem.category)}
+                                  >
+                                    {catItem.category}
+                                  </Dropdown.Item>
+                                );
+                              }
+                            }).flat()
                           ) : (
                             !categoriesLoading && <Dropdown.Item disabled>No categories available</Dropdown.Item>
                           )}
