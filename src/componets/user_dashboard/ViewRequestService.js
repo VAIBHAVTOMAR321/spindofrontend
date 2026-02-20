@@ -6,7 +6,7 @@ import UserLeftNav from "../user_dashboard/UserLeftNav";
 import UserHeader from "../user_dashboard/UserHeader";
 import Footer from "../footer/Footer";
 import { useAuth } from "../context/AuthContext";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../../assets/css/admindashboard.css";
 
 const statusColors = {
@@ -17,6 +17,7 @@ const statusColors = {
 
 const ViewRequestService = () => {
   const { user, tokens } = useAuth();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -166,6 +167,15 @@ const ViewRequestService = () => {
       <UserLeftNav sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} isMobile={isMobile} isTablet={isTablet} />
       <div className="main-content-dash">
         <UserHeader toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        <div className="p-3">
+          <Button 
+            variant="outline-secondary" 
+            onClick={() => navigate('/UserDashBoard')}
+            className="me-2"
+          >
+            <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+          </Button>
+        </div>
         <Container fluid className="dashboard-body dashboard-main-container">
           <Row className="justify-content-center mt-4">
             <Col xs={12}>

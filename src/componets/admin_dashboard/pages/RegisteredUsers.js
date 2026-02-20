@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Table, Button, Form, Modal } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import AdminHeader from "../AdminHeader";
@@ -13,6 +14,7 @@ const API_URL = `${BASE_URL}/api/customer/register/`;
 
 const RegisteredUsers = ({ showCardOnly = false }) => {
   // Sidebar and device state
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -226,6 +228,15 @@ const RegisteredUsers = ({ showCardOnly = false }) => {
         {/* Main Content */}
         <div className="main-content-dash">
           <AdminHeader toggleSidebar={toggleSidebar} />
+          <div className="p-3">
+            <Button 
+              variant="outline-secondary" 
+              onClick={() => navigate('/AdminDashBoard')}
+              className="me-2"
+            >
+              <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+            </Button>
+          </div>
           <Container fluid className="dashboard-body dashboard-main-container">
             <div className="p-3">
               {/* Modern Responsive Header Row */}
@@ -347,7 +358,7 @@ const RegisteredUsers = ({ showCardOnly = false }) => {
               {/* Modern Table */}
               <div className="table-responsive rounded-4 shadow-sm" style={{ background: '#fff', padding: '0.5rem 0.5rem 1rem 0.5rem' }} id="user-table-pdf">
                 <Table className="align-middle mb-0" style={{ minWidth: 700 }}>
-                  <thead style={{ background: '#f1f5f9' }}>
+                  <thead className="table-thead" style={{ background: '#f1f5f9' }}>
                     <tr style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
                       <th>Unique ID</th>
                       <th>Name</th>

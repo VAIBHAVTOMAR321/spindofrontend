@@ -41,7 +41,8 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
   const [formData, setFormData] = useState({
     id: '',
     mobile_number: '',
-    password: ''
+    password: '',
+    is_active: 1
   });
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
@@ -135,15 +136,20 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
     setFormData({
       id: vendor.id,
       mobile_number: vendor.mobile_number,
-      password: ''
+      password: '',
+      is_active: vendor.is_active ? 1 : 0
     });
     setShowModal(true);
     setFormError("");
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    if (name === 'is_active') {
+      setFormData((prev) => ({ ...prev, is_active: checked ? 1 : 0 }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -158,6 +164,7 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
       data.append("unique_id", editingVendor?.unique_id);
       data.append("mobile_number", formData.mobile_number);
       if (formData.password) data.append("password", formData.password);
+      data.append("is_active", formData.is_active);
 
       await axios.put(API_URL, data, {
         headers: {
@@ -205,7 +212,7 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
   const resetForm = () => {
     setShowModal(false);
     setEditingVendor(null);
-    setFormData({ id: '', mobile_number: '', password: '' });
+    setFormData({ id: '', mobile_number: '', password: '', is_active: 1 });
     setFormError("");
     setFormSuccess("");
   };
@@ -252,6 +259,15 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
         />
         <div className="main-content-dash">
           <AdminHeader toggleSidebar={toggleSidebar} />
+          <div className="p-3">
+            <Button 
+              variant="outline-secondary" 
+              onClick={() => navigate('/AdminDashBoard')}
+              className="me-2"
+            >
+              <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+            </Button>
+          </div>
           <Container fluid className="dashboard-body dashboard-main-container">
             <div className="p-3">
               <div
@@ -403,6 +419,7 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
                       <th>District</th>
                       <th>Block</th>
                       <th>Category</th>
+                      <th>Status</th>
                       <th>Aadhar Card</th>
                       <th>Created</th>
                       {manageMode && <th>Action</th>}
@@ -453,6 +470,19 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
                               ? JSON.stringify(vendor.category)
                               : vendor.category ?? ''
                           }</td>
+                          <td>
+                            {/* Status column: Active/Inactive */}
+                            <span style={{
+                              color: vendor.is_active ? '#15803d' : '#dc2626',
+                              fontWeight: 600,
+                              background: vendor.is_active ? '#dcfce7' : '#fee2e2',
+                              borderRadius: 8,
+                              padding: '2px 10px',
+                              fontSize: 14
+                            }}>
+                              {vendor.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
                           <td>
                             {vendor.aadhar_card && (
                               <img
@@ -546,6 +576,16 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
                         value={formData.password}
                         onChange={handleChange}
                         style={{ borderRadius: 8, fontSize: 15 }}
+                      />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                      <Form.Check
+                        type="checkbox"
+                        name="is_active"
+                        label="Active Vendor"
+                        checked={formData.is_active === 1}
+                        onChange={handleChange}
+                        style={{ fontSize: 15 }}
                       />
                     </Form.Group>
                     <Button type="submit" className="w-100 fw-bold" style={{ borderRadius: 8, fontSize: 16, background: '#10b981', border: 'none' }}>

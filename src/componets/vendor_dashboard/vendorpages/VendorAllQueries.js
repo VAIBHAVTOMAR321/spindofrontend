@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Spinner, Alert, Table, Button, Modal } from "react-bootstrap";
 import VendorLeftNav from "../VendorLeftNav";
 import VendorHeader from "../VendorHeader";
@@ -7,6 +7,7 @@ import "../../../assets/css/admindashboard.css";
 import { useAuth } from "../../context/AuthContext";
 
 const VendorAllQueries = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -128,9 +129,14 @@ const VendorAllQueries = () => {
       />
       <div className="main-content-dash">
         <VendorHeader toggleSidebar={toggleSidebar} />
-        {/* Breadcrumb: Back to Dashboard */}
-        <div style={{ width: '100%', borderBottom: '1px solid #e0e0e0', marginBottom: 8, padding: '2px 0', background: 'transparent', minHeight: 0, display: 'flex', alignItems: 'center' }}>
-          <a href="/VendorDashBoard" style={{ fontSize: 'clamp(12px, 2vw, 15px)', color: '#1976d2', textDecoration: 'none', fontWeight: 500 }}>&larr; Back to Dashboard</a>
+        <div className="p-3">
+          <Button 
+            variant="outline-secondary" 
+            onClick={() => navigate('/VendorDashBoard')}
+            className="me-2"
+          >
+            <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+          </Button>
         </div>
         <Container fluid className="dashboard-body dashboard-main-container">
           <Row className="justify-content-center mt-4">

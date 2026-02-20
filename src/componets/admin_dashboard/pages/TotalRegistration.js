@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Table, Button, Form, Modal } from "react-bootstrap";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -17,6 +18,7 @@ const API_URL = `${BASE_URL}/api/staffadmin/register/`;
 const TotalRegistration = () => {
   // --- AdminDashBoard Structure & State ---
   // Check device width
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -333,7 +335,15 @@ const TotalRegistration = () => {
         {/* Main Content */}
         <div className="main-content-dash">
           <AdminHeader toggleSidebar={toggleSidebar} />
-
+          <div className="p-3">
+            <Button 
+              variant="outline-secondary" 
+              onClick={() => navigate('/AdminDashBoard')}
+              className="me-2"
+            >
+              <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+            </Button>
+          </div>
           <Container fluid className="dashboard-body dashboard-main-container">
             {/* --- TotalRegistration Content Starts Here --- */}
             <div className="p-3">

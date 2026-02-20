@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Table, Button, Form, Modal } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import VendorHeader from "./VendorHeader";
@@ -13,6 +14,7 @@ const API_URL = `${BASE_URL}/api/customer/requestservices/`;
 
 const CompletedRequests = ({ showCardOnly = false }) => {
   // Sidebar and device state
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -30,7 +32,7 @@ const CompletedRequests = ({ showCardOnly = false }) => {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   // Auth
-  const { tokens, refreshAccessToken, logout } = useAuth();
+  const { tokens, refreshAccessToken, logout, user } = useAuth();
 
   // Data state
   const [requestData, setRequestData] = useState([]);
@@ -59,7 +61,16 @@ const CompletedRequests = ({ showCardOnly = false }) => {
 
   // Filtered data - only show completed requests
   const filteredData = requestData
-    .filter((request) => request.status === "completed")
+    .filter((request) => {
+      // Check if request has a completed assignment for this vendor
+      const vendorUniqueId = user?.uniqueId || tokens?.unique_id;
+      if (Array.isArray(request.assignments) && vendorUniqueId) {
+        return request.assignments.some(
+          (a) => Array.isArray(a) && a[1] === vendorUniqueId && a[3] === "completed"
+        );
+      }
+      return false;
+    })
     .filter(
       (request) =>
         (!filters.request_id ||
@@ -220,9 +231,14 @@ const CompletedRequests = ({ showCardOnly = false }) => {
         {/* Main Content */}
         <div className="main-content-dash">
           <VendorHeader toggleSidebar={toggleSidebar} />
-          {/* Breadcrumb: Back to Dashboard */}
-          <div style={{ width: '100%', borderBottom: '1px solid #e0e0e0', marginBottom: 8, padding: '2px 0', background: 'transparent', minHeight: 0, display: 'flex', alignItems: 'center' }}>
-            <a href="/VendorDashBoard" style={{ fontSize: 'clamp(12px, 2vw, 15px)', color: '#1976d2', textDecoration: 'none', fontWeight: 500 }}>&larr; Back to Dashboard</a>
+          <div className="p-3">
+            <Button 
+              variant="outline-secondary" 
+              onClick={() => navigate('/VendorDashBoard')}
+              className="me-2"
+            >
+              <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+            </Button>
           </div>
           <Container fluid className="dashboard-body dashboard-main-container">
             <div className="p-3">
@@ -385,6 +401,7 @@ const CompletedRequests = ({ showCardOnly = false }) => {
                       <th>State</th>
                       <th>District</th>
                       <th>Schedule Date</th>
+                      <th>Status</th>
                       <th>Completed On</th>
                       <th>Action</th>
                     </tr>
@@ -396,47 +413,81 @@ const CompletedRequests = ({ showCardOnly = false }) => {
                           (currentPage - 1) * itemsPerPage,
                           currentPage * itemsPerPage
                         )
-                        .map((request) => (
-                          <tr
-                            key={request.id}
-                            style={{ borderBottom: "1px solid #e5e7eb" }}
-                          >
-                            <td style={{ fontWeight: 500 }}>
-                              {request.request_id}
-                            </td>
-                            <td>{request.username}</td>
-                            <td>{request.contact_number}</td>
-                            <td>{request.email || "N/A"}</td>
-                            <td>{request.state}</td>
-                            <td>{request.district}</td>
-                            <td>
-                              {new Date(
-                                request.schedule_date
-                              ).toLocaleDateString()}
-                            </td>
-                            <td>
-                              {new Date(
-                                request.updated_at
-                              ).toLocaleDateString()}
-                            </td>
-                            <td>
-                              <Button
-                                size="sm"
-                                variant="info"
-                                onClick={() => handleViewDetails(request)}
-                                style={{
-                                  borderRadius: 8,
-                                  fontWeight: 600,
-                                }}
-                              >
-                                View
-                              </Button>
-                            </td>
-                          </tr>
-                        ))
+                        .map((request) => {
+                          // Get vendor unique_id from AuthContext
+                          const vendorUniqueId = user?.uniqueId || tokens?.unique_id;
+                          let assignmentStatus = "Not Assigned";
+                          
+                          // Find status from assignments for this vendor
+                          if (Array.isArray(request.assignments) && vendorUniqueId) {
+                            for (const assignment of request.assignments) {
+                              if (Array.isArray(assignment) && assignment[1] === vendorUniqueId) {
+                                assignmentStatus = assignment[3] || "Not Assigned";
+                                break;
+                              }
+                            }
+                          }
+                          
+                          return (
+                            <tr
+                              key={request.id}
+                              style={{ borderBottom: "1px solid #e5e7eb" }}
+                            >
+                              <td style={{ fontWeight: 500 }}>
+                                {request.request_id}
+                              </td>
+                              <td>{request.username}</td>
+                              <td>{request.contact_number}</td>
+                              <td>{request.email || "N/A"}</td>
+                              <td>{request.state}</td>
+                              <td>{request.district}</td>
+                              <td>
+                                {new Date(
+                                  request.schedule_date
+                                ).toLocaleDateString()}
+                              </td>
+                              <td>
+                                <span
+                                  style={{
+                                    padding: "4px 12px",
+                                    borderRadius: "6px",
+                                    fontSize: "12px",
+                                    fontWeight: 600,
+                                    backgroundColor: assignmentStatus === "completed" ? 
+                                      "#d4edda" : assignmentStatus === "assigned" ? 
+                                      "#cfe2ff" : "#f8f9fa",
+                                    color: assignmentStatus === "completed" ? 
+                                      "#155724" : assignmentStatus === "assigned" ? 
+                                      "#004085" : "#6c757d"
+                                  }}
+                                >
+                                  {assignmentStatus.charAt(0).toUpperCase() + assignmentStatus.slice(1)}
+                                </span>
+                              </td>
+                              <td>
+                                {new Date(
+                                  request.updated_at
+                                ).toLocaleDateString()}
+                              </td>
+                              <td>
+                                <Button
+                                  size="sm"
+                                  variant="info"
+                                  onClick={() => handleViewDetails(request)}
+                                  style={{
+                                    borderRadius: 8,
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  View
+                                </Button>
+                              </td>
+                            </tr>
+                          );
+                        })
                     ) : (
                       <tr>
-                        <td colSpan="9" className="text-center py-4">
+                        <td colSpan="10" className="text-center py-4">
                           <p style={{ color: "#6b7280", fontSize: 16 }}>
                             No completed requests found
                           </p>
@@ -550,15 +601,33 @@ const CompletedRequests = ({ showCardOnly = false }) => {
                             Service Details
                           </h6>
                           <p>
-                            <strong>Services Requested:</strong>
+                            <strong>Assigned Services (to you):</strong>
                           </p>
                           <ul>
-                            {selectedRequest.request_for_services &&
-                              selectedRequest.request_for_services.map(
-                                (service, index) => (
-                                  <li key={index}>{service}</li>
-                                )
-                              )}
+                            {(() => {
+                              // Get vendor unique_id from AuthContext (following VendorProfile.js pattern)
+                              const vendorUniqueId = user?.uniqueId || tokens?.unique_id;
+                              const assignments = selectedRequest.assignments;
+                              
+                              if (Array.isArray(assignments) && vendorUniqueId) {
+                                // Loop through assignments to find matching vendor
+                                for (const assignment of assignments) {
+                                  // assignment structure: [[services], vendor_id, vendor_name]
+                                  if (Array.isArray(assignment) && assignment.length >= 2) {
+                                    const services = Array.isArray(assignment[0]) ? assignment[0] : [];
+                                    const assignedVendorId = assignment[1];
+                                    
+                                    if (assignedVendorId === vendorUniqueId) {
+                                      return services.length > 0
+                                        ? services.map((service, idx) => <li key={idx}>{service}</li>)
+                                        : <li>No services in this assignment</li>;
+                                    }
+                                  }
+                                }
+                                return <li>No services assigned to you</li>;
+                              }
+                              return <li>Unable to retrieve vendor information</li>;
+                            })()}
                           </ul>
                           <p>
                             <strong>Description:</strong>{" "}
@@ -590,15 +659,41 @@ const CompletedRequests = ({ showCardOnly = false }) => {
                             Assignment Information
                           </h6>
                           <p>
-                            <strong>Status:</strong> {selectedRequest.status}
+                            <strong>Overall Status:</strong> {selectedRequest.status}
                           </p>
                           <p>
-                            <strong>Assigned To:</strong>{" "}
-                            {selectedRequest.assigned_to_name || "N/A"}
-                          </p>
-                          <p>
-                            <strong>Assigned By:</strong>{" "}
-                            {selectedRequest.assigned_by_name || "N/A"}
+                            <strong>Assignment Status:</strong>{" "}
+                            {(() => {
+                              const vendorUniqueId = user?.uniqueId || tokens?.unique_id;
+                              const assignments = selectedRequest.assignments;
+                              
+                              if (Array.isArray(assignments) && vendorUniqueId) {
+                                for (const assignment of assignments) {
+                                  if (Array.isArray(assignment) && assignment[1] === vendorUniqueId) {
+                                    const assignmentStatus = assignment[3] || "Not Assigned";
+                                    return (
+                                      <span
+                                        style={{
+                                          padding: "4px 12px",
+                                          borderRadius: "6px",
+                                          fontSize: "13px",
+                                          fontWeight: 600,
+                                          backgroundColor: assignmentStatus === "completed" ? 
+                                            "#d4edda" : assignmentStatus === "assigned" ? 
+                                            "#cfe2ff" : "#f8f9fa",
+                                          color: assignmentStatus === "completed" ? 
+                                            "#155724" : assignmentStatus === "assigned" ? 
+                                            "#004085" : "#6c757d"
+                                        }}
+                                      >
+                                        {assignmentStatus.charAt(0).toUpperCase() + assignmentStatus.slice(1)}
+                                      </span>
+                                    );
+                                  }
+                                }
+                              }
+                              return <span>Unable to retrieve status</span>;
+                            })()}
                           </p>
                         </Col>
                       </Row>

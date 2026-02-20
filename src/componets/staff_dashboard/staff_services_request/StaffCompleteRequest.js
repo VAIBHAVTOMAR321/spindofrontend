@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Table, Button } from "react-bootstrap";
+import { Container, Row, Col, Card, Table, Button, Modal } from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -55,6 +55,10 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  // Detail view state
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+
   // Fetch all request services
   const fetchRequestServices = async () => {
     if (!tokens?.access) return;
@@ -63,8 +67,8 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
         headers: { Authorization: `Bearer ${tokens.access}` },
       });
       const allRequests = res.data.data || [];
-      // Filter to get only requests that have been assigned
-      const assignedRequests = allRequests.filter(req => req.assigned_to_name && req.assigned_to_name.trim() !== '');
+      // Filter to get only requests that have assignments
+      const assignedRequests = allRequests.filter(req => Array.isArray(req.assignments) && req.assignments.length > 0);
       setRequestData(allRequests); // Keep all requests in state
       setCount(assignedRequests.length); // Set count to only assigned requests
     } catch (error) {
@@ -93,7 +97,7 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
 
   // --- Main Component Render ---
   // Filter the requests to only show assigned ones for the table
-  const assignedRequests = requestData.filter(req => req.assigned_to_name && req.assigned_to_name.trim() !== '');
+  const assignedRequests = requestData.filter(req => Array.isArray(req.assignments) && req.assignments.length > 0);
 
   return (
     <>
@@ -109,6 +113,15 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
         <div className="main-content-dash">
           <StaffHeader toggleSidebar={toggleSidebar} />
           <Container fluid className="dashboard-body dashboard-main-container">
+            <div className="mb-3">
+              <Button 
+                variant="outline-secondary" 
+                onClick={() => navigate('/StaffDashBoard')}
+                className="me-2"
+              >
+                <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+              </Button>
+            </div>
             <div className="p-3">
               {/* Header Row - Simplified to show only Assigned Requests count */}
               <div
@@ -153,8 +166,7 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
                       <th>State</th>
                       <th>District</th>
                       <th>Schedule Date</th>
-                      <th>Assigned To</th>
-                      <th>Assigned By</th>
+                      <th>Assignments</th>
                       <th>Status</th>
                       <th>Created</th>
                       <th>Action</th>
@@ -173,8 +185,56 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
                             <td>{request.state}</td>
                             <td>{request.district}</td>
                             <td>{new Date(request.schedule_date).toLocaleDateString()}</td>
-                            <td>{request.assigned_to_name || '--'}</td>
-                            <td>{request.assigned_by_name || '--'}</td>
+                            <td>
+                              {Array.isArray(request.assignments) && request.assignments.length > 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                  {request.assignments.slice(0, 2).map((assignment, idx) => {
+                                    if (Array.isArray(assignment) && assignment.length >= 3) {
+                                      const vendorName = assignment[2];
+                                      const assignmentStatus = assignment[3] || "assigned";
+                                      return (
+                                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                          <span style={{ fontSize: 12, fontWeight: 600, color: '#065f46' }}>
+                                            {vendorName}
+                                          </span>
+                                          <span
+                                            style={{
+                                              padding: '2px 8px',
+                                              borderRadius: 3,
+                                              fontSize: 10,
+                                              fontWeight: 600,
+                                              backgroundColor: assignmentStatus === "completed" ? "#d4edda" : assignmentStatus === "assigned" ? "#cfe2ff" : "#f8f9fa",
+                                              color: assignmentStatus === "completed" ? "#155724" : assignmentStatus === "assigned" ? "#004085" : "#6c757d"
+                                            }}
+                                          >
+                                            {assignmentStatus}
+                                          </span>
+                                        </div>
+                                      );
+                                    }
+                                    return null;
+                                  })}
+                                  {request.assignments.length > 2 && (
+                                    <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>
+                                      +{request.assignments.length - 2} more
+                                    </span>
+                                  )}
+                                  <Button
+                                    variant="link"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedRequest(request);
+                                      setShowDetailModal(true);
+                                    }}
+                                    style={{ padding: 0, textDecoration: 'none', color: '#6366f1', fontWeight: 600, fontSize: 11, marginTop: 2 }}
+                                  >
+                                    View All
+                                  </Button>
+                                </div>
+                              ) : (
+                                <span style={{ color: '#94a3b8' }}>--</span>
+                              )}
+                            </td>
                             <td>
                               <span
                                 style={{
@@ -209,7 +269,7 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
                         ))
                     ) : (
                       <tr>
-                        <td colSpan="12" className="text-center text-muted py-4">
+                        <td colSpan="11" className="text-center text-muted py-4">
                           No assigned service requests found.
                         </td>
                       </tr>
@@ -245,6 +305,83 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
           </Container>
         </div>
       </div>
+
+      {/* Detail View Modal - All Assignments */}
+      <Modal
+        show={showDetailModal}
+        onHide={() => setShowDetailModal(false)}
+        centered
+        size="lg"
+      >
+        <Modal.Header closeButton style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e5e7eb' }}>
+          <Modal.Title style={{ color: '#1e293b', fontWeight: 700 }}>
+            All Vendor Assignments
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ padding: '2rem' }}>
+          {selectedRequest && (
+            <div>
+              <h6 style={{ color: '#475569', fontWeight: 600, marginBottom: '1rem' }}>Vendor Assignments</h6>
+              {Array.isArray(selectedRequest.assignments) && selectedRequest.assignments.length > 0 ? (
+                <div>
+                  {selectedRequest.assignments.map((assignment, aIdx) => (
+                    <div key={aIdx} className="p-3 border rounded mb-3" style={{ backgroundColor: '#f8fafc' }}>
+                      {(() => {
+                        if (Array.isArray(assignment) && assignment.length >= 3) {
+                          const services = assignment[0];
+                          const vendorName = assignment[2];
+                          const assignmentStatus = assignment[3] || "assigned";
+                          const serviceList = Array.isArray(services) ? services : [services];
+                          return (
+                            <div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                                <h6 style={{ color: '#6366f1', fontWeight: 700, margin: 0 }}>{vendorName}</h6>
+                                <span
+                                  style={{
+                                    padding: '4px 10px',
+                                    borderRadius: 4,
+                                    fontSize: 12,
+                                    fontWeight: 600,
+                                    backgroundColor: assignmentStatus === "completed" ? "#d4edda" : assignmentStatus === "assigned" ? "#cfe2ff" : "#f8f9fa",
+                                    color: assignmentStatus === "completed" ? "#155724" : assignmentStatus === "assigned" ? "#004085" : "#6c757d"
+                                  }}
+                                >
+                                  {assignmentStatus.charAt(0).toUpperCase() + assignmentStatus.slice(1)}
+                                </span>
+                              </div>
+                              <div className="d-flex flex-wrap gap-2">
+                                {serviceList.map((service, sIdx) => (
+                                  <span key={sIdx}>
+                                    <span
+                                      style={{
+                                        padding: '6px 12px',
+                                        borderRadius: 4,
+                                        fontSize: 13,
+                                        fontWeight: 600,
+                                        backgroundColor: '#d1fae5',
+                                        color: '#065f46',
+                                      }}
+                                    >
+                                      {service}
+                                    </span>
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        }
+                        return '--';
+                      })()}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <span style={{ color: '#94a3b8' }}>No assignments yet</span>
+              )}
+            </div>
+          )}
+        </Modal.Body>
+      </Modal>
     </>
   );
 };

@@ -61,7 +61,7 @@ const Login = () => {
         };
       }
 
-      console.log('Sending request:', requestBody);
+      // ...removed console.log...
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -72,11 +72,28 @@ const Login = () => {
       });
 
       const data = await response.json();
-      console.log('Response received:', data);
+      // ...removed console.log...
 
       // Check if the response was successful
       if (!response.ok) {
-        throw new Error(data.message || `Request failed with status ${response.status}`);
+        // Handle field-specific errors (e.g., { errors: { mobile_number: ["Invalid mobile number"] } })
+        let errorMsg = data.message || `Request failed with status ${response.status}`;
+        if (data.errors && typeof data.errors === 'object') {
+          // Map specific error for mobile_number
+          errorMsg = Object.entries(data.errors)
+            .map(([field, msgs]) => {
+              if (
+                field === 'mobile_number' &&
+                Array.isArray(msgs) &&
+                msgs.includes('Invalid mobile number')
+              ) {
+                return 'Enter Valid mobile number';
+              }
+              return `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`;
+            })
+            .join(' | ');
+        }
+        throw new Error(errorMsg);
       }
 
       // Check if the API returned a successful status
@@ -131,10 +148,26 @@ const Login = () => {
         // Redirect the user to their role-specific dashboard
         navigate(redirectTo, { replace: true });
       } else {
-        throw new Error(data.message || "Login failed. Please check your credentials.");
+        // Handle field-specific errors for non-200 responses as well
+        let errorMsg = data.message || "Login failed. Please check your credentials.";
+        if (data.errors && typeof data.errors === 'object') {
+          errorMsg = Object.entries(data.errors)
+            .map(([field, msgs]) => {
+              if (
+                field === 'mobile_number' &&
+                Array.isArray(msgs) &&
+                msgs.includes('Invalid mobile number')
+              ) {
+                return 'Enter Valid mobile number';
+              }
+              return `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`;
+            })
+            .join(' | ');
+        }
+        throw new Error(errorMsg);
       }
     } catch (err) {
-      console.error("Login error:", err);
+      // ...removed console.error...
       setError(err.message || "An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
