@@ -32,7 +32,7 @@ const VendorRequests = ({ showCardOnly = false }) => {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   // Auth
-  const { tokens, refreshAccessToken, logout } = useAuth();
+  const { tokens, refreshAccessToken, logout, user } = useAuth();
 
   // Data state
   const [requestData, setRequestData] = useState([]);
@@ -60,33 +60,54 @@ const VendorRequests = ({ showCardOnly = false }) => {
     setCurrentPage(1);
   };
 
-  // Filtered data
-  const filteredData = requestData.filter(
-    (request) =>
-      (!filters.request_id ||
-        request.request_id
-          ?.toString()
-          .toLowerCase()
-          .includes(filters.request_id.toLowerCase())) &&
-      (!filters.username ||
-        request.username
-          ?.toLowerCase()
-          .includes(filters.username.toLowerCase())) &&
-      (!filters.contact_number ||
-        request.contact_number
-          ?.toString()
-          .includes(filters.contact_number)) &&
-      (!filters.email ||
-        request.email?.toLowerCase().includes(filters.email.toLowerCase())) &&
-      (!filters.state ||
-        request.state?.toLowerCase().includes(filters.state.toLowerCase())) &&
-      (!filters.district ||
-        request.district
-          ?.toLowerCase()
-          .includes(filters.district.toLowerCase())) &&
-      (!filters.status ||
-        request.status?.toLowerCase() === filters.status.toLowerCase())
-  );
+  // Filtered data - only show requests assigned to this vendor
+  const filteredData = requestData
+    .filter((request) => {
+      // Check if request has an assignment for this vendor
+      const vendorUniqueId = user?.uniqueId || tokens?.unique_id;
+      if (Array.isArray(request.assignments) && vendorUniqueId) {
+        return request.assignments.some(
+          (a) => Array.isArray(a) && a[1] === vendorUniqueId && (a[3] === "assigned" || a[3] === "completed")
+        );
+      }
+      return false;
+    })
+    .filter(
+      (request) =>
+        (!filters.request_id ||
+          request.request_id
+            ?.toString()
+            .toLowerCase()
+            .includes(filters.request_id.toLowerCase())) &&
+        (!filters.username ||
+          request.username
+            ?.toLowerCase()
+            .includes(filters.username.toLowerCase())) &&
+        (!filters.contact_number ||
+          request.contact_number
+            ?.toString()
+            .includes(filters.contact_number)) &&
+        (!filters.email ||
+          request.email?.toLowerCase().includes(filters.email.toLowerCase())) &&
+        (!filters.state ||
+          request.state?.toLowerCase().includes(filters.state.toLowerCase())) &&
+        (!filters.district ||
+          request.district
+            ?.toLowerCase()
+            .includes(filters.district.toLowerCase())) &&
+        (!filters.status ||
+          (() => {
+            const vendorUniqueId = user?.uniqueId || tokens?.unique_id;
+            if (Array.isArray(request.assignments) && vendorUniqueId) {
+              for (const assignment of request.assignments) {
+                if (Array.isArray(assignment) && assignment[1] === vendorUniqueId) {
+                  return assignment[3]?.toLowerCase() === filters.status.toLowerCase();
+                }
+              }
+            }
+            return false;
+          })())
+    );
 
   // Handle view details button click
   const handleViewDetails = (request) => {
@@ -164,6 +185,7 @@ const VendorRequests = ({ showCardOnly = false }) => {
     try {
       const payload = {
         request_id: requestId,
+        vendor_unique_id: user?.uniqueId || tokens?.unique_id,
         status: newStatus,
       };
       await axios.put(API_URL, payload, {
@@ -420,93 +442,106 @@ const VendorRequests = ({ showCardOnly = false }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredData
-                      .slice(
-                        (currentPage - 1) * itemsPerPage,
-                        currentPage * itemsPerPage
-                      )
-                      .map((request) => (
-                        <tr
-                          key={request.id}
-                          style={{ borderBottom: "1px solid #e5e7eb" }}
-                        >
-                          <td style={{ fontWeight: 500 }}>
-                            {request.request_id}
-                          </td>
-                          <td>{request.username}</td>
-                          <td>{request.contact_number}</td>
-                          <td>{request.email || "N/A"}</td>
-                          <td>{request.state}</td>
-                          <td>{request.district}</td>
-                          <td>
-                            {new Date(
-                              request.schedule_date
-                            ).toLocaleDateString()}
-                          </td>
-                          <td>{request.schedule_time}</td>
-                          <td>
-                            {request.status === "completed" ? (
-                              <span
-                                style={{
-                                  padding: "4px 8px",
-                                  borderRadius: 6,
-                                  backgroundColor: "#dcfce7",
-                                  color: "#166534",
-                                  fontWeight: 600,
-                                  fontSize: 12,
-                                }}
-                              >
-                                {request.status}
-                              </span>
-                            ) : request.status === "pending" ? (
-                              <span
-                                style={{
-                                  padding: "4px 8px",
-                                  borderRadius: 6,
-                                  backgroundColor: "#fef3c7",
-                                  color: "#92400e",
-                                  fontWeight: 600,
-                                  fontSize: 12,
-                                }}
-                              >
-                                {request.status}
-                              </span>
-                            ) : (
-                              <Form.Select
-                                value={request.status}
-                                onChange={(e) =>
-                                  handleStatusChange(
-                                    request.request_id,
-                                    e.target.value
-                                  )
-                                }
-                                size="sm"
-                                style={{
-                                  borderRadius: 6,
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                }}
-                              >
-                                <option value="assigned">Assigned</option>
-                                <option value="completed">Completed</option>
-                              </Form.Select>
-                            )}
-                          </td>
-                          <td>
-                            <Button
-                              size="sm"
-                              variant="info"
-                              onClick={() => handleViewDetails(request)}
-                              style={{
-                                borderRadius: 8,
-                                fontWeight: 600,
-                              }}
+                    {filteredData.length > 0 ? (
+                      filteredData
+                        .slice(
+                          (currentPage - 1) * itemsPerPage,
+                          currentPage * itemsPerPage
+                        )
+                        .map((request) => {
+                          // Get vendor unique_id from AuthContext
+                          const vendorUniqueId = user?.uniqueId || tokens?.unique_id;
+                          let assignmentStatus = "Not Assigned";
+                          
+                          // Find status from assignments for this vendor
+                          if (Array.isArray(request.assignments) && vendorUniqueId) {
+                            for (const assignment of request.assignments) {
+                              if (Array.isArray(assignment) && assignment[1] === vendorUniqueId) {
+                                assignmentStatus = assignment[3] || "assigned";
+                                break;
+                              }
+                            }
+                          }
+                          
+                          return (
+                            <tr
+                              key={request.id}
+                              style={{ borderBottom: "1px solid #e5e7eb" }}
                             >
-                              View
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
+                              <td style={{ fontWeight: 500 }}>
+                                {request.request_id}
+                              </td>
+                              <td>{request.username}</td>
+                              <td>{request.contact_number}</td>
+                              <td>{request.email || "N/A"}</td>
+                              <td>{request.state}</td>
+                              <td>{request.district}</td>
+                              <td>
+                                {new Date(
+                                  request.schedule_date
+                                ).toLocaleDateString()}
+                              </td>
+                              <td>{request.schedule_time}</td>
+                              <td>
+                                {assignmentStatus === "completed" ? (
+                                  <span
+                                    style={{
+                                      padding: "4px 8px",
+                                      borderRadius: 6,
+                                      backgroundColor: "#dcfce7",
+                                      color: "#166534",
+                                      fontWeight: 600,
+                                      fontSize: 12,
+                                    }}
+                                  >
+                                    {assignmentStatus}
+                                  </span>
+                                ) : (
+                                  <Form.Select
+                                    value={assignmentStatus}
+                                    onChange={(e) =>
+                                      handleStatusChange(
+                                        request.request_id,
+                                        e.target.value
+                                      )
+                                    }
+                                    size="sm"
+                                    style={{
+                                      borderRadius: 6,
+                                      fontSize: 12,
+                                      fontWeight: 600,
+                                    }}
+                                  >
+                                    <option value="assigned">Assigned</option>
+                                    <option value="completed">Completed</option>
+                                  </Form.Select>
+                                )}
+                              </td>
+                              <td>
+                                <Button
+                                  size="sm"
+                                  variant="info"
+                                  onClick={() => handleViewDetails(request)}
+                                  style={{
+                                    borderRadius: 8,
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  View
+                                </Button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                    ) : (
+                      <tr>
+                        <td colSpan="10" className="text-center py-4">
+                          <p style={{ color: "#6b7280", fontSize: 16 }}>
+                            No requests assigned to you
+                          </p>
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </Table>
 
@@ -612,15 +647,33 @@ const VendorRequests = ({ showCardOnly = false }) => {
                             Service Details
                           </h6>
                           <p>
-                            <strong>Services Requested:</strong>
+                            <strong>Assigned Services (to you):</strong>
                           </p>
                           <ul>
-                            {selectedRequest.request_for_services &&
-                              selectedRequest.request_for_services.map(
-                                (service, index) => (
-                                  <li key={index}>{service}</li>
-                                )
-                              )}
+                            {(() => {
+                              // Get vendor unique_id from AuthContext (following VendorProfile.js pattern)
+                              const vendorUniqueId = user?.uniqueId || tokens?.unique_id;
+                              const assignments = selectedRequest.assignments;
+                              
+                              if (Array.isArray(assignments) && vendorUniqueId) {
+                                // Loop through assignments to find matching vendor
+                                for (const assignment of assignments) {
+                                  // assignment structure: [[services], vendor_id, vendor_name, status]
+                                  if (Array.isArray(assignment) && assignment.length >= 2) {
+                                    const services = Array.isArray(assignment[0]) ? assignment[0] : [];
+                                    const assignedVendorId = assignment[1];
+                                    
+                                    if (assignedVendorId === vendorUniqueId) {
+                                      return services.length > 0
+                                        ? services.map((service, idx) => <li key={idx}>{service}</li>)
+                                        : <li>No services in this assignment</li>;
+                                    }
+                                  }
+                                }
+                                return <li>No services assigned to you</li>;
+                              }
+                              return <li>Unable to retrieve vendor information</li>;
+                            })()}
                           </ul>
                           <p>
                             <strong>Description:</strong>{" "}
@@ -652,15 +705,38 @@ const VendorRequests = ({ showCardOnly = false }) => {
                             Assignment Information
                           </h6>
                           <p>
-                            <strong>Status:</strong> {selectedRequest.status}
-                          </p>
-                          <p>
-                            <strong>Assigned To:</strong>{" "}
-                            {selectedRequest.assigned_to_name || "N/A"}
-                          </p>
-                          <p>
-                            <strong>Assigned By:</strong>{" "}
-                            {selectedRequest.assigned_by_name || "N/A"}
+                            <strong>Assignment Status:</strong>{" "}
+                            {(() => {
+                              const vendorUniqueId = user?.uniqueId || tokens?.unique_id;
+                              const assignments = selectedRequest.assignments;
+                              
+                              if (Array.isArray(assignments) && vendorUniqueId) {
+                                for (const assignment of assignments) {
+                                  if (Array.isArray(assignment) && assignment[1] === vendorUniqueId) {
+                                    const assignmentStatus = assignment[3] || "assigned";
+                                    return (
+                                      <span
+                                        style={{
+                                          padding: "4px 12px",
+                                          borderRadius: "6px",
+                                          fontSize: "13px",
+                                          fontWeight: 600,
+                                          backgroundColor: assignmentStatus === "completed" ? 
+                                            "#d4edda" : assignmentStatus === "assigned" ? 
+                                            "#cfe2ff" : "#f8f9fa",
+                                          color: assignmentStatus === "completed" ? 
+                                            "#155724" : assignmentStatus === "assigned" ? 
+                                            "#004085" : "#6c757d"
+                                        }}
+                                      >
+                                        {assignmentStatus.charAt(0).toUpperCase() + assignmentStatus.slice(1)}
+                                      </span>
+                                    );
+                                  }
+                                }
+                              }
+                              return <span>Unable to retrieve status</span>;
+                            })()}
                           </p>
                         </Col>
                       </Row>

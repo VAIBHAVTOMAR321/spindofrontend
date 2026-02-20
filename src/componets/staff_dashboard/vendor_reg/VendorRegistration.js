@@ -44,6 +44,11 @@ const VendorRegistration = () => {
   const [districtsLoading, setDistrictsLoading] = useState(false);
   const [blocksLoading, setBlocksLoading] = useState(false);
   const [locationError, setLocationError] = useState("");
+  
+  // --- STATE FOR SERVICE CATEGORIES ---
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [categoriesError, setCategoriesError] = useState("");
 
   useEffect(() => {
     const checkDevice = () => {
@@ -79,6 +84,30 @@ const VendorRegistration = () => {
     };
     fetchDistricts();
   }, []); // Empty dependency array means this runs once on mount
+  
+  // --- USE EFFECT TO FETCH SERVICE CATEGORIES ---
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setCategoriesLoading(true);
+      setCategoriesError("");
+      try {
+        const response = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/get-service/categories/");
+        if (!response.ok) throw new Error("Failed to fetch categories");
+        const data = await response.json();
+        if (data.status && Array.isArray(data.data)) {
+          setCategories(data.data);
+        } else {
+          throw new Error("Invalid data format for categories");
+        }
+      } catch (err) {
+        setCategoriesError(err.message || "Could not load category data.");
+        setCategories([]);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   // --- USE EFFECT TO FETCH BLOCKS WHEN DISTRICT CHANGES ---
   useEffect(() => {
@@ -483,61 +512,40 @@ const VendorRegistration = () => {
                       </div>
                       {/* Dropdown for selecting categories */}
                       <Dropdown>
-  <Dropdown.Toggle variant="outline-primary" id="category-dropdown">
-    {formData.category.length === 0 ? "Select Category" : "Add Category"}
-  </Dropdown.Toggle>
-  <Dropdown.Menu style={{ maxHeight: 250, overflowY: 'auto' }}>
-    {[
-      "Electrician",
-      "Plumber",
-      "Carpenter",
-      "Painting",
-      "Medical Services",
-      "Comprehensive Home Services"
-    ]
-      .filter(category => !formData.category.includes(category))
-      .map(category => (
-        <Dropdown.Item
-          key={category}
-          onClick={() => {
-            setFormData(prev => ({
-              ...prev,
-              category: [...prev.category, category]
-            }));
-          }}
-        >
-          {category}
-        </Dropdown.Item>
-      ))}
-    {[
-      "Electrician",
-      "Plumber",
-      "Carpenter",
-      "Painting",
-      "Medical Services",
-      "Comprehensive Home Services"
-    ].filter(category => !formData.category.includes(category)).length === 0 && (
-      <Dropdown.Item disabled>No more categories</Dropdown.Item>
-    )}
-  </Dropdown.Menu>
-</Dropdown>
-                      {/* Custom category input */}
-                      {formData.category.includes("Other") && (
-                        <div className="mt-3">
-                          <Form.Control
-                            type="text"
-                            placeholder="Specify category"
-                            onChange={(e) => {
-                              const customCategory = e.target.value;
-                              setFormData(prev => ({
-                                ...prev,
-                                category: prev.category.map(cat => cat === "Other" ? customCategory : cat)
-                              }));
-                            }}
-                            required={formData.category.includes("Other")}
-                          />
-                        </div>
-                      )}
+                        <Dropdown.Toggle variant="outline-primary" id="category-dropdown">
+                          {formData.category.length === 0 ? "Select Category" : "Add Category"}
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu style={{ maxHeight: 300, overflowY: 'auto' }}>
+                          {categoriesLoading && <Dropdown.Item disabled>Loading categories...</Dropdown.Item>}
+                          {categoriesError && <Dropdown.Item disabled className="text-danger">{categoriesError}</Dropdown.Item>}
+                          {!categoriesLoading && categories.length > 0 ? (
+                            categories.map((catItem) => {
+                              const subcategoriesStr = Array.isArray(catItem.subcategories)
+                                ? catItem.subcategories.join(", ")
+                                : "";
+                              const displayText = subcategoriesStr
+                                ? `${catItem.category} - ${subcategoriesStr}`
+                                : catItem.category;
+                              return (
+                                <Dropdown.Item
+                                  key={catItem.category}
+                                  onClick={() => {
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      category: [...prev.category, displayText]
+                                    }));
+                                  }}
+                                  disabled={formData.category.some(cat => cat.startsWith(catItem.category))}
+                                >
+                                  {displayText}
+                                </Dropdown.Item>
+                              );
+                            })
+                          ) : (
+                            !categoriesLoading && <Dropdown.Item disabled>No categories available</Dropdown.Item>
+                          )}
+                        </Dropdown.Menu>
+                      </Dropdown>
                     </Form.Group>
                   </Col>
                 <Col md={6} lg={4} sm={12}>

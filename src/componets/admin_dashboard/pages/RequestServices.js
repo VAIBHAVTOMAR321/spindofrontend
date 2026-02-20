@@ -69,8 +69,7 @@ const RequestServices = ({ showCardOnly = false }) => {
     (!filters.state || request.state?.toLowerCase().includes(filters.state.toLowerCase())) &&
     (!filters.district || request.district?.toLowerCase().includes(filters.district.toLowerCase())) &&
     (!filters.schedule_date || request.schedule_date?.includes(filters.schedule_date)) &&
-    (!filters.assigned_to_name || request.assigned_to_name?.toLowerCase().includes(filters.assigned_to_name.toLowerCase())) &&
-    (!filters.assigned_by_name || request.assigned_by_name?.toLowerCase().includes(filters.assigned_by_name.toLowerCase())) &&
+    // Removed assigned_to_name and assigned_by_name filters
     (!filters.status || request.status?.toLowerCase() === filters.status.toLowerCase())
   );
 
@@ -97,18 +96,33 @@ const RequestServices = ({ showCardOnly = false }) => {
 
   const handleViewPDF = () => {
     const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-    const headers = [["Request ID", "Username", "Contact", "State", "District", "Schedule Date", "Assigned To", "Assigned By", "Status"]];
-    const rows = filteredData.map(request => [
-      request.request_id,
-      request.username,
-      request.contact_number,
-      request.state,
-      request.district,
-      new Date(request.schedule_date).toLocaleDateString(),
-      request.assigned_to_name || '--',
-      request.assigned_by_name || '--',
-      request.status
-    ]);
+    const headers = [["Request ID", "Username", "Contact", "State", "District", "Schedule Date", "Assignments", "Status"]];
+    const rows = filteredData.map(request => {
+      // Format assignments with status
+      let assignmentsText = "Not Assigned";
+      if (Array.isArray(request.assignments) && request.assignments.length > 0) {
+        assignmentsText = request.assignments.map(assignment => {
+          if (Array.isArray(assignment) && Array.isArray(assignment[0])) {
+            const services = assignment[0];
+            const vendorName = assignment[2];
+            const assignmentStatus = assignment[3] || "assigned";
+            return `${vendorName}: ${services.join(', ')} (${assignmentStatus})`;
+          }
+          return JSON.stringify(assignment);
+        }).join('\n');
+      }
+      
+      return [
+        request.request_id,
+        request.username,
+        request.contact_number,
+        request.state,
+        request.district,
+        new Date(request.schedule_date).toLocaleDateString(),
+        assignmentsText,
+        request.status
+      ];
+    });
     autoTable(pdf, {
       head: headers,
       body: rows,
@@ -236,20 +250,7 @@ const RequestServices = ({ showCardOnly = false }) => {
                     placeholder="Filter District"
                     style={{ maxWidth: 130, borderRadius: 8 }}
                   />
-                  <Form.Control
-                    name="assigned_to_name"
-                    value={filters.assigned_to_name}
-                    onChange={handleFilterChange}
-                    placeholder="Filter Assigned To"
-                    style={{ maxWidth: 140, borderRadius: 8 }}
-                  />
-                  <Form.Control
-                    name="assigned_by_name"
-                    value={filters.assigned_by_name}
-                    onChange={handleFilterChange}
-                    placeholder="Filter Assigned By"
-                    style={{ maxWidth: 140, borderRadius: 8 }}
-                  />
+                  {/* Removed Assigned To and Assigned By filter inputs */}
                   <Form.Select
                     name="status"
                     value={filters.status}
@@ -312,8 +313,7 @@ const RequestServices = ({ showCardOnly = false }) => {
                       <th>State</th>
                       <th>District</th>
                       <th>Schedule Date</th>
-                      <th>Assigned To</th>
-                      <th>Assigned By</th>
+                      <th>Assignments</th>
                       <th>Status</th>
                       <th>Created</th>
                     </tr>
@@ -331,8 +331,60 @@ const RequestServices = ({ showCardOnly = false }) => {
                           <td>{request.state}</td>
                           <td>{request.district}</td>
                           <td>{new Date(request.schedule_date).toLocaleDateString()}</td>
-                          <td>{request.assigned_to_name || '--'}</td>
-                          <td>{request.assigned_by_name || '--'}</td>
+                          <td>
+                            {/* Assignments column: show vendor-service pairs with status */}
+                            {Array.isArray(request.assignments) && request.assignments.length > 0 ? (
+                              <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                                {request.assignments.map((assignment, idx) => {
+                                  // Handle nested assignment structure: [ [services], vendor_id, vendor_name, status ]
+                                  if (Array.isArray(assignment) && Array.isArray(assignment[0])) {
+                                    const services = assignment[0];
+                                    const vendorId = assignment[1];
+                                    const vendorName = assignment[2];
+                                    const assignmentStatus = assignment[3] || "assigned";
+                                    
+                                    return (
+                                      <li key={idx} style={{ fontSize: 12, marginBottom: 6, padding: '6px 8px', backgroundColor: '#f9fafb', borderRadius: 4 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 8 }}>
+                                          <div style={{ flex: 1 }}>
+                                            <div style={{ fontWeight: 600, color: '#065f46', marginBottom: 2 }}>
+                                              {vendorName || vendorId || '--'}
+                                            </div>
+                                            {services && services.length > 0 && (
+                                              <div style={{ color: '#64748b', fontSize: 11, lineHeight: 1.3 }}>
+                                                {services.join(', ')}
+                                              </div>
+                                            )}
+                                          </div>
+                                          <span
+                                            style={{
+                                              padding: '2px 8px',
+                                              borderRadius: 3,
+                                              fontSize: 10,
+                                              fontWeight: 600,
+                                              backgroundColor: assignmentStatus === "completed" ? "#d4edda" : assignmentStatus === "assigned" ? "#cfe2ff" : "#f8f9fa",
+                                              color: assignmentStatus === "completed" ? "#155724" : assignmentStatus === "assigned" ? "#004085" : "#6c757d",
+                                              whiteSpace: 'nowrap'
+                                            }}
+                                          >
+                                            {assignmentStatus.charAt(0).toUpperCase() + assignmentStatus.slice(1)}
+                                          </span>
+                                        </div>
+                                      </li>
+                                    );
+                                  }
+                                  // fallback for other assignment formats
+                                  return (
+                                    <li key={idx} style={{ fontSize: 13, marginBottom: 2 }}>
+                                      <span style={{ fontWeight: 600, color: '#065f46' }}>{JSON.stringify(assignment)}</span>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            ) : (
+                              <span style={{ color: '#64748b', fontSize: 13 }}>Not Assigned</span>
+                            )}
+                          </td>
                           <td>
                             <span
                               style={{

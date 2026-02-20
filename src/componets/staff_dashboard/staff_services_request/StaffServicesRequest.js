@@ -47,14 +47,18 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
   // Assign vendor state
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
-  const [selectedVendor, setSelectedVendor] = useState("");
+  // Multi-vendor assignment state
+  const [vendorAssignments, setVendorAssignments] = useState([
+    { vendor: '', services: [] }
+  ]);
   const [assignLoading, setAssignLoading] = useState(false);
   const [assignSuccess, setAssignSuccess] = useState("");
   const [assignError, setAssignError] = useState("");
   const [vendorList, setVendorList] = useState([]);
   const [vendorListLoading, setVendorListLoading] = useState(false);
-  // New state for selected services in modal
-  const [selectedServices, setSelectedServices] = useState([]);
+  // Detail view state
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailType, setDetailType] = useState(null); // 'services' or 'assignments'
 
   // Fetch request services
   const fetchRequestServices = async () => {
@@ -130,37 +134,40 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
 
   // Assign vendor function
   const assignVendor = async () => {
-    if (!selectedRequest || !selectedVendor) {
-      setAssignError("Please select a vendor");
+    if (!selectedRequest) {
+      setAssignError("No request selected");
       return;
     }
-    // Optionally, you can require at least one service to be selected:
-    // if (!selectedServices.length) {
-    //   setAssignError("Please select at least one service");
-    //   return;
-    // }
-
+    // Validate: at least one vendor, no empty vendor, no empty services
+    for (let va of vendorAssignments) {
+      if (!va.vendor) {
+        setAssignError("Please select all vendors");
+        return;
+      }
+      if (!va.services.length) {
+        setAssignError("Please select at least one service for each vendor");
+        return;
+      }
+    }
     setAssignLoading(true);
     setAssignSuccess("");
     setAssignError("");
-
     try {
       const res = await axios.post(
         ASSIGN_VENDOR_API,
         {
           request_id: selectedRequest.request_id,
-          vendor_unique_id: selectedVendor,
-          request_for_services: selectedServices,
+          assignments: vendorAssignments.map(va => ({
+            vendor_unique_id: va.vendor,
+            request_for_services: va.services
+          }))
         },
         {
           headers: { Authorization: `Bearer ${tokens.access}` },
         }
       );
-
-      setAssignSuccess("Vendor assigned successfully!");
-      setSelectedVendor("");
-      setSelectedServices([]);
-      // Refresh the request data to show the updated assigned vendor
+      setAssignSuccess("Vendors assigned successfully!");
+      setVendorAssignments([{ vendor: '', services: [] }]);
       setTimeout(() => {
         fetchRequestServices();
         setShowAssignModal(false);
@@ -169,7 +176,7 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
       setAssignError(
         error.response?.data?.message ||
         error.response?.data?.error ||
-        "Failed to assign vendor. Please try again."
+        "Failed to assign vendors. Please try again."
       );
     } finally {
       setAssignLoading(false);
@@ -179,8 +186,7 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
   // Open assign vendor modal
   const openAssignModal = (request) => {
     setSelectedRequest(request);
-    setSelectedVendor("");
-    setSelectedServices([]);
+    setVendorAssignments([{ vendor: '', services: [] }]);
     setAssignSuccess("");
     setAssignError("");
     setShowAssignModal(true);
@@ -292,8 +298,7 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                             <th>District</th>
                             <th>Request for Services</th>
                             <th>Schedule Date</th>
-                            <th>Assigned To</th>
-                            <th>Assigned By</th>
+                            <th>Assignments</th>
                             <th>Status</th>
                             <th>Created</th>
                             <th>Action</th>
@@ -311,21 +316,91 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                               <td>{typeof request.state === 'string' ? request.state : '--'}</td>
                               <td>{typeof request.district === 'string' ? request.district : '--'}</td>
                               <td>
-                                {(() => {
-                                  const services = request.request_for_services;
-                                  if (Array.isArray(services)) {
-                                    return services.length > 0 ? services.join(", ") : '--';
-                                  }
-                                  if (typeof services === 'string') {
-                                    return services.trim() || '--';
-                                  }
-                                  // Handle other types (number, boolean, object, null, undefined)
-                                  return '--';
-                                })()}
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedRequest(request);
+                                    setDetailType('services');
+                                    setShowDetailModal(true);
+                                  }}
+                                  style={{ padding: 0, textDecoration: 'none', color: '#6366f1', fontWeight: 600 }}
+                                >
+                                  {(() => {
+                                    const services = request.request_for_services;
+                                    let serviceList = [];
+                                    if (Array.isArray(services)) {
+                                      serviceList = services;
+                                    } else if (typeof services === 'string') {
+                                      serviceList = services.trim() ? [services] : [];
+                                    }
+                                    return serviceList.length > 0 ? `${serviceList.length} Service${serviceList.length > 1 ? 's' : ''}` : '--';
+                                  })()}
+                                </Button>
                               </td>
                               <td>{typeof request.schedule_date === 'string' ? new Date(request.schedule_date).toLocaleDateString() : '--'}</td>
-                              <td>{typeof request.assigned_to_name === 'string' ? request.assigned_to_name : '--'}</td>
-                              <td>{typeof request.assigned_by_name === 'string' ? request.assigned_by_name : '--'}</td>
+                              <td>
+                                {Array.isArray(request.assignments) && request.assignments.length > 0 ? (
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                    {request.assignments.slice(0, 2).map((assignment, idx) => {
+                                      if (Array.isArray(assignment) && assignment.length >= 3) {
+                                        const vendorName = assignment[2];
+                                        const assignmentStatus = assignment[3] || "assigned";
+                                        return (
+                                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                            <span style={{ fontSize: 12, fontWeight: 600, color: '#065f46' }}>
+                                              {vendorName}
+                                            </span>
+                                            <span
+                                              style={{
+                                                padding: '2px 8px',
+                                                borderRadius: 3,
+                                                fontSize: 11,
+                                                fontWeight: 600,
+                                                backgroundColor: assignmentStatus === "completed" ? "#d4edda" : "#cfe2ff",
+                                                color: assignmentStatus === "completed" ? "#155724" : "#004085"
+                                              }}
+                                            >
+                                              {assignmentStatus}
+                                            </span>
+                                          </div>
+                                        );
+                                      }
+                                      return null;
+                                    })}
+                                    {request.assignments.length > 2 && (
+                                      <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>
+                                        +{request.assignments.length - 2} more
+                                      </span>
+                                    )}
+                                    <Button
+                                      variant="link"
+                                      size="sm"
+                                      onClick={() => {
+                                        setSelectedRequest(request);
+                                        setDetailType('assignments');
+                                        setShowDetailModal(true);
+                                      }}
+                                      style={{ padding: 0, textDecoration: 'none', color: '#6366f1', fontWeight: 600, fontSize: 11, marginTop: 2 }}
+                                    >
+                                      View All
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <Button
+                                    variant="link"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedRequest(request);
+                                      setDetailType('assignments');
+                                      setShowDetailModal(true);
+                                    }}
+                                    style={{ padding: 0, textDecoration: 'none', color: '#6366f1', fontWeight: 600 }}
+                                  >
+                                    --
+                                  </Button>
+                                )}
+                              </td>
                               <td>
                                 <span
                                   style={{
@@ -465,6 +540,126 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
         </div>
       </div>
 
+      {/* Detail View Modal */}
+      <Modal
+        show={showDetailModal}
+        onHide={() => setShowDetailModal(false)}
+        centered
+        size="lg"
+      >
+        <Modal.Header closeButton style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e5e7eb' }}>
+          <Modal.Title style={{ color: '#ffffff', fontWeight: 700 }}>
+            {detailType === 'services' ? 'Request for Services Details' : 'Vendor Assignments'}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ padding: '2rem' }}>
+          {detailType === 'services' && selectedRequest && (
+            <div>
+              <h6 style={{ color: '#475569', fontWeight: 600, marginBottom: '1rem' }}>All Services</h6>
+              {(() => {
+                const services = selectedRequest.request_for_services;
+                let serviceList = [];
+                if (Array.isArray(services)) {
+                  serviceList = services;
+                } else if (typeof services === 'string') {
+                  serviceList = services.trim() ? [services] : [];
+                }
+                // Get assigned services
+                const assignedServices = [];
+                if (Array.isArray(selectedRequest.assignments)) {
+                  selectedRequest.assignments.forEach(assignment => {
+                    if (Array.isArray(assignment) && Array.isArray(assignment[0])) {
+                      assignedServices.push(...assignment[0]);
+                    }
+                  });
+                }
+                return serviceList.length > 0 ? (
+                  <div className="d-flex flex-wrap gap-2">
+                    {serviceList.map((service, idx) => (
+                      <span key={idx}>
+                        <span
+                          style={{
+                            padding: '8px 14px',
+                            borderRadius: 6,
+                            fontSize: 14,
+                            fontWeight: 600,
+                            backgroundColor: assignedServices.includes(service) ? '#d1fae5' : '#e0e7ff',
+                            color: assignedServices.includes(service) ? '#065f46' : '#3730a3',
+                          }}
+                        >
+                          {service}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                ) : '--';
+              })()}
+            </div>
+          )}
+          {detailType === 'assignments' && selectedRequest && (
+            <div>
+              <h6 style={{ color: '#475569', fontWeight: 600, marginBottom: '1rem' }}>Vendor Assignments</h6>
+              {Array.isArray(selectedRequest.assignments) && selectedRequest.assignments.length > 0 ? (
+                <div>
+                  {selectedRequest.assignments.map((assignment, aIdx) => (
+                    <div key={aIdx} className="p-3 border rounded mb-3" style={{ backgroundColor: '#f8fafc' }}>
+                      {(() => {
+                        if (Array.isArray(assignment) && assignment.length >= 3) {
+                          const services = assignment[0];
+                          const vendorName = assignment[2];
+                          const assignmentStatus = assignment[3] || "assigned";
+                          const serviceList = Array.isArray(services) ? services : [services];
+                          return (
+                            <div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                                <h6 style={{ color: '#6366f1', fontWeight: 700, margin: 0 }}>{vendorName}</h6>
+                                <span
+                                  style={{
+                                    padding: '4px 10px',
+                                    borderRadius: 4,
+                                    fontSize: 12,
+                                    fontWeight: 600,
+                                    backgroundColor: assignmentStatus === "completed" ? "#d4edda" : assignmentStatus === "assigned" ? "#cfe2ff" : "#f8f9fa",
+                                    color: assignmentStatus === "completed" ? "#155724" : assignmentStatus === "assigned" ? "#004085" : "#6c757d"
+                                  }}
+                                >
+                                  {assignmentStatus.charAt(0).toUpperCase() + assignmentStatus.slice(1)}
+                                </span>
+                              </div>
+                              <div className="d-flex flex-wrap gap-2">
+                                {serviceList.map((service, sIdx) => (
+                                  <span key={sIdx}>
+                                    <span
+                                      style={{
+                                        padding: '6px 12px',
+                                        borderRadius: 4,
+                                        fontSize: 13,
+                                        fontWeight: 600,
+                                        backgroundColor: '#d1fae5',
+                                        color: '#065f46',
+                                      }}
+                                    >
+                                      {service}
+                                    </span>
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        }
+                        return '--';
+                      })()}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <span style={{ color: '#94a3b8' }}>No assignments yet</span>
+              )}
+            </div>
+          )}
+        </Modal.Body>
+      </Modal>
+
       {/* Assign Vendor Modal */}
       <Modal
         show={showAssignModal}
@@ -473,7 +668,7 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
         size="lg"
       >
         <Modal.Header closeButton style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e5e7eb' }}>
-          <Modal.Title style={{ color: '#6366f1', fontWeight: 700 }}>
+          <Modal.Title style={{ color: '#ffffff', fontWeight: 700 }}>
             Assign Vendor
           </Modal.Title>
         </Modal.Header>
@@ -513,90 +708,120 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
               </div>
 
               <Form>
-                <Form.Group className="mb-4">
-                  <Form.Label style={{ color: '#475569', fontWeight: 600 }}>
-                    Select Vendors <span style={{ color: '#ef4444' }}>*</span>
-                  </Form.Label>
-                  {vendorListLoading ? (
-                    <div className="d-flex justify-content-center align-items-center py-3">
-                      <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <Form.Select
-                      value={selectedVendor}
-                      onChange={e => setSelectedVendor(e.target.value)}
-                      className="border rounded-lg p-3 bg-light"
-                      style={{ maxHeight: 300, overflowY: 'auto' }}
-                    >
-                      <option value="">Select a vendor</option>
-                      {vendorList.map((vendor) => {
-                        let categories = '';
-                        if (Array.isArray(vendor.category)) {
-                          categories = vendor.category.join(', ');
-                        } else if (typeof vendor.category === 'string') {
-                          categories = vendor.category;
-                        } else if (typeof vendor.category === 'object' && vendor.category !== null) {
-                          categories = Object.values(vendor.category).join(', ');
+                {/* Multi-vendor assignment UI */}
+                {vendorAssignments.map((va, idx) => {
+                  // Compute available vendors (no duplicate selection)
+                  const usedVendors = vendorAssignments.map((v, i) => i !== idx ? v.vendor : '').filter(Boolean);
+                  // Get all available services from request
+                  let allServices = [];
+                  if (selectedRequest) {
+                    if (Array.isArray(selectedRequest.request_for_services)) {
+                      allServices = selectedRequest.request_for_services;
+                    } else if (typeof selectedRequest.request_for_services === 'string') {
+                      try {
+                        const parsed = JSON.parse(selectedRequest.request_for_services);
+                        if (Array.isArray(parsed)) {
+                          allServices = parsed;
+                        } else {
+                          allServices = selectedRequest.request_for_services.split(',').map(s => s.trim()).filter(Boolean);
                         }
-                        return (
-                          <option key={vendor.unique_id} value={vendor.unique_id}>
-                            {typeof vendor.username === 'string' ? vendor.username : 'Unknown'}
-                            {categories && categories !== 'N/A' && categories !== '{}' ? ` - ${categories}` : ''}
-                          </option>
-                        );
-                      })}
-                    </Form.Select>
-                  )}
-                  {vendorList.length === 0 && !vendorListLoading && (
-                    <div className="text-muted mt-2 text-sm">
-                      No vendors available. Please register vendors first.
-                    </div>
-                  )}
-                </Form.Group>
-
-                {/* New: Multi-select for services using react-select */}
-                <Form.Group className="mb-4">
-                  <Form.Label style={{ color: '#475569', fontWeight: 600 }}>
-                    Select Services
-                  </Form.Label>
-                  <Select
-                    isMulti
-                    closeMenuOnSelect={false}
-                    options={(() => {
-                      let services = [];
-                      if (selectedRequest) {
-                        if (Array.isArray(selectedRequest.request_for_services)) {
-                          services = selectedRequest.request_for_services;
-                        } else if (typeof selectedRequest.request_for_services === 'string') {
-                          // Try to parse as JSON array, fallback to comma split
-                          try {
-                            const parsed = JSON.parse(selectedRequest.request_for_services);
-                            if (Array.isArray(parsed)) {
-                              services = parsed;
-                            } else {
-                              services = selectedRequest.request_for_services.split(',').map(s => s.trim()).filter(Boolean);
-                            }
-                          } catch {
-                            services = selectedRequest.request_for_services.split(',').map(s => s.trim()).filter(Boolean);
-                          }
-                        }
+                      } catch {
+                        allServices = selectedRequest.request_for_services.split(',').map(s => s.trim()).filter(Boolean);
                       }
-                      return services.map((service) => ({ value: service, label: service }));
-                    })()}
-                    value={selectedServices.map(s => ({ value: s, label: s }))}
-                    onChange={selected => setSelectedServices(selected ? selected.map(opt => opt.value) : [])}
-                    classNamePrefix="react-select"
-                    placeholder="Select services..."
-                    styles={{ menu: base => ({ ...base, zIndex: 9999 }) }}
-                  />
-                  {selectedServices.length > 0 && (
-                    <div className="mt-2 text-sm text-success">
-                      Selected {selectedServices.length} service(s)
+                    }
+                  }
+                  // Remove services already assigned to other vendors
+                  const usedServices = vendorAssignments.flatMap((v, i) => i !== idx ? v.services : []);
+                  // Also remove services that are already assigned in the request
+                  const alreadyAssignedServices = [];
+                  if (Array.isArray(selectedRequest?.assignments)) {
+                    selectedRequest.assignments.forEach(assignment => {
+                      if (Array.isArray(assignment) && Array.isArray(assignment[0])) {
+                        alreadyAssignedServices.push(...assignment[0]);
+                      }
+                    });
+                  }
+                  const availableServices = allServices.filter(s => !usedServices.includes(s) && !alreadyAssignedServices.includes(s));
+                  return (
+                    <div key={idx} className="border rounded p-3 mb-3 bg-light">
+                      <Form.Group className="mb-2">
+                        <Form.Label style={{ color: '#475569', fontWeight: 600 }}>
+                          Select Vendor {vendorAssignments.length > 1 ? idx + 1 : ''} <span style={{ color: '#ef4444' }}>*</span>
+                        </Form.Label>
+                        <Form.Select
+                          value={va.vendor}
+                          onChange={e => {
+                            const newAssignments = [...vendorAssignments];
+                            newAssignments[idx].vendor = e.target.value;
+                            setVendorAssignments(newAssignments);
+                          }}
+                          className="border rounded-lg p-2 bg-white"
+                        >
+                          <option value="">Select a vendor</option>
+                          {vendorList.filter(v => !usedVendors.includes(v.unique_id)).map((vendor) => {
+                            let categories = '';
+                            if (Array.isArray(vendor.category)) {
+                              categories = vendor.category.join(', ');
+                            } else if (typeof vendor.category === 'string') {
+                              categories = vendor.category;
+                            } else if (typeof vendor.category === 'object' && vendor.category !== null) {
+                              categories = Object.values(vendor.category).join(', ');
+                            }
+                            return (
+                              <option key={vendor.unique_id} value={vendor.unique_id}>
+                                {typeof vendor.username === 'string' ? vendor.username : 'Unknown'}
+                                {categories && categories !== 'N/A' && categories !== '{}' ? ` - ${categories}` : ''}
+                              </option>
+                            );
+                          })}
+                        </Form.Select>
+                      </Form.Group>
+                      <Form.Group className="mb-2">
+                        <Form.Label style={{ color: '#475569', fontWeight: 600 }}>
+                          Select Services
+                        </Form.Label>
+                        <Select
+                          isMulti
+                          closeMenuOnSelect={false}
+                          options={availableServices.map(service => ({ value: service, label: service }))}
+                          value={va.services.map(s => ({ value: s, label: s }))}
+                          onChange={selected => {
+                            const newAssignments = [...vendorAssignments];
+                            newAssignments[idx].services = selected ? selected.map(opt => opt.value) : [];
+                            setVendorAssignments(newAssignments);
+                          }}
+                          classNamePrefix="react-select"
+                          placeholder="Select services..."
+                          styles={{ menu: base => ({ ...base, zIndex: 9999 }) }}
+                        />
+                        {va.services.length > 0 && (
+                          <div className="mt-2 text-sm text-success">
+                            Selected {va.services.length} service(s)
+                          </div>
+                        )}
+                      </Form.Group>
+                      {vendorAssignments.length > 1 && (
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => {
+                            setVendorAssignments(vendorAssignments.filter((_, i) => i !== idx));
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      )}
                     </div>
-                  )}
-                </Form.Group>
+                  );
+                })}
+                <Button
+                  variant="secondary"
+                  className="mb-3"
+                  onClick={() => setVendorAssignments([...vendorAssignments, { vendor: '', services: [] }])}
+                  disabled={vendorAssignments.length >= vendorList.length}
+                >
+                  + Add Another Vendor
+                </Button>
 
                 {assignSuccess && (
                   <Alert variant="success" className="mb-4">
