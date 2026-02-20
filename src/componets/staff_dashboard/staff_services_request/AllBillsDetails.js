@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Spinner, Alert, Table, Button, Modal, Form } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 import "../../../assets/css/admindashboard.css";
 import { useAuth } from "../../context/AuthContext";
@@ -8,6 +9,7 @@ import StaffLeftNav from "../StaffLeftNav";
 import StaffHeader from "../StaffHeader";
 
 const AllBillsDetails = () => {
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -152,7 +154,16 @@ const AllBillsDetails = () => {
       />
       <div className="main-content-dash">
         <StaffHeader toggleSidebar={toggleSidebar} />
-        <Container fluid className="dashboard-body dashboard-main-container">
+         <Container fluid className="dashboard-body dashboard-main-container">
+            <div className="mb-3">
+              <Button 
+                variant="outline-secondary" 
+                onClick={() => navigate('/StaffDashBoard')}
+                className="me-2"
+              >
+                <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+              </Button>
+            </div>
           <Row className="justify-content-center mt-4">
             <Col xs={12} lg={12}>
               <Card className="shadow-lg border-0 rounded-4 p-3 animate__animated animate__fadeIn" style={{ backgroundColor: "#f8f9fa" }}>

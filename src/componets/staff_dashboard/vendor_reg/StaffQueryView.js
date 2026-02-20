@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Spinner, Alert, Table, Button, Modal } from "react-bootstrap";
 
 import "../../../assets/css/admindashboard.css";
@@ -9,6 +9,7 @@ import StaffLeftNav from "../StaffLeftNav";
 import StaffHeader from "../StaffHeader";
 
 const StaffQueryView = () => {
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -111,7 +112,16 @@ const StaffQueryView = () => {
       />
       <div className="main-content-dash">
         <StaffHeader toggleSidebar={toggleSidebar} />
-        <Container fluid className="dashboard-body dashboard-main-container">
+         <Container fluid className="dashboard-body dashboard-main-container">
+            <div className="mb-3">
+              <Button 
+                variant="outline-secondary" 
+                onClick={() => navigate('/StaffDashBoard')}
+                className="me-2"
+              >
+                <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+              </Button>
+            </div>
           <Row className="justify-content-center mt-4">
             <Col xs={12} lg={12}>
               <Card className="shadow-lg border-0 rounded-4 p-3 animate__animated animate__fadeIn" style={{ backgroundColor: "#f8f9fa" }}>
@@ -147,6 +157,7 @@ const StaffQueryView = () => {
                             <th>#</th>
                             <th>Title</th>
                             <th>Issue</th>
+                            <th>Remark</th>
                             <th>Status</th>
                             <th>Date</th>
                             <th>View</th>
@@ -155,7 +166,7 @@ const StaffQueryView = () => {
                         <tbody>
                           {paginatedQueries.length === 0 ? (
                             <tr>
-                              <td colSpan={6} className="text-center">No queries found.</td>
+                              <td colSpan={7} className="text-center">No queries found.</td>
                             </tr>
                           ) : (
                             paginatedQueries.map((q, idx) => (
@@ -163,6 +174,15 @@ const StaffQueryView = () => {
                                 <td>{(currentPage - 1) * queriesPerPage + idx + 1}</td>
                                 <td>{q.title}</td>
                                 <td style={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{q.issue}</td>
+                                <td style={{ maxWidth: 150, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {q.remark ? (
+                                    <span title={q.remark}>
+                                      {q.remark.length > 20 ? `${q.remark.substring(0, 20)}...` : q.remark}
+                                    </span>
+                                  ) : (
+                                    <span style={{ color: '#999', fontStyle: 'italic' }}>No remark</span>
+                                  )}
+                                </td>
                                 <td>
                                   <span style={{ fontWeight: 600, color: q.status === 'Approved' ? '#52ab98' : q.status === 'Rejected' ? '#e53935' : '#2b6777' }}>
                                     {q.status || 'Pending'}
@@ -202,35 +222,78 @@ const StaffQueryView = () => {
                     </>
                   )}
                   {/* Modal for query details */}
-                  <Modal show={showModal} onHide={handleCloseModal} centered>
+                  <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
                     <Modal.Header closeButton>
                       <Modal.Title>Query Details</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                       {selectedQuery && (
                         <div>
-                          <p><strong>Title:</strong> {selectedQuery.title}</p>
-                          <p><strong>Issue:</strong> {selectedQuery.issue}</p>
-                          <p><strong>Status:</strong> <span style={{ fontWeight: 600, color: selectedQuery.status === 'resolved' ? '#52ab98' : '#2b6777' }}>{selectedQuery.status || 'Pending'}</span></p>
-                          <p><strong>Date:</strong> {selectedQuery.created_at ? new Date(selectedQuery.created_at).toLocaleString() : '-'}</p>
-
+                          <Row>
+                            <Col md={6}>
+                              <p><strong>Title:</strong> {selectedQuery.title}</p>
+                            </Col>
+                            <Col md={6}>
+                              <p><strong>Status:</strong> <span style={{ fontWeight: 600, color: selectedQuery.status === 'resolved' ? '#52ab98' : '#2b6777' }}>{selectedQuery.status || 'Pending'}</span></p>
+                            </Col>
+                          </Row>
+                          <Row>
+                            <Col md={12}>
+                              <p><strong>Issue:</strong></p>
+                              <div className="bg-light p-3 rounded mb-3" style={{ borderLeft: '4px solid #2b6777' }}>
+                                {selectedQuery.issue}
+                              </div>
+                            </Col>
+                          </Row>
+                          <Row>
+                            <Col md={12}>
+                              <p><strong>Remark:</strong></p>
+                              <div className="bg-light p-3 rounded mb-3" style={{ borderLeft: '4px solid #52ab98' }}>
+                                {selectedQuery.remark ? (
+                                  selectedQuery.remark
+                                ) : (
+                                  <span style={{ color: '#999', fontStyle: 'italic' }}>No remark provided</span>
+                                )}
+                              </div>
+                            </Col>
+                          </Row>
+                          <Row>
+                            <Col md={6}>
+                              <p><strong>Date:</strong> {selectedQuery.created_at ? new Date(selectedQuery.created_at).toLocaleString() : '-'}</p>
+                            </Col>
+                            {selectedQuery.updated_at && (
+                              <Col md={6}>
+                                <p><strong>Last Updated:</strong> {new Date(selectedQuery.updated_at).toLocaleString()}</p>
+                              </Col>
+                            )}
+                          </Row>
                           {selectedQuery.issue_image && (
-                            <div className="mb-2">
-                              <strong>Image:</strong><br />
-                              <img
-                                src={
-                                  selectedQuery.issue_image.startsWith("http")
-                                    ? selectedQuery.issue_image
-                                    : `https://mahadevaaya.com/spindo/spindobackend${selectedQuery.issue_image}`
-                                }
-                                alt="Query"
-                                style={{ maxWidth: 200, borderRadius: 6 }}
-                              />
-                            </div>
+                            <Row>
+                              <Col md={12}>
+                                <p><strong>Attached Image:</strong></p>
+                                <div className="text-center mb-3">
+                                  <img
+                                    src={
+                                      selectedQuery.issue_image.startsWith("http")
+                                        ? selectedQuery.issue_image
+                                        : `https://mahadevaaya.com/spindo/spindobackend${selectedQuery.issue_image}`
+                                    }
+                                    alt="Query"
+                                    style={{ maxWidth: '100%', maxHeight: '300px', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+                                    className="img-fluid"
+                                  />
+                                </div>
+                              </Col>
+                            </Row>
                           )}
                         </div>
                       )}
                     </Modal.Body>
+                    <Modal.Footer>
+                      <Button variant="secondary" onClick={handleCloseModal}>
+                        Close
+                      </Button>
+                    </Modal.Footer>
                   </Modal>
                 </Card.Body>
               </Card>
@@ -243,4 +306,3 @@ const StaffQueryView = () => {
 };
 
 export default StaffQueryView;
-

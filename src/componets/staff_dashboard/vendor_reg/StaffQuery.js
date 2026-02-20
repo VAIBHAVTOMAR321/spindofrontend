@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Container, Form, Button, Row, Col, Card, Spinner, Alert } from "react-bootstrap";
 
 import "../../../assets/css/admindashboard.css";
@@ -7,6 +8,7 @@ import StaffLeftNav from "../StaffLeftNav";
 import StaffHeader from "../StaffHeader";
 
 const StaffQuery = () => {
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -221,7 +223,16 @@ const StaffQuery = () => {
       />
       <div className="main-content-dash">
         <StaffHeader toggleSidebar={toggleSidebar} />
-        <Container fluid className="dashboard-body dashboard-main-container">
+         <Container fluid className="dashboard-body dashboard-main-container">
+            <div className="mb-3">
+              <Button 
+                variant="outline-secondary" 
+                onClick={() => navigate('/StaffDashBoard')}
+                className="me-2"
+              >
+                <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+              </Button>
+            </div>
           <Row className="justify-content-center mt-4">
             <Col xs={12} lg={12}>
               <Card className="shadow-lg border-0 rounded-4 p-3 animate__animated animate__fadeIn" style={{ backgroundColor: "#f8f9fa" }}>
@@ -337,23 +348,7 @@ const StaffQuery = () => {
                       </Form.Text>
                     </Form.Group>
 
-                    <Form.Group className="mb-3" controlId="extra_remark">
-                      <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}>
-                        <i className="bi bi-chat-left-text me-2"></i>Additional Remarks (Optional)
-                      </Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={3}
-                        name="extra_remark"
-                        value={query.extra_remark}
-                        onChange={handleChange}
-                        placeholder="Any additional information that might help us resolve your issue..."
-                        className="border-2"
-                        style={{ borderColor: "#52ab98", resize: "none" }}
-                        maxLength="500"
-                      />
-                      <Form.Text className="text-muted">{query.extra_remark.length}/500 characters</Form.Text>
-                    </Form.Group>
+                
 
                     <Form.Group className="mb-4" controlId="issue_image">
                       <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}>

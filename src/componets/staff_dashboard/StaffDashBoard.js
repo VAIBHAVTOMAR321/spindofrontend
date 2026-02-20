@@ -207,12 +207,19 @@ const StaffDashBoard = () => {
 
             {/* Vendors & Requests stacked in right column */}
             <Col xs={12} sm={12} md={6} lg={8}>
-              {/* Vendors Section */}
+               {/* Vendors Section */}
               <div className="mb-3">
-                <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Users Management</h6>
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <h6 className="fw-bold" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Users Management</h6>
+                  <Link to="/VendorRegistration">
+                    <Button variant="primary" size="sm" style={{ fontSize: 'clamp(11px, 2vw, 13px)' }}>
+                      <i className="bi bi-plus-circle me-1"></i> Add Vendor
+                    </Button>
+                  </Link>
+                </div>
                 <Row className="g-2 mb-2" style={{ margin: 0 }}>
                   <Col xs={12} sm={6} md={6} lg={6}>
-                    <Link to="/VendorRegistration" state={{ viewType: 'vendors' }} style={{ textDecoration: 'none' }}>
+                    <Link to="/AllVendors" state={{ viewType: 'vendors' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
                           <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#28a745', width: 28, height: 28, borderRadius: '50%' }}>
@@ -341,20 +348,28 @@ const StaffDashBoard = () => {
                 <Card.Body className="p-3">
                   <Row className="text-center">
                     <Col xs={6} sm={6} md={3} className="mb-2 mb-md-0">
-                      <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600 }}>Vendors Managed</div>
-                      <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700 }}>{vendorCount}</div>
+                      <Link to="/AllVendors" state={{ viewType: 'vendors' }} style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600, cursor: 'pointer' }}>Vendors Managed</div>
+                        <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700, cursor: 'pointer' }}>{vendorCount}</div>
+                      </Link>
                     </Col>
                     <Col xs={6} sm={6} md={3} className="mb-2 mb-md-0">
-                      <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600 }}>Customers</div>
-                      <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700 }}>{customerCount}</div>
+                      <Link to="/AllCustomers" style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600, cursor: 'pointer' }}>Customers</div>
+                        <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700, cursor: 'pointer' }}>{customerCount}</div>
+                      </Link>
                     </Col>
                     <Col xs={6} sm={6} md={3} className="mb-2 mb-md-0">
-                      <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600 }}>Requests</div>
-                      <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700 }}>{totalRequests}</div>
+                      <Link to="/StaffServicesRequest" style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600, cursor: 'pointer' }}>Requests</div>
+                        <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700, cursor: 'pointer' }}>{totalRequests}</div>
+                      </Link>
                     </Col>
                     <Col xs={6} sm={6} md={3}>
-                      <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600 }}>Queries</div>
-                      <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700 }}>{totalStaffQueries}</div>
+                      <Link to="/StaffQueryView" state={{ filter: 'all' }} style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600, cursor: 'pointer' }}>Queries</div>
+                        <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700, cursor: 'pointer' }}>{totalStaffQueries}</div>
+                      </Link>
                     </Col>
                   </Row>
                 </Card.Body>

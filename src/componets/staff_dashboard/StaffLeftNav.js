@@ -46,10 +46,22 @@ const menuItems = [
     active: true,
   },
   {
-    icon: <FaUsers />, // Vendor Registration
-    label: "Vendor Registration",
-    path: "/VendorRegistration",
-    active: true,
+    icon: <FaUsers />, // Vendors
+    label: "Vendors",
+    submenu: [
+      {
+        icon: <FaPlusSquare />, // Vendor Registration
+        label: "Vendor Registration",
+        path: "/VendorRegistration",
+        active: true,
+      },
+      {
+        icon: <FaListUl />, // All Vendors
+        label: "All Vendors",
+        path: "/AllVendors",
+        active: true,
+      },
+    ],
   },
   {
     icon: <FaTools />, // Services Request

@@ -25,6 +25,7 @@ import VendorDashBoard from "./componets/vendor_dashboard/VendorDashBoard";
 import StaffDashBoard from "./componets/staff_dashboard/StaffDashBoard";
 import StaffProfile from "./componets/staff_dashboard/StaffProfile";
 import AllCustomers from "./componets/staff_dashboard/pages/AllCustomers";
+import AllVendors from "./componets/staff_dashboard/pages/AllVendors";
 import AboutUs from "./componets/pages/AboutUs";
 import VendorRegistration from "./componets/staff_dashboard/vendor_reg/VendorRegistration";
 import TotalRegistration from "./componets/admin_dashboard/pages/TotalRegistration";
@@ -68,6 +69,7 @@ function App() {
     "/VendorProfile",
     "/VendorRegistration",
     "/AllCustomers",
+    "/AllVendors",
     "/VendorRequests",
     "/CompletedRequests",
     "/VendorAllBills",
@@ -193,11 +195,19 @@ function App() {
               </Protected>
             } 
           />
-          <Route 
+           <Route 
             path="/AllCustomers" 
             element={
               <Protected allowedRoles={['staffadmin']}>
                 <AllCustomers />
+              </Protected>
+            } 
+          />
+          <Route 
+            path="/AllVendors" 
+            element={
+              <Protected allowedRoles={['staffadmin']}>
+                <AllVendors />
               </Protected>
             } 
           />

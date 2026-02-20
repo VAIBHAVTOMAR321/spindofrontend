@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Container, Form, Button, Row, Col, Alert, Spinner, Modal, Dropdown } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import "../../../assets/css/admindashboard.css";
 import "../../../assets/css/service-multiselect.css";
 import StaffLeftNav from "../StaffLeftNav";
@@ -8,6 +9,7 @@ import { useAuth } from "../../context/AuthContext";
 
 const VendorRegistration = () => {
   const { tokens, refreshAccessToken } = useAuth();
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -299,7 +301,16 @@ const VendorRegistration = () => {
         <div className="main-content-dash">
           <StaffHeader toggleSidebar={toggleSidebar} />
 
-          <Container fluid className="dashboard-body dashboard-main-container">
+           <Container fluid className="dashboard-body dashboard-main-container">
+            <div className="mb-3">
+              <Button 
+                variant="outline-secondary" 
+                onClick={() => navigate('/StaffDashBoard')}
+                className="me-2"
+              >
+                <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+              </Button>
+            </div>
             <h2 className="mb-4">Vendor Registration</h2>
             
             {success && (

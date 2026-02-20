@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Container, Form, Button, Row, Col, Card, Spinner, Alert, Modal } from "react-bootstrap";
 import StaffLeftNav from "./StaffLeftNav";
 import StaffHeader from "./StaffHeader";
@@ -10,6 +11,7 @@ const BASE_URL = "https://mahadevaaya.com/spindo/spindobackend";
 const API_URL = `${BASE_URL}/api/staffadmin/register/`;
 
 const StaffProfile = () => {
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -351,7 +353,16 @@ const StaffProfile = () => {
       />
       <div className="main-content-dash">
         <StaffHeader toggleSidebar={toggleSidebar} />
-        <Container fluid className="dashboard-body dashboard-main-container">
+         <Container fluid className="dashboard-body dashboard-main-container">
+            <div className="mb-3">
+              <Button 
+                variant="outline-secondary" 
+                onClick={() => navigate('/StaffDashBoard')}
+                className="me-2"
+              >
+                <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+              </Button>
+            </div>
           <Row className="justify-content-center mt-4">
             <Col xs={12}>
               <Card className="user-profile-card animate__animated animate__fadeIn">
