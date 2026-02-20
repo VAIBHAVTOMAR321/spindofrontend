@@ -1,34 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Row, Col, Button, Alert, Spinner, Badge } from 'react-bootstrap';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 
 function VendorList() {
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // Keep this for actual API/network errors
+  const [error, setError] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate(); // Added useNavigate hook
   const selectedService = location.state?.service;
 
-  // HELPER FUNCTION: Safely format any value for display
-  // This prevents the "Objects are not valid as a React child" error.
   const formatDisplayValue = (value) => {
     if (value === null || value === undefined || value === '') {
       return 'Not specified';
     }
     if (Array.isArray(value)) {
-      // If it's an array, join its elements into a string
       return value.length > 0 ? value.join(', ') : 'Not specified';
     }
     if (typeof value === 'object') {
-      // If it's an object (but not an array), stringify it as a safe fallback
       return JSON.stringify(value);
     }
-    // For strings, numbers, etc., return as is
     return value;
   };
 
-  // Helper function to safely convert to lowercase string
   const toLowerCaseString = (value) => {
     return value ? value.toString().toLowerCase() : '';
   };
@@ -37,7 +32,7 @@ function VendorList() {
     const fetchVendors = async () => {
       try {
         setLoading(true);
-        setError(null); // Clear previous errors
+        setError(null);
         
         const response = await fetch('https://mahadevaaya.com/spindo/spindobackend/api/vendor/list/');
         if (!response.ok) {
@@ -109,7 +104,6 @@ function VendorList() {
             }))
           });
           
-          // Set the vendors array. If it's empty, the UI will handle the message.
           setVendors(filteredVendors);
           
         } else {
@@ -145,11 +139,10 @@ function VendorList() {
   }
 
   return (
-    <Container className="my-5">
+    <Container className="my-2 container-box">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2>Vendors for {selectedService.prod_name}</h2>
-         
+          <h2 className="fw-bold">Vendors for {selectedService.prod_name}</h2>
         </div>
         <Link to="/" className="btn btn-outline-secondary">← Back to Services</Link>
       </div>
@@ -209,12 +202,10 @@ function VendorList() {
           </div>
         </Alert>
       ) : vendors.length === 0 ? (
-        // This block now correctly shows when no vendors are found for a service
         <Alert variant="info">
           <Alert.Heading>No Vendors Found</Alert.Heading>
           <p>
             Not found {selectedService.prod_name} at the moment.
-           
           </p>
           <hr />
           <div className="d-flex justify-content-between">
@@ -232,58 +223,79 @@ function VendorList() {
           <Row>
             {vendors.map((vendor) => (
               <Col md={4} className="mb-4" key={vendor.unique_id || vendor.id || Math.random()}>
-                <Card className="h-100 vendor-card shadow-sm">
-                  <Card.Body className="d-flex flex-column">
-                    <div className="d-flex justify-content-between align-items-start mb-2">
-                      <Card.Title as="h5" className="mb-0">
+                <Card className="h-100 vendor-card shadow-sm border-0 overflow-hidden">
+                  <div className="card-header py-3">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <h5 className="mb-0 fw-bold">
                         {formatDisplayValue(vendor.username || vendor.name || vendor.company_name)}
-                      </Card.Title>
+                      </h5>
                       {vendor.verified && (
-                        <Badge bg="success" className="ms-2">Verified</Badge>
+                        <Badge bg="light" text="dark" className="ms-2">Verified</Badge>
                       )}
                     </div>
-                   
-                    <Card.Text className="flex-grow-1">
-                    
-                      <div className="mb-2">
+                  </div>
+                  <Card.Body className="p-4">
+                    <div className="mb-3">
+                      <div className="d-flex align-items-center mb-2">
+                        <i className="bi bi-geo-alt-fill text-primary me-2"></i>
                         <strong>Address:</strong> 
-                        <span className="ms-1">{formatDisplayValue(vendor.address)}</span>
                       </div>
-                      {vendor.phone && (
-                        <div className="mb-2">
+                      <p className="ms-4 mb-0 text-muted">{formatDisplayValue(vendor.address)}</p>
+                    </div>
+                    
+                    {vendor.phone && (
+                      <div className="mb-3">
+                        <div className="d-flex align-items-center mb-2">
+                          <i className="bi bi-telephone-fill text-primary me-2"></i>
                           <strong>Phone:</strong> 
-                          <a href={`tel:${vendor.phone}`} className="ms-1 text-decoration-none">
-                            {vendor.phone}
-                          </a>
                         </div>
-                      )}
-                      {vendor.email && (
-                        <div className="mb-2">
+                        <a href={`tel:${vendor.phone}`} className="ms-4 text-decoration-none">
+                          {vendor.phone}
+                        </a>
+                      </div>
+                    )}
+                    
+                    {vendor.email && (
+                      <div className="mb-3">
+                        <div className="d-flex align-items-center mb-2">
+                          <i className="bi bi-envelope-fill text-primary me-2"></i>
                           <strong>Email:</strong> 
-                          <a href={`mailto:${vendor.email}`} className="ms-1 text-decoration-none">
-                            {vendor.email}
-                          </a>
                         </div>
-                      )}
-                      {vendor.rating && (
-                        <div className="mb-2">
+                        <a href={`mailto:${vendor.email}`} className="ms-4 text-decoration-none">
+                          {vendor.email}
+                        </a>
+                      </div>
+                    )}
+                    
+                    {vendor.rating && (
+                      <div className="mb-3">
+                        <div className="d-flex align-items-center mb-2">
+                          <i className="bi bi-star-fill text-warning me-2"></i>
                           <strong>Rating:</strong> 
-                          <span className="ms-1">{'★'.repeat(Math.floor(vendor.rating))}</span>
-                          <span className="text-muted">({vendor.rating})</span>
                         </div>
-                      )}
-                    </Card.Text>
-                    <div className="mt-auto d-grid gap-2">
-                      <Button variant="primary" className="w-100">
-                        Contact Vendor
+                        <div className="ms-4">
+                          <span className="text-warning">{'★'.repeat(Math.floor(vendor.rating))}</span>
+                          <span className="text-muted ms-1">({vendor.rating})</span>
+                        </div>
+                      </div>
+                    )}
+                  </Card.Body>
+                  <Card.Footer className="bg-light py-3">
+                    <div className="d-grid gap-2">
+                      <Button 
+                        variant="primary" 
+                        className="fw-bold btn-book"
+                        onClick={() => navigate('/login')} // Added onClick handler to navigate to login
+                      >
+                        Book Now
                       </Button>
                       {vendor.profile_url && (
-                        <Button variant="outline-secondary" size="sm" className="w-100">
+                        <Button variant="outline-secondary" size="sm">
                           View Profile
                         </Button>
                       )}
                     </div>
-                  </Card.Body>
+                  </Card.Footer>
                 </Card>
               </Col>
             ))}

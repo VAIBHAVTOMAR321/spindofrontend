@@ -1,7 +1,7 @@
 /* Service Cards Styles */
-.home-content {
+/* .home-content {
   padding: 40px 0;
-}
+} */
 
 .home-title {
   text-align: center;
@@ -9,7 +9,7 @@
   color: #2c3e50;
   font-weight: 700;
   position: relative;
-  padding-bottom: 15px;
+ font-size: 36px;
 }
 
 .home-title:after {
@@ -67,7 +67,7 @@
 }
 
 .service-card:hover .btn-book {
-  background-color: #3498db;
+  background-color: #1b4a8f !important;
   transform: scale(1.05);
 }
 
@@ -132,7 +132,7 @@
 }
 
 .btn-book {
-  background-color: #212529;
+  background-color: #1b4a8f ;
   color: white;
   border: none;
   padding: 10px 30px;
@@ -146,7 +146,7 @@
 }
 
 .btn-book:hover {
-  background-color: #3498db;
+  background-color: #1b4a8f !important;
   color: white;
   transform: scale(1.05);
   box-shadow: 0 6px 12px rgba(46, 204, 113, 0.4);

@@ -33,7 +33,8 @@ function ServicesPage() {
 
   const handleBookService = (serviceId) => {
     console.log('Booking service:', serviceId);
-    // Add your booking logic here
+    // Redirect to login page
+    window.location.href = '/login';
   };
 
   // Function to get the correct image path
