@@ -55,6 +55,7 @@ import VendorAllBills from "./componets/vendor_dashboard/VendorAllBills";
 import GenerateVendorQuery from "./componets/vendor_dashboard/vendorpages/GenerateVendorQuery";
 import VendorAllQueries from "./componets/vendor_dashboard/vendorpages/VendorAllQueries";
 import AllBills from "./componets/admin_dashboard/pages/AllBills";
+import SolarInstalation from "./componets/pages/SolarInstalation";
 
 
 
@@ -115,7 +116,7 @@ function App() {
           <Route path="/ServicesPage" element={<ServicesPage />} />
           <Route path="/VendorList" element={<VendorList />} />
           <Route path="/ContactUs" element={<ContactUs />} />
-
+          <Route path="/SolarInstalation" element={<SolarInstalation />} />
           {/* Protected Routes */}
           <Route 
             path="/AdminDashBoard" 

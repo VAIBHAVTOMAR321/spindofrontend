@@ -144,7 +144,9 @@ function NavBar() {
                 
                 
               </NavDropdown>
-
+ <Nav.Link href="/SolarInstalation" className="custom-nav-link">
+                Solar Instalation
+              </Nav.Link>
               <Nav.Link href="/ContactUs" className="custom-nav-link">
                 Get in Touch
               </Nav.Link>
