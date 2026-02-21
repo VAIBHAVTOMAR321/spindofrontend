@@ -69,7 +69,7 @@ const AllBills = () => {
     let totalGST = 0;
     let totalPayment = 0;
     let serviceTypes = [];
-    let gstPercentage = 0;
+    let gstPercentage = null;
     
     if (bill.bill_items && Array.isArray(bill.bill_items)) {
       bill.bill_items.forEach(item => {
@@ -82,9 +82,9 @@ const AllBills = () => {
           totalGST += parseFloat(item[3]) || 0;
           totalPayment += parseFloat(item[4]) || 0;
           
-          // Calculate GST percentage (assuming first item has the correct percentage)
-          if (gstPercentage === 0 && parseFloat(item[2]) > 0) {
-            gstPercentage = ((parseFloat(item[3]) / parseFloat(item[2])) * 100).toFixed(2);
+          // GST percentage is now item[3] (as per new payload)
+          if (gstPercentage === null && typeof item[3] !== 'undefined') {
+            gstPercentage = item[3];
           }
         }
       });
@@ -96,7 +96,7 @@ const AllBills = () => {
       service_type: serviceTypes.join(', ') || 'N/A',
       amount: totalAmount.toFixed(2),
       gst: totalGST.toFixed(2),
-      gst_percentage: gstPercentage,
+      gst_percentage: gstPercentage !== null ? gstPercentage : '',
       total_payment: totalPayment.toFixed(2)
     };
   };
@@ -343,7 +343,7 @@ const AllBills = () => {
                           <td>{bill.cust_mobile}</td>
                           <td>{bill.service_type}</td>
                           <td>Rs. {parseFloat(bill.amount).toFixed(2)}</td>
-                          <td>{bill.gst_percentage}%</td>
+                          <td>{bill.gst_percentage !== '' ? `${bill.gst_percentage}%` : 'N/A'}</td>
                           <td style={{ fontWeight: 600 }}>Rs. {parseFloat(bill.total_payment).toFixed(2)}</td>
                           <td>
                             <span style={{
