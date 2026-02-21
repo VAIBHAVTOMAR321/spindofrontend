@@ -24,9 +24,11 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  position: relative;
+  position: relative; /* Crucial for positioning the ::before pseudo-element */
+  z-index: 1;
 }
 
+/* --- RESTORED: Background Image Styles --- */
 .slide-1 {
   background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
                     url('../images/carpente-img.avif');
@@ -40,6 +42,24 @@
 .slide-3 {
   background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
                     url('../images/pl.jfif');
+}
+
+/* --- NEW: Pseudo-element for animated background --- */
+.carousel-slide::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Inherit the background image from the parent element */
+  background-image: inherit;
+  background-size: inherit;
+  background-position: inherit;
+  background-repeat: inherit;
+  z-index: -1; /* Place it behind the content */
+  /* Apply the fade-in animation to this pseudo-element */
+  animation: bgFadeIn 1.5s ease-out;
 }
 
 .carousel-overlay {
@@ -66,7 +86,7 @@
 .caption-content {
   max-width: 800px;
   margin: 0 auto;
-  animation: slideInUp 1s ease-out;
+  animation: fadeInUp 1s ease-out;
 }
 
 .carousel-title {
@@ -79,7 +99,7 @@
 }
 
 .carousel-subtitle {
-  font-size: 1.3rem;
+  font-size: 14px;
   margin-bottom: 2rem;
   color: rgba(255,255,255,0.9);
   text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
@@ -103,6 +123,11 @@
   transform: translateY(-3px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
   background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+/* --- Smooth Sliding Transition --- */
+.carousel-item {
+  transition: transform 0.6s ease-in-out;
 }
 
 /* Carousel Controls */
@@ -152,8 +177,6 @@
 }
 
 /* Content Section */
-
-
 .home-background {
   position: absolute;
   top: 0;
@@ -194,7 +217,7 @@
 }
 
 .home-text {
-  font-size: 1.2rem;
+  font-size: 14px;
   line-height: 1.8;
   margin-bottom: 1.5rem;
   text-shadow: none;
@@ -205,7 +228,7 @@
 .intro-paragraph {
   margin-bottom: 2rem;
   color: #5a5c69;
-  font-size: 18px;
+  font-size: 14px;
 }
 
 .service-highlights {
@@ -298,107 +321,43 @@
 
 /* Animations */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -40%);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%);
-  }
+/* --- Background Fade-In Animation --- */
+@keyframes bgFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
+
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .hero-carousel {
-    height: 60vh;
-    max-height: 500px;
-  }
-  
-  .carousel-slide {
-    height: 60vh;
-    max-height: 500px;
-  }
-  
-  .carousel-title {
-    font-size: 2.5rem;
-  }
-  
-  .carousel-subtitle {
-    font-size: 1.1rem;
-  }
-  
-  .home-title {
-    font-size: 2.5rem;
-  }
-  
-  .home-text {
-    font-size: 1.1rem;
-  }
-  
-  .image-column, .text-column {
-    padding: 1rem 0;
-  }
-  
-  .image-container {
-    justify-content: center;
-  }
-  
-  .service-image.small {
-    width: 100%;
-  }
-  
-  .carousel-control-prev,
-  .carousel-control-next {
-    width: 40px;
-    height: 40px;
-  }
+  .hero-carousel { height: 60vh; max-height: 500px; }
+  .carousel-slide { height: 60vh; max-height: 500px; }
+  .carousel-title { font-size: 2.5rem; }
+  .carousel-subtitle { font-size: 1.1rem; }
+  .home-title { font-size: 2.5rem; }
+  .home-text { font-size: 12px; }
+  .image-column, .text-column { padding: 1rem 0; }
+  .image-container { justify-content: center; }
+  .service-image.small { width: 100%; }
+  .carousel-control-prev, .carousel-control-next { width: 40px; height: 40px; }
 }
 
 @media (max-width: 576px) {
-  .carousel-title {
-    font-size: 2rem;
-  }
-  
-  .carousel-subtitle {
-    font-size: 1rem;
-  }
-  
-  .cta-button-carousel {
-    padding: 12px 30px;
-    font-size: 1rem;
-  }
+  .carousel-title { font-size: 2rem; }
+  .carousel-subtitle { font-size: 1rem; }
+  .cta-button-carousel { padding: 12px 30px; font-size: 1rem; }
 }

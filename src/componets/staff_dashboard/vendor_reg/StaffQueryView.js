@@ -55,21 +55,49 @@ const StaffQueryView = () => {
     fetch(apiUrl, {
       headers: tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
-        // Check if data is an array or has data property
+        console.log("API Response:", data); // Log the full response for debugging
+        
+        let queriesData = [];
+        
+        // Handle different response structures
         if (Array.isArray(data)) {
-          setQueries(data);
+          queriesData = data;
         } else if (data.status && Array.isArray(data.data)) {
-          setQueries(data.data);
+          queriesData = data.data;
+        } else if (data.status && data.data && !Array.isArray(data.data)) {
+          // If data is an object with queries array
+          if (Array.isArray(data.data.results) || Array.isArray(data.data.queries)) {
+            queriesData = data.data.results || data.data.queries;
+          } else {
+            queriesData = [data.data];
+          }
+        } else if (data.results && Array.isArray(data.results)) {
+          queriesData = data.results;
         } else {
           // If single object is returned, wrap in array
-          setQueries([data]);
+          queriesData = [data];
         }
+        
+        console.log("Processed queries:", queriesData); // Log processed queries
+        
+        // Log first query structure to understand the data format
+        if (queriesData.length > 0) {
+          console.log("First query structure:", queriesData[0]);
+        }
+        
+        setQueries(queriesData);
         setLoading(false);
       })
-      .catch(() => {
-        setError("Error fetching user queries.");
+      .catch((err) => {
+        console.error("Error fetching queries:", err);
+        setError(`Error fetching user queries: ${err.message}`);
         setLoading(false);
       });
   }, [user, tokens]);
@@ -84,6 +112,16 @@ const StaffQueryView = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedQuery(null);
+  };
+
+  // Helper function to get remarks
+  const getRemarks = (query) => {
+    return query.remark || query.remarks || query.admin_remark || '';
+  };
+
+  // Helper function to get extra remarks
+  const getExtraRemarks = (query) => {
+    return query.extra_remark || query.extraRemark || query.additional_remark || '';
   };
 
   // Filtered and paginated queries
@@ -112,16 +150,16 @@ const StaffQueryView = () => {
       />
       <div className="main-content-dash">
         <StaffHeader toggleSidebar={toggleSidebar} />
-         <Container fluid className="dashboard-body dashboard-main-container">
-            <div className="mb-3">
-              <Button 
-                variant="outline-secondary" 
-                onClick={() => navigate('/StaffDashBoard')}
-                className="me-2"
-              >
-                <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
-              </Button>
-            </div>
+        <Container fluid className="dashboard-body dashboard-main-container">
+          <div className="mb-3">
+            <Button 
+              variant="outline-secondary" 
+              onClick={() => navigate('/StaffDashBoard')}
+              className="me-2"
+            >
+              <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
+            </Button>
+          </div>
           <Row className="justify-content-center mt-4">
             <Col xs={12} lg={12}>
               <Card className="shadow-lg border-0 rounded-4 p-3 animate__animated animate__fadeIn" style={{ backgroundColor: "#f8f9fa" }}>
@@ -134,17 +172,29 @@ const StaffQueryView = () => {
                     <p style={{ color: "#6c757d", fontSize: "14px" }}>View all your submitted queries and their status.</p>
                   </div>
                   {loading && (
-                    <div className="text-center"><Spinner animation="border" variant="primary" /></div>
+                    <div className="text-center">
+                      <Spinner animation="border" variant="primary" />
+                      <p className="mt-2">Loading your queries...</p>
+                    </div>
                   )}
                   {error && (
-                    <Alert variant="danger">{error}</Alert>
+                    <Alert variant="danger" dismissible onClose={() => setError("")}>
+                      <i className="bi bi-exclamation-triangle me-2"></i>
+                      {error}
+                    </Alert>
                   )}
                   {!loading && !error && (
                     <>
                       {/* Filter Dropdown */}
                       <div className="d-flex justify-content-end mb-3">
                         <label className="me-2 fw-semibold" htmlFor="query-filter">Filter by Status:</label>
-                        <select id="query-filter" className="form-select w-auto" value={filter} onChange={handleFilterChange}>
+                        <select 
+                          id="query-filter" 
+                          className="form-select w-auto" 
+                          value={filter} 
+                          onChange={handleFilterChange}
+                          style={{ borderColor: "#52ab98" }}
+                        >
                           <option value="all">All</option>
                           <option value="pending">Pending</option>
                           <option value="accepted">Accepted</option>
@@ -157,6 +207,7 @@ const StaffQueryView = () => {
                             <th>#</th>
                             <th>Title</th>
                             <th>Issue</th>
+                           
                             <th>Remark</th>
                             <th>Status</th>
                             <th>Date</th>
@@ -166,36 +217,53 @@ const StaffQueryView = () => {
                         <tbody>
                           {paginatedQueries.length === 0 ? (
                             <tr>
-                              <td colSpan={7} className="text-center">No queries found.</td>
+                              <td colSpan={8} className="text-center py-4">
+                                <i className="bi bi-inbox" style={{ fontSize: '2rem', color: '#6c757d' }}></i>
+                                <p className="mt-2 mb-0 text-muted">No queries found.</p>
+                              </td>
                             </tr>
                           ) : (
-                            paginatedQueries.map((q, idx) => (
-                              <tr key={q.id || idx}>
-                                <td>{(currentPage - 1) * queriesPerPage + idx + 1}</td>
-                                <td>{q.title}</td>
-                                <td style={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{q.issue}</td>
-                                <td style={{ maxWidth: 150, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                  {q.remark ? (
-                                    <span title={q.remark}>
-                                      {q.remark.length > 20 ? `${q.remark.substring(0, 20)}...` : q.remark}
+                            paginatedQueries.map((q, idx) => {
+                              const remarks = getRemarks(q);
+                              const extraRemarks = getExtraRemarks(q);
+                              return (
+                                <tr key={q.id || idx}>
+                                  <td>{(currentPage - 1) * queriesPerPage + idx + 1}</td>
+                                  <td>{q.title || 'No title'}</td>
+                                  <td style={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {q.issue || 'No issue description'}
+                                  </td>
+                                
+                                  <td style={{ maxWidth: 150, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {extraRemarks ? (
+                                      <span title={extraRemarks}>
+                                        {extraRemarks.length > 20 ? `${extraRemarks.substring(0, 20)}...` : extraRemarks}
+                                      </span>
+                                    ) : (
+                                      <span style={{ color: '#999', fontStyle: 'italic' }}>No extra remark</span>
+                                    )}
+                                  </td>
+                                  <td>
+                                    <span 
+                                      style={{ 
+                                        fontWeight: 600, 
+                                        color: q.status === 'Accepted' ? '#52ab98' : 
+                                               q.status === 'rejected' ? '#e53935' : 
+                                               q.status === 'Rejected' ? '#e53935' : '#2b6777' 
+                                      }}
+                                    >
+                                      {q.status || 'Pending'}
                                     </span>
-                                  ) : (
-                                    <span style={{ color: '#999', fontStyle: 'italic' }}>No remark</span>
-                                  )}
-                                </td>
-                                 <td>
-                                  <span style={{ fontWeight: 600, color: q.status === 'Accepted' ? '#52ab98' : q.status === 'Rejected' ? '#e53935' : '#2b6777' }}>
-                                    {q.status || 'Pending'}
-                                  </span>
-                                </td>
-                                <td>{q.created_at ? new Date(q.created_at).toLocaleString() : '-'}</td>
-                                <td>
-                                  <Button variant="outline-primary" size="sm" onClick={() => handleView(q)}>
-                                    <i className="bi bi-eye"></i> View
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))
+                                  </td>
+                                  <td>{q.created_at ? new Date(q.created_at).toLocaleString() : '-'}</td>
+                                  <td>
+                                    <Button variant="outline-primary" size="sm" onClick={() => handleView(q)}>
+                                      <i className="bi bi-eye"></i> View
+                                    </Button>
+                                  </td>
+                                </tr>
+                              );
+                            })
                           )}
                         </tbody>
                       </Table>
@@ -205,15 +273,37 @@ const StaffQueryView = () => {
                           <nav>
                             <ul className="pagination mb-0">
                               <li className={`page-item${currentPage === 1 ? ' disabled' : ''}`}>
-                                <button className="page-link" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>&laquo;</button>
+                                <button 
+                                  className="page-link" 
+                                  onClick={() => handlePageChange(currentPage - 1)} 
+                                  disabled={currentPage === 1}
+                                >
+                                  &laquo;
+                                </button>
                               </li>
                               {Array.from({ length: totalPages }, (_, i) => (
                                 <li key={i + 1} className={`page-item${currentPage === i + 1 ? ' active' : ''}`}>
-                                  <button className="page-link" onClick={() => handlePageChange(i + 1)}>{i + 1}</button>
+                                  <button 
+                                    className="page-link" 
+                                    onClick={() => handlePageChange(i + 1)}
+                                    style={{ 
+                                      backgroundColor: currentPage === i + 1 ? '#2b6777' : 'transparent',
+                                      borderColor: '#2b6777',
+                                      color: currentPage === i + 1 ? 'white' : '#2b6777'
+                                    }}
+                                  >
+                                    {i + 1}
+                                  </button>
                                 </li>
                               ))}
                               <li className={`page-item${currentPage === totalPages ? ' disabled' : ''}`}>
-                                <button className="page-link" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>&raquo;</button>
+                                <button 
+                                  className="page-link" 
+                                  onClick={() => handlePageChange(currentPage + 1)} 
+                                  disabled={currentPage === totalPages}
+                                >
+                                  &raquo;
+                                </button>
                               </li>
                             </ul>
                           </nav>
@@ -223,43 +313,63 @@ const StaffQueryView = () => {
                   )}
                   {/* Modal for query details */}
                   <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
-                    <Modal.Header closeButton>
-                      <Modal.Title>Query Details</Modal.Title>
+                    <Modal.Header closeButton style={{ backgroundColor: '#2b6777', color: 'white' }}>
+                      <Modal.Title>
+                        <i className="bi bi-file-text me-2"></i>
+                        Query Details
+                      </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                       {selectedQuery && (
                         <div>
-                          <Row>
+                          <Row className="mb-3">
                             <Col md={6}>
-                              <p><strong>Title:</strong> {selectedQuery.title}</p>
+                              <p><strong>Title:</strong> {selectedQuery.title || 'No title'}</p>
                             </Col>
                             <Col md={6}>
-                              <p><strong>Status:</strong> <span style={{ fontWeight: 600, color: selectedQuery.status === 'Accepted' ? '#52ab98' : selectedQuery.status === 'Rejected' ? '#e53935' : '#2b6777' }}>{selectedQuery.status || 'Pending'}</span></p>
+                              <p>
+                                <strong>Status:</strong>{' '}
+                                <span 
+                                  style={{ 
+                                    fontWeight: 600, 
+                                    color: selectedQuery.status === 'Accepted' ? '#52ab98' : 
+                                           selectedQuery.status === 'rejected' ? '#e53935' : 
+                                           selectedQuery.status === 'Rejected' ? '#e53935' : '#2b6777' 
+                                  }}
+                                >
+                                  {selectedQuery.status || 'Pending'}
+                                </span>
+                              </p>
                             </Col>
                           </Row>
-                          <Row>
+                          <Row className="mb-3">
                             <Col md={12}>
-                              <p><strong>Issue:</strong></p>
+                              <p><strong>Issue Description:</strong></p>
                               <div className="bg-light p-3 rounded mb-3" style={{ borderLeft: '4px solid #2b6777' }}>
-                                {selectedQuery.issue}
+                                {selectedQuery.issue || 'No issue description provided'}
                               </div>
                             </Col>
                           </Row>
-                          <Row>
+                         
+                          <Row className="mb-3">
                             <Col md={12}>
                               <p><strong>Remark:</strong></p>
-                              <div className="bg-light p-3 rounded mb-3" style={{ borderLeft: '4px solid #52ab98' }}>
-                                {selectedQuery.remark ? (
-                                  selectedQuery.remark
+                              <div className="bg-light p-3 rounded mb-3" style={{ borderLeft: '4px solid #ffa726' }}>
+                                {getExtraRemarks(selectedQuery) ? (
+                                  <div style={{ whiteSpace: 'pre-wrap' }}>
+                                    {getExtraRemarks(selectedQuery)}
+                                  </div>
                                 ) : (
-                                  <span style={{ color: '#999', fontStyle: 'italic' }}>No remark provided</span>
+                                  <span style={{ color: '#999', fontStyle: 'italic' }}>
+                                    No additional remark provided
+                                  </span>
                                 )}
                               </div>
                             </Col>
                           </Row>
-                          <Row>
+                          <Row className="mb-3">
                             <Col md={6}>
-                              <p><strong>Date:</strong> {selectedQuery.created_at ? new Date(selectedQuery.created_at).toLocaleString() : '-'}</p>
+                              <p><strong>Submitted Date:</strong> {selectedQuery.created_at ? new Date(selectedQuery.created_at).toLocaleString() : '-'}</p>
                             </Col>
                             {selectedQuery.updated_at && (
                               <Col md={6}>
@@ -268,7 +378,7 @@ const StaffQueryView = () => {
                             )}
                           </Row>
                           {selectedQuery.issue_image && (
-                            <Row>
+                            <Row className="mb-3">
                               <Col md={12}>
                                 <p><strong>Attached Image:</strong></p>
                                 <div className="text-center mb-3">
@@ -279,8 +389,21 @@ const StaffQueryView = () => {
                                         : `https://mahadevaaya.com/spindo/spindobackend${selectedQuery.issue_image}`
                                     }
                                     alt="Query"
-                                    style={{ maxWidth: '100%', maxHeight: '300px', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+                                    style={{ 
+                                      maxWidth: '100%', 
+                                      maxHeight: '300px', 
+                                      borderRadius: 8, 
+                                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                      cursor: 'pointer'
+                                    }}
                                     className="img-fluid"
+                                    onClick={() => {
+                                      // Open image in new tab on click
+                                      const imageUrl = selectedQuery.issue_image.startsWith("http")
+                                        ? selectedQuery.issue_image
+                                        : `https://mahadevaaya.com/spindo/spindobackend${selectedQuery.issue_image}`;
+                                      window.open(imageUrl, '_blank');
+                                    }}
                                   />
                                 </div>
                               </Col>
@@ -291,6 +414,7 @@ const StaffQueryView = () => {
                     </Modal.Body>
                     <Modal.Footer>
                       <Button variant="secondary" onClick={handleCloseModal}>
+                        <i className="bi bi-x-circle me-2"></i>
                         Close
                       </Button>
                     </Modal.Footer>

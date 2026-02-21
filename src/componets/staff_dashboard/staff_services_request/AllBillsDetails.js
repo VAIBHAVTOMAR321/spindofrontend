@@ -17,7 +17,9 @@ const AllBillsDetails = () => {
   const [error, setError] = useState("");
   const [bills, setBills] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [showItemsModal, setShowItemsModal] = useState(false);
   const [selectedBill, setSelectedBill] = useState(null);
+  const [selectedBillItems, setSelectedBillItems] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const billsPerPage = 10;
@@ -76,6 +78,16 @@ const AllBillsDetails = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedBill(null);
+  };
+
+  const handleViewItems = (bill) => {
+    setSelectedBillItems(bill);
+    setShowItemsModal(true);
+  };
+
+  const handleCloseItemsModal = () => {
+    setShowItemsModal(false);
+    setSelectedBillItems(null);
   };
 
   // Handle search
@@ -233,10 +245,19 @@ const AllBillsDetails = () => {
                                     <td>{bill.payment_id || '-'}</td>
                                     <td>{bill.customer_name}</td>
                                     <td>{bill.service_type || '-'}</td>
-                                    <td>
-                                      <div style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                        {formatBillItems(bill.bill_items)}
-                                      </div>
+                                    <td 
+                                      onClick={() => bill.bill_items && bill.bill_items.length > 0 && handleViewItems(bill)}
+                                      style={{ 
+                                        maxWidth: '200px', 
+                                        overflow: 'hidden', 
+                                        textOverflow: 'ellipsis', 
+                                        whiteSpace: 'nowrap',
+                                        cursor: bill.bill_items && bill.bill_items.length > 0 ? 'pointer' : 'default',
+                                        color: bill.bill_items && bill.bill_items.length > 0 ? '#2b6777' : 'inherit',
+                                        textDecoration: bill.bill_items && bill.bill_items.length > 0 ? 'underline' : 'none'
+                                      }}
+                                    >
+                                      {formatBillItems(bill.bill_items)}
                                     </td>
                                     <td>{formatCurrency(bill.amount)}</td>
                                     <td>{formatCurrency(totalPayment)}</td>
@@ -282,8 +303,11 @@ const AllBillsDetails = () => {
                   )}
                   {/* Modal for bill details */}
                   <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
-                    <Modal.Header closeButton>
-                      <Modal.Title>Bill Details</Modal.Title>
+                    <Modal.Header closeButton style={{ backgroundColor: '#2b6777', color: 'white' }}>
+                      <Modal.Title>
+                        <i className="bi bi-receipt me-2"></i>
+                        Bill Details
+                      </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                        {selectedBill && (
@@ -366,6 +390,75 @@ const AllBillsDetails = () => {
                         </div>
                       )}
                     </Modal.Body>
+                    <Modal.Footer>
+                      <Button variant="secondary" onClick={handleCloseModal}>
+                        <i className="bi bi-x-circle me-2"></i>
+                        Close
+                      </Button>
+                    </Modal.Footer>
+                  </Modal>
+
+                  {/* Modal for bill items only */}
+                  <Modal show={showItemsModal} onHide={handleCloseItemsModal} centered size="lg">
+                    <Modal.Header closeButton style={{ backgroundColor: '#52ab98', color: 'white' }}>
+                      <Modal.Title>
+                        <i className="bi bi-list-check me-2"></i>
+                        Bill Items - {selectedBillItems?.bill_id}
+                      </Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                      {selectedBillItems && (
+                        <div>
+                          <Row className="mb-3">
+                            <Col md={12}>
+                              <p><strong>Customer Name:</strong> {selectedBillItems.customer_name}</p>
+                              <p><strong>Bill Date:</strong> {formatDateTime(selectedBillItems.bill_date_time)}</p>
+                            </Col>
+                          </Row>
+                          {selectedBillItems.bill_items && selectedBillItems.bill_items.length > 0 ? (
+                            <Table responsive bordered hover>
+                              <thead className="table-thead">
+                                <tr>
+                                  <th>#</th>
+                                  <th>Category</th>
+                                  <th>Description</th>
+                                  <th>Amount</th>
+                                  <th>GST</th>
+                                  <th>Total</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {selectedBillItems.bill_items.map((item, index) => (
+                                  <tr key={index}>
+                                    <td>{index + 1}</td>
+                                    <td>{item[0] || '-'}</td>
+                                    <td>{item[1] || '-'}</td>
+                                    <td>{formatCurrency(item[2])}</td>
+                                    <td>{formatCurrency(item[3])}</td>
+                                    <td style={{ fontWeight: 600 }}>{formatCurrency(item[4])}</td>
+                                  </tr>
+                                ))}
+                                <tr style={{ backgroundColor: '#f8f9fa', fontWeight: 600 }}>
+                                  <td colSpan={5} className="text-end">Total:</td>
+                                  <td>{formatCurrency(calculateTotalFromItems(selectedBillItems.bill_items))}</td>
+                                </tr>
+                              </tbody>
+                            </Table>
+                          ) : (
+                            <Alert variant="info">
+                              <i className="bi bi-info-circle me-2"></i>
+                              No bill items found for this bill.
+                            </Alert>
+                          )}
+                        </div>
+                      )}
+                    </Modal.Body>
+                    <Modal.Footer>
+                      <Button variant="secondary" onClick={handleCloseItemsModal}>
+                        <i className="bi bi-x-circle me-2"></i>
+                        Close
+                      </Button>
+                    </Modal.Footer>
                   </Modal>
                 </Card.Body>
               </Card>

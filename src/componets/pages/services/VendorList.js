@@ -139,6 +139,18 @@ function VendorList() {
   }
 
   return (
+    <>
+     <div className="Contact-banner">
+        <div className="site-breadcrumb-wpr">
+          <h2 className="breadcrumb-title">Vendors</h2>
+          <ul className="breadcrumb-menu clearfix">
+            <li><a className="breadcrumb-home" href="/" data-discover="true">Home</a></li>
+            <li className="px-2">/</li>
+            <li><a className="breadcrumb-contact" href="/VendorList" data-discover="true">Vendors</a></li>
+          </ul>
+        </div>
+      </div>
+  
     <Container className="my-2 container-box">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -209,7 +221,7 @@ function VendorList() {
           </p>
           <hr />
           <div className="d-flex justify-content-between">
-            <Link to="/ContactUs" className="btn btn-primary">Contact Us</Link>
+            <Link to="/VendorList" className="btn btn-primary">Vendors</Link>
             <Link to="/" className="btn btn-outline-secondary">Browse Other Services</Link>
           </div>
         </Alert>
@@ -303,6 +315,7 @@ function VendorList() {
         </>
       )}
     </Container>
+      </>
   );
 }
 

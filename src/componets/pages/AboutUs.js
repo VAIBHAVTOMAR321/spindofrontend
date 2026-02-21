@@ -4,6 +4,18 @@ import "../../assets/css/home.css"
 
 function AboutUs() {
   return (
+    <>
+     <div className="Contact-banner">
+        <div className="site-breadcrumb-wpr">
+          <h2 className="breadcrumb-title">About Us</h2>
+          <ul className="breadcrumb-menu clearfix">
+            <li><a className="breadcrumb-home" href="/" data-discover="true">Home</a></li>
+            <li className="px-2">/</li>
+            <li><a className="breadcrumb-contact" href="/contact" data-discover="true">About Us</a></li>
+          </ul>
+        </div>
+      </div>
+  
     <div className="home-container">
       <div className="home-background"></div>
       <div className="home-overlay"></div>
@@ -12,24 +24,11 @@ function AboutUs() {
         <div className="home-content">
           <h1 className="home-title text-center mb-5">OUR VISION, MISSION, PHILOSOPHY</h1>
           
-          <p className="home-text">
-            SPINDO is revolutionizing the service industry through its innovative technology platform, offering a wide range of home services. From beauty treatments to cleaning, plumbing, carpentry, appliance repair, computer hardware solutions, painting, and customized security services, customers can conveniently book these services through our platform and enjoy them in the comfort of their homes, at their preferred time.
-          </p>
+        
           
-          <div className="service-highlights">
-            <span className="service-tag">Beauty Treatments</span>
-            <span className="service-tag">Cleaning</span>
-            <span className="service-tag">Plumbing</span>
-            <span className="service-tag">Carpentry</span>
-            <span className="service-tag">Appliance Repair</span>
-            <span className="service-tag">Computer Hardware</span>
-            <span className="service-tag">Painting</span>
-            <span className="service-tag">Security Services</span>
-          </div>
+         
           
-          <p className="home-text mb-5">
-            We are committed to delivering a consistently high-quality, standardized, and reliable service experience to our customers. To fulfil this commitment, we collaborate closely with our hand-picked service partners. We empower them with cutting-edge technology, comprehensive training, quality products, specialized tools, financial support, insurance coverage, and the strength of our brand. By doing so, we enable our partners to succeed and uphold our promise of excellence in service delivery.
-          </p>
+         
           
           <Row className="g-4 mb-5">
             <Col md={4}>
@@ -155,6 +154,7 @@ function AboutUs() {
         }
       `}</style>
     </div>
+      </>
   )
 }
 

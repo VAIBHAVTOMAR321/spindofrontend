@@ -50,6 +50,13 @@ function ServicesPage() {
     return `https://mahadevaaya.com/spindo/spindobackend/${imagePath}`;
   };
 
+  // Filter services based on status (published or accepted)
+  const filteredServices = services.filter(service => {
+    // Assuming the status field is named 'status' in your API response
+    // You may need to adjust this based on your actual API response structure
+    return service.status === 'published' || service.status === 'accepted';
+  });
+
   return (
     <div className="home-container">
       <div className="home-background"></div>
@@ -71,7 +78,7 @@ function ServicesPage() {
             </div>
           ) : (
             <Row className="my-4">
-              {services.slice(0, 3).map(service => (
+              {filteredServices.slice(0, 3).map(service => (
                 <Col md={4} key={service.id} className="mb-4">
                   <Card className="service-card">
                     {/* Service Image */}

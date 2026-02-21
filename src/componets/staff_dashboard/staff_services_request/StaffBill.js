@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Container, Form, Button, Row, Col, Card, Spinner, Alert, InputGroup, Table, Dropdown } from "react-bootstrap";
+import { Container, Form, Button, Row, Col, Card, Spinner, Alert, InputGroup, Table } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
 
 import "../../../assets/css/admindashboard.css";
@@ -45,7 +45,7 @@ const StaffBill = () => {
   // State for bill items
   const [billItems, setBillItems] = useState([
     {
-      category: [],
+      category: "",
       description: "",
       amount: "",
       gst: "18",
@@ -83,21 +83,88 @@ const StaffBill = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
+        console.log("Fetching categories...");
         const response = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/get-service/categories/", {
+          method: "GET",
           headers: {
+            "Content-Type": "application/json",
             ...(tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}),
           },
         });
+        
+        console.log("Categories response status:", response.status);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
-        if (data.status && data.data) {
-          const allCategories = data.data.flatMap(cat => cat.subcategories);
-          setCategories(allCategories);
+        console.log("Categories response data:", data);
+        
+        // Handle different response structures
+        if (data && data.data) {
+          // If data is an array of categories with subcategories
+          if (Array.isArray(data.data)) {
+            const allCategories = [];
+            
+            data.data.forEach(cat => {
+              // Add main category if it exists
+              if (cat.category && typeof cat.category === 'string') {
+                allCategories.push(cat.category);
+              }
+              
+              // Add subcategories if they exist
+              if (cat.subcategories && Array.isArray(cat.subcategories)) {
+                cat.subcategories.forEach(subcat => {
+                  // Only add if it's a string, not an object
+                  if (typeof subcat === 'string') {
+                    allCategories.push(subcat);
+                  } else if (subcat && subcat.name && typeof subcat.name === 'string') {
+                    allCategories.push(subcat.name);
+                  }
+                });
+              }
+            });
+            
+            // Remove duplicates and set categories
+            const uniqueCategories = [...new Set(allCategories)];
+            console.log("Extracted categories:", uniqueCategories);
+            setCategories(uniqueCategories);
+          } 
+          // If data is directly an object with category keys
+          else if (typeof data.data === 'object') {
+            const categoryArray = [];
+            Object.keys(data.data).forEach(key => {
+              if (typeof data.data[key] === 'string') {
+                categoryArray.push(data.data[key]);
+              } else if (Array.isArray(data.data[key])) {
+                data.data[key].forEach(item => {
+                  if (typeof item === 'string') {
+                    categoryArray.push(item);
+                  } else if (item && item.name && typeof item.name === 'string') {
+                    categoryArray.push(item.name);
+                  }
+                });
+              }
+            });
+            
+            const uniqueCategories = [...new Set(categoryArray)];
+            console.log("Extracted categories from object:", uniqueCategories);
+            setCategories(uniqueCategories);
+          }
+        } else if (Array.isArray(data)) {
+          // If response is directly an array
+          const stringCategories = data.filter(item => typeof item === 'string');
+          console.log("Categories as array:", stringCategories);
+          setCategories(stringCategories);
         } else {
-          setError("Failed to load service categories.");
+          console.warn("Unexpected categories response structure:", data);
+          setCategories([]); // Set empty array as fallback
         }
       } catch (err) {
         console.error("Error fetching categories:", err);
-        setError("Error fetching service categories.");
+        setError("Failed to load service categories. Please try again later.");
+        setCategories([]); // Set empty array on error
       } finally {
         setCategoriesLoading(false);
       }
@@ -112,18 +179,28 @@ const StaffBill = () => {
         setVendorsLoading(true);
         const response = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/vendor/list/", {
           headers: {
+            "Content-Type": "application/json",
             ...(tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}),
           },
         });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
-        if (data.status && data.data) {
+        console.log("Vendors response:", data);
+        
+        if (data && data.data && Array.isArray(data.data)) {
           setVendors(data.data);
         } else {
-          setError("Failed to load vendor list.");
+          console.warn("Unexpected vendors response structure:", data);
+          setVendors([]);
         }
       } catch (err) {
         console.error("Error fetching vendors:", err);
-        setError("Error fetching vendor list.");
+        setError("Failed to load vendor list. Please try again later.");
+        setVendors([]);
       } finally {
         setVendorsLoading(false);
       }
@@ -134,6 +211,15 @@ const StaffBill = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setBillData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Get available categories for a specific item (excluding already selected categories)
+  const getAvailableCategories = (currentIndex) => {
+    const selectedCategories = billItems
+      .map((item, index) => index !== currentIndex ? item.category : null)
+      .filter(cat => cat !== null && cat !== "");
+    
+    return categories.filter(cat => !selectedCategories.includes(cat));
   };
 
   // Handle bill item changes
@@ -151,26 +237,10 @@ const StaffBill = () => {
     setBillItems(updatedItems);
   };
 
-  // Handle category selection for bill items
-  const handleCategorySelect = (index, category) => {
-    const updatedItems = [...billItems];
-    if (!updatedItems[index].category.includes(category)) {
-      updatedItems[index].category = [...updatedItems[index].category, category];
-      setBillItems(updatedItems);
-    }
-  };
-
-  // Handle category removal for bill items
-  const handleCategoryRemove = (index, categoryToRemove) => {
-    const updatedItems = [...billItems];
-    updatedItems[index].category = updatedItems[index].category.filter(category => category !== categoryToRemove);
-    setBillItems(updatedItems);
-  };
-
   // Add new bill item
   const addBillItem = () => {
     setBillItems([...billItems, {
-      category: [],
+      category: "",
       description: "",
       amount: "",
       gst: "18",
@@ -422,7 +492,13 @@ const StaffBill = () => {
                             <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}><i className="bi bi-gear me-2"></i>Service Type</Form.Label>
                             <Form.Select name="service_type" value={billData.service_type} onChange={handleChange} required style={{ backgroundColor: "#e8f4f8", borderColor: "#52ab98" }}>
                               <option value="">-- Select Service --</option>
-                              {categories.map((cat, index) => <option key={index} value={cat}>{cat}</option>)}
+                              {categories.length > 0 ? (
+                                categories.map((cat, index) => (
+                                  <option key={index} value={cat}>{cat}</option>
+                                ))
+                              ) : (
+                                <option disabled>No categories available</option>
+                              )}
                             </Form.Select>
                           </Form.Group>
                         </Col>
@@ -480,10 +556,16 @@ const StaffBill = () => {
                                       style={{ backgroundColor: "#e8f4f8", borderColor: "#52ab98", fontSize: "14px" }}
                                     >
                                       <option value="">-- Select --</option>
-                                      {categories.map((cat, idx) => <option key={idx} value={cat}>{cat}</option>)}
+                                      {getAvailableCategories(index).length > 0 ? (
+                                        getAvailableCategories(index).map((cat, idx) => (
+                                          <option key={idx} value={cat}>{cat}</option>
+                                        ))
+                                      ) : (
+                                        <option disabled>No categories available</option>
+                                      )}
                                     </Form.Select>
                                   </td>
-                                  {/* <td>
+                                  <td>
                                     <Form.Control 
                                       type="text" 
                                       value={item.description} 
@@ -492,7 +574,7 @@ const StaffBill = () => {
                                       style={{ backgroundColor: "#e8f4f8", borderColor: "#52ab98", fontSize: "14px" }}
                                       placeholder="Item description"
                                     />
-                                  </td> */}
+                                  </td>
                                   <td>
                                     <Form.Control 
                                       type="number" 
@@ -513,6 +595,7 @@ const StaffBill = () => {
                                       required
                                       step="0.01"
                                       min="0"
+                                      max="100"
                                       style={{ backgroundColor: "#e8f4f8", borderColor: "#52ab98", fontSize: "14px" }}
                                       placeholder="18"
                                     />
