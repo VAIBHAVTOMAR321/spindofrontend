@@ -196,7 +196,7 @@ const StaffDashBoard = () => {
                           </span>
                         )}
                       </div>
-                      <h6 className="fw-bold mb-1 text-center" style={{ fontSize: 'clamp(13px, 2vw, 15px)' }}>Welcome, {profile.username || "Staff"}!</h6>
+                      <h6 className="fw-bold mb-1 text-center" style={{ fontSize: 'clamp(13px, 2vw, 15px)' }}>Welcome, {profile.can_name || profile.username || "Staff"}!</h6>
                       <div className="text-muted mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>{profile.email}</div>
                       <div className="mb-0" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}><b>Mobile:</b> {profile.mobile_number}</div>
                       <div className="mb-2" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>
