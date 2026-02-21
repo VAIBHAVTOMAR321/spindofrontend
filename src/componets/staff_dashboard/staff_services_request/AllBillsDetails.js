@@ -443,7 +443,6 @@ const AllBillsDetails = () => {
                               <th>Bill ID</th>
                               <th>Payment ID</th>
                               <th>Customer Name</th>
-                              <th>Service Type</th>
                               <th>Bill Items</th>
                               <th>Amount</th>
                               <th>GST</th>
@@ -487,7 +486,6 @@ const AllBillsDetails = () => {
                                     <td>{bill.bill_id}</td>
                                     <td>{bill.payment_id || '-'}</td>
                                     <td>{bill.customer_name}</td>
-                                    <td>{bill.service_type || '-'}</td>
                                     <td 
                                       onClick={() => bill.bill_items && bill.bill_items.length > 0 && handleViewItems(bill)}
                                       style={{ 
@@ -576,14 +574,10 @@ const AllBillsDetails = () => {
                               <p><strong>Payment ID:</strong> {selectedBill.payment_id || '-'}</p>
                               <p><strong>Customer Name:</strong> {selectedBill.customer_name}</p>
                               <p><strong>Customer Mobile:</strong> {selectedBill.cust_mobile || '-'}</p>
-                              <p><strong>Service Type:</strong> {selectedBill.service_type || '-'}</p>
-                              <p><strong>Service Description:</strong> {selectedBill.service_des || '-'}</p>
                             </Col>
                             <Col md={6}>
                               <p><strong>Amount:</strong> {formatCurrency(
-                                selectedBill.amount !== null && selectedBill.amount !== undefined ? 
-                                  selectedBill.amount : 
-                                  calculateAmountFromItems(selectedBill.bill_items)
+                                calculateAmountFromItems(selectedBill.bill_items)
                               )}</p>
                               <p style={{ display: 'flex', alignItems: 'center' }}>
                                 <strong>GST:</strong> 
@@ -608,11 +602,8 @@ const AllBillsDetails = () => {
                                 )}
                               </p>
                               <p><strong>Total Payment:</strong> {formatCurrency(
-                                selectedBill.total_payment !== null && selectedBill.total_payment !== undefined ? 
-                                  selectedBill.total_payment : 
-                                  calculateTotalFromItems(selectedBill.bill_items)
+                                calculateTotalFromItems(selectedBill.bill_items)
                               )}</p>
-                              <p><strong>Payment Type:</strong> {selectedBill.payment_type || '-'}</p>
                               <p><strong>Status:</strong> <span style={{ fontWeight: 600, color: selectedBill.status === 'Paid' ? '#52ab98' : selectedBill.status === 'Unpaid' ? '#e53935' : '#2b6777' }}>{selectedBill.status || 'Pending'}</span></p>
                             </Col>
                           </Row>

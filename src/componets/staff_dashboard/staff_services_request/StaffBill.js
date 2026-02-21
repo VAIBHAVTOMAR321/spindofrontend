@@ -108,21 +108,9 @@ const StaffBill = () => {
             const allCategories = [];
             
             data.data.forEach(cat => {
-              // Add main category if it exists
+              // Add only main category, skip subcategories
               if (cat.category && typeof cat.category === 'string') {
                 allCategories.push(cat.category);
-              }
-              
-              // Add subcategories if they exist
-              if (cat.subcategories && Array.isArray(cat.subcategories)) {
-                cat.subcategories.forEach(subcat => {
-                  // Only add if it's a string, not an object
-                  if (typeof subcat === 'string') {
-                    allCategories.push(subcat);
-                  } else if (subcat && subcat.name && typeof subcat.name === 'string') {
-                    allCategories.push(subcat.name);
-                  }
-                });
               }
             });
             
@@ -323,21 +311,31 @@ const StaffBill = () => {
     setSuccess("");
 
     try {
-      // Prepare bill items in the required format
-      const formattedBillItems = billItems.map(item => [
-        item.category,
-        item.description,
-        parseFloat(item.amount).toFixed(2),
-        (parseFloat(item.amount) * parseFloat(item.gst) / 100).toFixed(2),
-        item.total
-      ]);
+      // Prepare bill items in the required format: [category, description, amount, gst_percentage, total]
+      const formattedBillItems = billItems.map(item => {
+        const amount = parseFloat(item.amount) || 0;
+        const gstPercentage = parseFloat(item.gst) || 0;
+        const gstAmount = (amount * gstPercentage) / 100;
+        const total = amount + gstAmount;
+        
+        return [
+          item.category,
+          item.description,
+          amount.toFixed(2),
+          gstPercentage.toFixed(2), // GST percentage (not amount)
+          total.toFixed(2)
+        ];
+      });
 
+      // Create proper payload with only required fields
       const payload = {
-        ...billData,
-        amount: calculateTotalBill(), // Set main amount to grand total
-        gst: "0.00", // GST is calculated per item, so main GST can be 0
-        total_payment: calculateTotalBill(),
-        bill_items: formattedBillItems
+        vendor_id: billData.vendor_id,
+        payment_id: billData.payment_id,
+        customer_name: billData.customer_name,
+        cust_mobile: billData.cust_mobile,
+        bill_date_time: billData.bill_date_time,
+        bill_items: formattedBillItems,
+        status: billData.status
       };
 
       console.log("Payload being sent:", JSON.stringify(payload, null, 2));
