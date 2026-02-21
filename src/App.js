@@ -14,6 +14,7 @@ import Home from "./componets/pages/Home";
 import AdminDashBoard from "./componets/admin_dashboard/AdminDashBoard";
 import NavBar from "./componets/navbar/NavBar";
 import Login from "./componets/login/Login";
+import ForgotPassword from "./componets/login/ForgotPassword";
 import Registration from "./register/Registration";
 import UserDashBoard from "./componets/user_dashboard/UserDashBoard";
 import UserProfile from "./componets/user_dashboard/UserProfile";
@@ -116,6 +117,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/Registration" element={<Registration />} />
           <Route path="/Login" element={<Login />} />
+          <Route path="/ForgotPassword" element={<ForgotPassword />} />
           <Route path="/AboutUs" element={<AboutUs />} />
           <Route path="/ServicesPage" element={<ServicesPage />} />
           <Route path="/VendorList" element={<VendorList />} />

@@ -43,21 +43,25 @@ const Login = () => {
         requestBody = {
           mobile_number: emailOrPhone,
           password: password,
+          role: 'customer'
         };
       } else if (role === 'staffadmin') {
         requestBody = {
           mobile_number: staffAdminId,
           password: password,
+          role: 'staffadmin'
         };
       } else if (role === 'admin') {
         requestBody = {
           mobile_number: adminId,
           password: password,
+          role: 'admin'
         };
       } else if (role === 'vendor') {
         requestBody = {
           mobile_number: email,
           password: password,
+          role: 'vendor'
         };
       }
 
@@ -398,6 +402,16 @@ const Login = () => {
               'Log In'
             )}
           </button>
+          </div>
+          <div className="text-center forgot-password-section">
+            <button
+              type="button"
+              className="forgot-password-link"
+              onClick={() => navigate('/ForgotPassword')}
+              disabled={isLoading}
+            >
+              Forgot Password?
+            </button>
           </div>
         </form>
       </div>

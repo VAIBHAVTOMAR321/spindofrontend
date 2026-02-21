@@ -63,6 +63,22 @@
           border: 1px solid #f5c6cb;
         }
         
+        .success-message {
+          background-color: #d4edda;
+          color: #155724;
+          padding: 12px;
+          margin: 15px;
+          border-radius: 5px;
+          border: 1px solid #c3e6cb;
+        }
+        
+        .password-hint {
+          display: block;
+          margin-top: 5px;
+          color: #6c757d;
+          font-size: 11px;
+        }
+        
         .role-tabs {
           display: flex;
           background-color: #f8f9fa;
@@ -153,6 +169,33 @@
         .login-button:disabled {
           background-color: #6c757d;
           cursor: not-allowed;
+        }
+        
+        .forgot-password-section {
+          padding: 0 25px 20px 25px;
+        }
+        
+        .forgot-password-link {
+          background: none;
+          border: none;
+          color: #0077B5;
+          text-decoration: none;
+          cursor: pointer;
+          font-size: 13px;
+          font-weight: 500;
+          padding: 0;
+          transition: color 0.3s ease;
+        }
+        
+        .forgot-password-link:hover {
+          color: #152054;
+          text-decoration: underline;
+        }
+        
+        .forgot-password-link:disabled {
+          color: #6c757d;
+          cursor: not-allowed;
+          opacity: 0.6;
         }
         
         .loading-spinner {
