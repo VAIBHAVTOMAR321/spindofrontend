@@ -59,6 +59,7 @@ import AllBills from "./componets/admin_dashboard/pages/AllBills";
 import SolarInstalation from "./componets/pages/SolarInstalation";
 import SolarQuery from "./componets/admin_dashboard/pages/SolarQuery";
 import ManageCompanyDetails from "./componets/admin_dashboard/media_link/ManageCompanyDetails";
+import PaymentQR from "./componets/pages/PaymentQR";
 
 
 
@@ -123,6 +124,8 @@ function App() {
           <Route path="/VendorList" element={<VendorList />} />
           <Route path="/ContactUs" element={<ContactUs />} />
           <Route path="/SolarInstalation" element={<SolarInstalation />} />
+          <Route path="/PaymentQR" element={<PaymentQR />} />
+          
           {/* Protected Routes */}
           <Route 
             path="/AdminDashBoard" 

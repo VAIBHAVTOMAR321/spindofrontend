@@ -255,7 +255,7 @@ function NavBar() {
               <Nav.Link href="/ContactUs" className="custom-nav-link">
                 Get in Touch
               </Nav.Link>
-              <Nav.Link href="#payment" className="custom-nav-link">
+              <Nav.Link href="/PaymentQR" className="custom-nav-link">
                 Payment
               </Nav.Link>
               <Nav.Link href="/Login" className="custom-nav-link">
