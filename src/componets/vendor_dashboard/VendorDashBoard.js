@@ -21,6 +21,7 @@ const VendorDashBoard = () => {
   const [billCount, setBillCount] = useState(0);
   const [paidBillCount, setPaidBillCount] = useState(0);
   const [unpaidBillCount, setUnpaidBillCount] = useState(0);
+  const [cancelledRequestCount, setCancelledRequestCount] = useState(0);
   const [queryCount, setQueryCount] = useState(0);
   const [approvedQueryCount, setApprovedQueryCount] = useState(0);
   const [pendingQueryCount, setPendingQueryCount] = useState(0);
@@ -59,19 +60,24 @@ const VendorDashBoard = () => {
       .then(res => res.json())
       .then(data => {
         if (data.data && Array.isArray(data.data)) {
-          setCompletedRequestCount(data.data.filter(r => (r.status || '').toLowerCase() === 'completed').length);
-          setPendingRequestCount(data.data.filter(r => (r.status || '').toLowerCase() === 'pending').length);
-          setAssignedRequestCount(data.data.filter(r => (r.status || '').toLowerCase() === 'assigned').length);
+          const vendorId = user.uniqueId;
+          // Count requests based on assignment status for this vendor
+          setCompletedRequestCount(data.data.filter(r => Array.isArray(r.assignments) && r.assignments.some(a => Array.isArray(a) && a[1] === vendorId && (a[3] || '').toLowerCase() === 'completed')).length);
+          setPendingRequestCount(data.data.filter(r => Array.isArray(r.assignments) && r.assignments.some(a => Array.isArray(a) && a[1] === vendorId && (a[3] || '').toLowerCase() === 'pending')).length);
+          setAssignedRequestCount(data.data.filter(r => Array.isArray(r.assignments) && r.assignments.some(a => Array.isArray(a) && a[1] === vendorId && (a[3] || '').toLowerCase() === 'assigned')).length);
+          setCancelledRequestCount(data.data.filter(r => Array.isArray(r.assignments) && r.assignments.some(a => Array.isArray(a) && a[1] === vendorId && (a[3] || '').toLowerCase() === 'cancelled')).length);
         } else {
           setCompletedRequestCount(0);
           setPendingRequestCount(0);
           setAssignedRequestCount(0);
+          setCancelledRequestCount(0);
         }
       })
       .catch(() => {
         setCompletedRequestCount(0);
         setPendingRequestCount(0);
         setAssignedRequestCount(0);
+        setCancelledRequestCount(0);
       });
     // Bills (fetch from /api/billing/?vendor_id=...)
     fetch(`https://mahadevaaya.com/spindo/spindobackend/api/billing/?vendor_id=${user.uniqueId}`, {
@@ -255,7 +261,7 @@ const VendorDashBoard = () => {
               <div className="mb-3">
                   <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Requests</h6>
                   <Row className="g-2 mb-2" style={{ margin: 0 }}>
-                    <Col xs={12} sm={6} md={6} lg={4}>
+                    <Col xs={12} sm={6} md={6} lg={3}>
                       <Link to="/VendorRequests" state={{ filter: 'Completed' }} style={{ textDecoration: 'none' }}>
                         <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                           <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -268,7 +274,7 @@ const VendorDashBoard = () => {
                         </Card>
                       </Link>
                     </Col>
-                    <Col xs={12} sm={6} md={6} lg={4}>
+                    <Col xs={12} sm={6} md={6} lg={3}>
                       <Link to="/VendorRequests" state={{ filter: 'Pending' }} style={{ textDecoration: 'none' }}>
                         <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                           <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -281,7 +287,7 @@ const VendorDashBoard = () => {
                         </Card>
                       </Link>
                     </Col>
-                    <Col xs={12} sm={6} md={6} lg={4}>
+                    <Col xs={12} sm={6} md={6} lg={3}>
                       <Link to="/VendorRequests" state={{ filter: 'Assigned' }} style={{ textDecoration: 'none' }}>
                         <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                           <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -290,6 +296,19 @@ const VendorDashBoard = () => {
                             </div>
                             <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Assigned</div>
                             <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{assignedRequestCount}</div>
+                          </Card.Body>
+                        </Card>
+                      </Link>
+                    </Col>
+                    <Col xs={12} sm={6} md={6} lg={3}>
+                      <Link to="/VendorRequests" state={{ filter: 'Cancelled' }} style={{ textDecoration: 'none' }}>
+                        <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
+                          <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
+                            <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#ffe3e3', color: '#e53935', width: 28, height: 28, borderRadius: '50%' }}>
+                              <i className="bi bi-x-circle" style={{ fontSize: 14 }}></i>
+                            </div>
+                            <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Cancelled</div>
+                            <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{cancelledRequestCount}</div>
                           </Card.Body>
                         </Card>
                       </Link>
