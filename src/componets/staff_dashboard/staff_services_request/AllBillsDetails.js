@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Spinner, Alert, Table, Button, Modal, Form } from "react-bootstrap";
+import { Container, Row, Col, Card, Spinner, Alert, Table, Button, Modal, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
 import "../../../assets/css/admindashboard.css";
@@ -360,6 +360,28 @@ const AllBillsDetails = () => {
     return 'N/A';
   };
 
+  // Get GST display value (percentage or amount)
+  const getGSTDisplayValue = (item) => {
+    let gstValue = 0;
+    
+    if (Array.isArray(item)) {
+      if (item.length > 3) {
+        gstValue = parseFloat(item[3]) || 0;
+      }
+    } else if (typeof item === 'object' && item !== null) {
+      gstValue = parseFloat(item.gst) || parseFloat(item.GST) || parseFloat(item.tax) || 0;
+    }
+    
+    // Return as percentage if it's a percentage value
+    if (gstValue > 0 && gstValue <= 100) {
+      return `${gstValue}%`;
+    } else if (gstValue > 100) {
+      return formatCurrency(gstValue);
+    }
+    
+    return '0%';
+  };
+
   return (
     <div className="dashboard-container">
       <StaffLeftNav
@@ -488,10 +510,12 @@ const AllBillsDetails = () => {
                                     }}>
                                       {calculatedGSTPercentage > 0 ? `${calculatedGSTPercentage}%` : '0%'}
                                       {calculatedGSTPercentage > 0 && (
-                                        <i className=" ms-1" 
-                                           title={`GST calculated from ${bill.bill_items ? bill.bill_items.length : 0} items`}
-                                           
-                                        />
+                                        <OverlayTrigger
+                                          placement="top"
+                                          overlay={<Tooltip id={`gst-tooltip-${idx}`}>GST calculated from {bill.bill_items ? bill.bill_items.length : 0} items</Tooltip>}
+                                        >
+                                          <i className="bi bi-info-circle ms-1" style={{ cursor: 'pointer' }} />
+                                        </OverlayTrigger>
                                       )}
                                     </td>
                                     <td>{formatCurrency(calculatedTotal)}</td>
@@ -561,9 +585,28 @@ const AllBillsDetails = () => {
                                   selectedBill.amount : 
                                   calculateAmountFromItems(selectedBill.bill_items)
                               )}</p>
-                              <p><strong>GST:</strong> {formatCurrency(
-                                calculateGSTFromItems(selectedBill.bill_items)
-                              )}</p>
+                              <p style={{ display: 'flex', alignItems: 'center' }}>
+                                <strong>GST:</strong> 
+                                <span style={{ 
+                                  marginLeft: '8px',
+                                  backgroundColor: '#f0f8ff',
+                                  padding: '2px 8px',
+                                  borderRadius: '4px',
+                                  fontWeight: calculateGSTPercentageFromItems(selectedBill.bill_items) > 0 ? '600' : 'normal',
+                                  color: calculateGSTPercentageFromItems(selectedBill.bill_items) > 0 ? '#2b6777' : '#6c757d'
+                                }}>
+                                  {calculateGSTPercentageFromItems(selectedBill.bill_items) > 0 ? 
+                                    `${calculateGSTPercentageFromItems(selectedBill.bill_items)}%` : '0%'}
+                                </span>
+                                {calculateGSTPercentageFromItems(selectedBill.bill_items) > 0 && (
+                                  <OverlayTrigger
+                                    placement="top"
+                                    overlay={<Tooltip>GST calculated from bill items</Tooltip>}
+                                  >
+                                    <i className="bi bi-info-circle ms-2" style={{ cursor: 'pointer', color: '#2b6777' }} />
+                                  </OverlayTrigger>
+                                )}
+                              </p>
                               <p><strong>Total Payment:</strong> {formatCurrency(
                                 selectedBill.total_payment !== null && selectedBill.total_payment !== undefined ? 
                                   selectedBill.total_payment : 
@@ -600,6 +643,7 @@ const AllBillsDetails = () => {
                                       let amount = 0;
                                       let gst = 0;
                                       let total = 0;
+                                      let gstDisplay = '0%';
                                       
                                       if (Array.isArray(item)) {
                                         category = item[0] || '-';
@@ -610,8 +654,10 @@ const AllBillsDetails = () => {
                                         // Determine if GST is percentage or amount
                                         if (gstValue > 0 && gstValue <= 100) {
                                           gst = (amount * gstValue) / 100;
+                                          gstDisplay = `${gstValue}%`;
                                         } else if (gstValue > 100) {
                                           gst = gstValue;
+                                          gstDisplay = formatCurrency(gstValue);
                                         }
                                         
                                         total = parseFloat(item[4]) || (amount + gst);
@@ -624,8 +670,10 @@ const AllBillsDetails = () => {
                                         // Determine if GST is percentage or amount
                                         if (gstValue > 0 && gstValue <= 100) {
                                           gst = (amount * gstValue) / 100;
+                                          gstDisplay = `${gstValue}%`;
                                         } else if (gstValue > 100) {
                                           gst = gstValue;
+                                          gstDisplay = formatCurrency(gstValue);
                                         }
                                         
                                         total = parseFloat(item.total) || parseFloat(item.Total) || (amount + gst);
@@ -637,7 +685,16 @@ const AllBillsDetails = () => {
                                           <td>{category}</td>
                                           <td>{description}</td>
                                           <td>{formatCurrency(amount)}</td>
-                                          <td>{formatCurrency(gst)}</td>
+                                          <td>
+                                            <span style={{ 
+                                              backgroundColor: '#f0f8ff',
+                                              padding: '2px 6px',
+                                              borderRadius: '4px',
+                                              fontSize: '0.9em'
+                                            }}>
+                                              {gstDisplay}
+                                            </span>
+                                          </td>
                                           <td>{formatCurrency(total)}</td>
                                         </tr>
                                         
@@ -648,9 +705,7 @@ const AllBillsDetails = () => {
                                       <td>{formatCurrency(
                                         calculateAmountFromItems(selectedBill.bill_items)
                                       )}</td>
-                                      <td>{formatCurrency(
-                                        calculateGSTFromItems(selectedBill.bill_items)
-                                      )}</td>
+                                      <td>{calculateGSTPercentageFromItems(selectedBill.bill_items) > 0 ? `${calculateGSTPercentageFromItems(selectedBill.bill_items)}%` : '0%'}</td>
                                       <td>{formatCurrency(
                                         calculateTotalFromItems(selectedBill.bill_items)
                                       )}</td>
@@ -729,6 +784,7 @@ const AllBillsDetails = () => {
                                   let amount = 0;
                                   let gst = 0;
                                   let total = 0;
+                                  let gstDisplay = '0%';
                                   
                                   if (Array.isArray(item)) {
                                     category = item[0] || '-';
@@ -739,8 +795,10 @@ const AllBillsDetails = () => {
                                     // Determine if GST is percentage or amount
                                     if (gstValue > 0 && gstValue <= 100) {
                                       gst = (amount * gstValue) / 100;
+                                      gstDisplay = `${gstValue}%`;
                                     } else if (gstValue > 100) {
                                       gst = gstValue;
+                                      gstDisplay = formatCurrency(gstValue);
                                     }
                                     
                                     total = parseFloat(item[4]) || (amount + gst);
@@ -753,8 +811,10 @@ const AllBillsDetails = () => {
                                     // Determine if GST is percentage or amount
                                     if (gstValue > 0 && gstValue <= 100) {
                                       gst = (amount * gstValue) / 100;
+                                      gstDisplay = `${gstValue}%`;
                                     } else if (gstValue > 100) {
                                       gst = gstValue;
+                                      gstDisplay = formatCurrency(gstValue);
                                     }
                                     
                                     total = parseFloat(item.total) || parseFloat(item.Total) || (amount + gst);
@@ -766,7 +826,16 @@ const AllBillsDetails = () => {
                                       <td>{category}</td>
                                       <td>{description}</td>
                                       <td>{formatCurrency(amount)}</td>
-                                      <td>{formatCurrency(gst)}</td>
+                                      <td>
+                                        <span style={{ 
+                                          backgroundColor: '#f0f8ff',
+                                          padding: '2px 6px',
+                                          borderRadius: '4px',
+                                          fontSize: '0.9em'
+                                        }}>
+                                          {gstDisplay}
+                                        </span>
+                                      </td>
                                       <td style={{ fontWeight: 600 }}>{formatCurrency(total)}</td>
                                     </tr>
                                   );
@@ -776,9 +845,7 @@ const AllBillsDetails = () => {
                                   <td>{formatCurrency(
                                     calculateAmountFromItems(selectedBillItems.bill_items)
                                   )}</td>
-                                  <td>{formatCurrency(
-                                    calculateGSTFromItems(selectedBillItems.bill_items)
-                                  )}</td>
+                                  <td>{calculateGSTPercentageFromItems(selectedBillItems.bill_items) > 0 ? `${calculateGSTPercentageFromItems(selectedBillItems.bill_items)}%` : '0%'}</td>
                                   <td>{formatCurrency(
                                     calculateTotalFromItems(selectedBillItems.bill_items)
                                   )}</td>
