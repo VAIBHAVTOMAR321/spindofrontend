@@ -200,7 +200,7 @@ const ManageCompanyDetails = ({ showCardOnly = false }) => {
     return (
       <div className="dashboard-card" onClick={() => navigate('/CompanyDetails')} style={{ cursor: 'pointer' }}>
         <div className="dashboard-card-icon user-icon" title="Company Details">
-          <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2z" stroke="#10b981" strokeWidth="2"/><path d="M12 7v5M9 10h6" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/></svg>
+          <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2z" stroke="#fff" strokeWidth="2"/><path d="M12 7v5M9 10h6" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/></svg>
         </div>
         <div className="dashboard-card-title">Company Details</div>
         <div className="dashboard-card-value">{companyData ? '1' : '0'}</div>

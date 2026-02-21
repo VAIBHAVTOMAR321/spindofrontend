@@ -243,7 +243,7 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
     return (
       <div className="dashboard-card" onClick={() => navigate('/RegisteredVendor')} style={{ cursor: 'pointer' }}>
         <div className="dashboard-card-icon user-icon" title="Number Of Vendors">
-          <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" stroke="#10b981" strokeWidth="2"/><path d="M4 20c0-2.5 3.5-4 8-4s8 1.5 8 4" stroke="#10b981" strokeWidth="2"/></svg>
+          <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" stroke="#fff" strokeWidth="2"/><path d="M4 20c0-2.5 3.5-4 8-4s8 1.5 8 4" stroke="#10b981" strokeWidth="2"/></svg>
         </div>
         <div className="dashboard-card-title">Number Of Vendors</div>
         <div className="dashboard-card-value">{count}</div>
@@ -412,8 +412,8 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
               </Modal>
               <div className="table-responsive rounded-4 shadow-sm" style={{ background: '#fff', padding: '0.5rem 0.5rem 1rem 0.5rem' }}>
                 <Table className="align-middle mb-0" style={{ minWidth: 700 }}>
-                  <thead style={{ background: '#f1f5f9' }}>
-                    <tr style={{ fontWeight: 700, color: '#10b981', fontSize: 15 }}>
+                  <thead className="table-thead">
+                    <tr style={{ fontWeight: 700, color: '', fontSize: 15 }}>
                       <th>Unique ID</th>
                       <th>Name</th>
                       <th>Mobile</th>
@@ -545,13 +545,13 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
               {/* Edit Modal */}
               <Modal show={showModal} onHide={resetForm} centered>
                 <Modal.Header closeButton style={{ background: '#f1f5f9', borderBottom: '1px solid #e5e7eb' }}>
-                  <Modal.Title style={{ fontWeight: 700, color: '#10b981' }}>
+                  <Modal.Title style={{ fontWeight: 700, color: '#fff' }}>
                     Update Vendor
                   </Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{ background: '#f8fafc', borderRadius: 12 }}>
                   {formSuccess && (
-                    <div style={{ color: '#15803d', background: '#dcfce7', borderRadius: 8, padding: '8px 12px', marginBottom: 12, fontWeight: 600, textAlign: 'center' }}>
+                    <div style={{ color: '#fff', background: '#dcfce7', borderRadius: 8, padding: '8px 12px', marginBottom: 12, fontWeight: 600, textAlign: 'center' }}>
                       {formSuccess}
                     </div>
                   )}
@@ -591,8 +591,8 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
                         style={{ fontSize: 15 }}
                       />
                     </Form.Group>
-                    <Button type="submit" className="w-100 fw-bold" style={{ borderRadius: 8, fontSize: 16, background: '#10b981', border: 'none' }}>
-                      Update
+                    <Button type="submit" className="w-100 fw-bold" style={{ borderRadius: 8, fontSize: 16,  border: 'none' }}>
+                      Update 
                     </Button>
                   </Form>
                 </Modal.Body>
