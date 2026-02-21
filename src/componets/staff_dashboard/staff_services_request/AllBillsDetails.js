@@ -51,18 +51,34 @@ const AllBillsDetails = () => {
     })
       .then((res) => res.json())
       .then((data) => {
+        // Debug: Log the API response
+        console.log("API Response:", data);
+        
         // Check if data is an array or has data property
         if (Array.isArray(data)) {
+          // Debug: Log first bill to check structure
+          if (data.length > 0) {
+            console.log("First bill structure:", data[0]);
+            console.log("Bill items structure:", data[0].bill_items);
+          }
           setBills(data);
         } else if (data.status && Array.isArray(data.data)) {
+          // Debug: Log first bill to check structure
+          if (data.data.length > 0) {
+            console.log("First bill structure:", data.data[0]);
+            console.log("Bill items structure:", data.data[0].bill_items);
+          }
           setBills(data.data);
         } else {
           // If single object is returned, wrap in array
+          console.log("Single bill structure:", data);
+          console.log("Bill items structure:", data.bill_items);
           setBills([data]);
         }
         setLoading(false);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("Error fetching bills:", err);
         setError("Error fetching bills.");
         setLoading(false);
       });
@@ -126,7 +142,7 @@ const AllBillsDetails = () => {
 
   // Format currency with proper null checks
   const formatCurrency = (value) => {
-    if (value === null || value === undefined || value === '') return '-';
+    if (value === null || value === undefined || value === '' || isNaN(parseFloat(value))) return '₹0.00';
     return `₹${parseFloat(value).toFixed(2)}`;
   };
 
@@ -134,8 +150,186 @@ const AllBillsDetails = () => {
   const calculateTotalFromItems = (billItems) => {
     if (!billItems || !Array.isArray(billItems)) return 0;
     return billItems.reduce((total, item) => {
-      const itemTotal = parseFloat(item[4]) || 0; // Total is at index 4
+      let itemTotal = 0;
+      let amount = 0;
+      let gstAmount = 0;
+      
+      if (Array.isArray(item)) {
+        // Check if item has total at index 4
+        if (item.length > 4) {
+          const storedTotal = parseFloat(item[4]);
+          if (!isNaN(storedTotal)) {
+            itemTotal = storedTotal;
+          } else {
+            // Calculate total if stored total is invalid
+            amount = parseFloat(item[2]) || 0;
+            const gstValue = parseFloat(item[3]) || 0;
+            
+            if (gstValue > 0 && gstValue <= 100) {
+              gstAmount = (amount * gstValue) / 100;
+            } else if (gstValue > 100) {
+              gstAmount = gstValue;
+            }
+            
+            itemTotal = amount + gstAmount;
+          }
+        } else if (item.length > 3) {
+          // Calculate total from amount and GST
+          amount = parseFloat(item[2]) || 0;
+          const gstValue = parseFloat(item[3]) || 0;
+          
+          if (gstValue > 0 && gstValue <= 100) {
+            gstAmount = (amount * gstValue) / 100;
+          } else if (gstValue > 100) {
+            gstAmount = gstValue;
+          }
+          
+          itemTotal = amount + gstAmount;
+        }
+      } else if (typeof item === 'object' && item !== null) {
+        // If item has total property, use it
+        const storedTotal = parseFloat(item.total) || parseFloat(item.Total);
+        if (!isNaN(storedTotal)) {
+          itemTotal = storedTotal;
+        } else {
+          // Calculate total from amount and GST
+          amount = parseFloat(item.amount) || parseFloat(item.Amount) || 0;
+          const gstValue = parseFloat(item.gst) || parseFloat(item.GST) || parseFloat(item.tax) || 0;
+          
+          if (gstValue > 0 && gstValue <= 100) {
+            gstAmount = (amount * gstValue) / 100;
+          } else if (gstValue > 100) {
+            gstAmount = gstValue;
+          }
+          
+          itemTotal = amount + gstAmount;
+        }
+      }
+      
       return total + itemTotal;
+    }, 0);
+  };
+
+  // Calculate GST percentage from bill_items
+  const calculateGSTPercentageFromItems = (billItems) => {
+    if (!billItems || !Array.isArray(billItems)) {
+      return 0;
+    }
+    
+    // Get unique GST percentage from items (assuming all items have same GST)
+    let gstPercentage = 0;
+    
+    for (let index = 0; index < billItems.length; index++) {
+      const item = billItems[index];
+      
+      if (Array.isArray(item)) {
+        // Check if index 3 contains GST (could be amount or percentage)
+        if (item.length > 3) {
+          const gstValue = parseFloat(item[3]) || 0;
+          // Determine if it's a percentage (typically 0-100) 
+          if (gstValue > 0 && gstValue <= 100) {
+            gstPercentage = gstValue;
+            break; // Use first valid GST percentage
+          }
+        }
+      } else if (typeof item === 'object' && item !== null) {
+        // Check if item has GST (could be amount or percentage)
+        const gstValue = parseFloat(item.gst) || parseFloat(item.GST) || parseFloat(item.tax) || 0;
+        // Determine if it's a percentage (typically 0-100) 
+        if (gstValue > 0 && gstValue <= 100) {
+          gstPercentage = gstValue;
+          break; // Use first valid GST percentage
+        }
+      }
+    }
+    
+    return gstPercentage;
+  };
+
+  // Calculate GST from bill_items - Enhanced version with better logging
+  const calculateGSTFromItems = (billItems) => {
+    if (!billItems || !Array.isArray(billItems)) {
+      console.log("GST: No bill items or not an array");
+      return 0;
+    }
+    
+    console.log("GST: Processing bill items:", billItems);
+    
+    const totalGST = billItems.reduce((total, item, index) => {
+      let gstAmount = 0;
+      let amount = 0;
+      
+      if (Array.isArray(item)) {
+        // Get amount from index 2
+        if (item.length > 2) {
+          amount = parseFloat(item[2]) || 0;
+        }
+        
+        // Check if index 3 contains GST (could be amount or percentage)
+        if (item.length > 3) {
+          const gstValue = parseFloat(item[3]) || 0;
+          console.log(`GST Item ${index}: Array format, amount=${amount}, gstValue=${gstValue}`);
+          
+          // Determine if it's a percentage (typically 0-100) or amount
+          if (gstValue > 0 && gstValue <= 100) {
+            // It's a percentage, calculate GST amount
+            gstAmount = (amount * gstValue) / 100;
+            console.log(`GST Item ${index}: Calculated as percentage (${gstValue}%) = ${gstAmount}`);
+          } else if (gstValue > 100) {
+            // It's already an amount (greater than 100 implies rupees)
+            gstAmount = gstValue;
+            console.log(`GST Item ${index}: Treated as fixed amount = ${gstAmount}`);
+          } else {
+            console.log(`GST Item ${index}: Invalid GST value (${gstValue})`);
+          }
+        }
+      } else if (typeof item === 'object' && item !== null) {
+        // Get amount from object
+        amount = parseFloat(item.amount) || parseFloat(item.Amount) || 0;
+        
+        // Check if item has GST (could be amount or percentage)
+        const gstValue = parseFloat(item.gst) || parseFloat(item.GST) || parseFloat(item.tax) || 0;
+        console.log(`GST Item ${index}: Object format, amount=${amount}, gstValue=${gstValue}`);
+        
+        // Determine if it's a percentage (typically 0-100) or amount
+        if (gstValue > 0 && gstValue <= 100) {
+          // It's a percentage, calculate GST amount
+          gstAmount = (amount * gstValue) / 100;
+          console.log(`GST Item ${index}: Calculated as percentage (${gstValue}%) = ${gstAmount}`);
+        } else if (gstValue > 100) {
+          // It's already an amount
+          gstAmount = gstValue;
+          console.log(`GST Item ${index}: Treated as fixed amount = ${gstAmount}`);
+        } else {
+          console.log(`GST Item ${index}: Invalid GST value (${gstValue})`);
+        }
+      }
+      
+      return total + gstAmount;
+    }, 0);
+    
+    console.log(`GST: Total calculated GST = ${totalGST}`);
+    return totalGST;
+  };
+
+  // Calculate amount from bill_items (sum of all amounts without GST)
+  const calculateAmountFromItems = (billItems) => {
+    if (!billItems || !Array.isArray(billItems)) return 0;
+    
+    return billItems.reduce((total, item) => {
+      let amount = 0;
+      
+      if (Array.isArray(item)) {
+        // Extract amount directly from array (index 2)
+        if (item.length > 2) {
+          amount = parseFloat(item[2]) || 0;
+        }
+      } else if (typeof item === 'object' && item !== null) {
+        // Extract amount directly from object
+        amount = parseFloat(item.amount) || parseFloat(item.Amount) || 0;
+      }
+      
+      return total + amount;
     }, 0);
   };
 
@@ -148,12 +342,22 @@ const AllBillsDetails = () => {
     // If only one item, display it
     if (billItems.length === 1) {
       const item = billItems[0];
-      return `${item[0]} - ${item[1]}`;
+      if (Array.isArray(item)) {
+        return `${item[0] || 'N/A'} - ${item[1] || 'N/A'}`;
+      } else if (typeof item === 'object' && item !== null) {
+        return `${item.category || item.Category || 'N/A'} - ${item.description || item.Description || 'N/A'}`;
+      }
+      return 'N/A';
     }
     
     // If multiple items, show first one with count
     const firstItem = billItems[0];
-    return `${firstItem[0]} - ${firstItem[1]} (+${billItems.length - 1} more)`;
+    if (Array.isArray(firstItem)) {
+      return `${firstItem[0] || 'N/A'} - ${firstItem[1] || 'N/A'} (+${billItems.length - 1} more)`;
+    } else if (typeof firstItem === 'object' && firstItem !== null) {
+      return `${firstItem.category || firstItem.Category || 'N/A'} - ${firstItem.description || firstItem.Description || 'N/A'} (+${billItems.length - 1} more)`;
+    }
+    return 'N/A';
   };
 
   return (
@@ -220,6 +424,7 @@ const AllBillsDetails = () => {
                               <th>Service Type</th>
                               <th>Bill Items</th>
                               <th>Amount</th>
+                              <th>GST</th>
                               <th>Total Payment</th>
                               <th>Status</th>
                               <th>Date</th>
@@ -229,14 +434,30 @@ const AllBillsDetails = () => {
                           <tbody>
                             {paginatedBills.length === 0 ? (
                               <tr>
-                                <td colSpan={11} className="text-center">No bills found.</td>
+                                <td colSpan={12} className="text-center">No bills found.</td>
                               </tr>
                             ) : (
                               paginatedBills.map((bill, idx) => {
-                                // Calculate total from bill_items if total_payment is null
-                                const totalPayment = bill.total_payment !== null ? 
+                                // Calculate GST percentage from bill_items
+                                const calculatedGSTPercentage = calculateGSTPercentageFromItems(bill.bill_items);
+                                
+                                // Calculate amount from bill_items if null
+                                const calculatedAmount = bill.amount !== null && bill.amount !== undefined ? 
+                                  parseFloat(bill.amount) : 
+                                  calculateAmountFromItems(bill.bill_items);
+                                
+                                // Calculate total from bill_items if null
+                                const calculatedTotal = bill.total_payment !== null && bill.total_payment !== undefined ? 
                                   parseFloat(bill.total_payment) : 
                                   calculateTotalFromItems(bill.bill_items);
+                                
+                                // Enhanced debug logging
+                                console.log(`=== Bill ${bill.bill_id} ===`);
+                                console.log(`Raw bill.gst:`, bill.gst);
+                                console.log(`Calculated GST percentage from items:`, calculatedGSTPercentage);
+                                console.log(`Final GST value to display:`, calculatedGSTPercentage);
+                                console.log(`Bill items:`, bill.bill_items);
+                                console.log(`========================`);
                                 
                                 return (
                                   <tr key={bill.id || idx}>
@@ -259,8 +480,21 @@ const AllBillsDetails = () => {
                                     >
                                       {formatBillItems(bill.bill_items)}
                                     </td>
-                                    <td>{formatCurrency(bill.amount)}</td>
-                                    <td>{formatCurrency(totalPayment)}</td>
+                                    <td>{formatCurrency(calculatedAmount)}</td>
+                                    <td style={{ 
+                                      backgroundColor: '#f0f8ff',
+                                      fontWeight: calculatedGSTPercentage > 0 ? '600' : 'normal',
+                                      color: calculatedGSTPercentage > 0 ? '' : '#6c757d'
+                                    }}>
+                                      {calculatedGSTPercentage > 0 ? `${calculatedGSTPercentage}%` : '0%'}
+                                      {calculatedGSTPercentage > 0 && (
+                                        <i className=" ms-1" 
+                                           title={`GST calculated from ${bill.bill_items ? bill.bill_items.length : 0} items`}
+                                           
+                                        />
+                                      )}
+                                    </td>
+                                    <td>{formatCurrency(calculatedTotal)}</td>
                                     <td>
                                       <span style={{ fontWeight: 600, color: bill.status === 'Paid' ? '#52ab98' : bill.status === 'Unpaid' ? '#e53935' : '#2b6777' }}>
                                         {bill.status || 'Pending'}
@@ -322,10 +556,16 @@ const AllBillsDetails = () => {
                               <p><strong>Service Description:</strong> {selectedBill.service_des || '-'}</p>
                             </Col>
                             <Col md={6}>
-                              <p><strong>Amount:</strong> {formatCurrency(selectedBill.amount)}</p>
-                              <p><strong>GST:</strong> {formatCurrency(selectedBill.gst)}</p>
+                              <p><strong>Amount:</strong> {formatCurrency(
+                                selectedBill.amount !== null && selectedBill.amount !== undefined ? 
+                                  selectedBill.amount : 
+                                  calculateAmountFromItems(selectedBill.bill_items)
+                              )}</p>
+                              <p><strong>GST:</strong> {formatCurrency(
+                                calculateGSTFromItems(selectedBill.bill_items)
+                              )}</p>
                               <p><strong>Total Payment:</strong> {formatCurrency(
-                                selectedBill.total_payment !== null ? 
+                                selectedBill.total_payment !== null && selectedBill.total_payment !== undefined ? 
                                   selectedBill.total_payment : 
                                   calculateTotalFromItems(selectedBill.bill_items)
                               )}</p>
@@ -344,6 +584,7 @@ const AllBillsDetails = () => {
                                 <Table responsive bordered size="sm" className="mb-3">
                                   <thead className="table-thead">
                                     <tr>
+                                      <th>#</th>
                                       <th>Category</th>
                                       <th>Description</th>
                                       <th>Amount</th>
@@ -352,15 +593,68 @@ const AllBillsDetails = () => {
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {selectedBill.bill_items.map((item, index) => (
-                                      <tr key={index}>
-                                        <td>{item[0] || '-'}</td>
-                                        <td>{item[1] || '-'}</td>
-                                        <td>{formatCurrency(item[2])}</td>
-                                        <td>{formatCurrency(item[3])}</td>
-                                        <td>{formatCurrency(item[4])}</td>
-                                      </tr>
-                                    ))}
+                                     {selectedBill.bill_items.map((item, index) => {
+                                      // Extract values based on item structure
+                                      let category = '-';
+                                      let description = '-';
+                                      let amount = 0;
+                                      let gst = 0;
+                                      let total = 0;
+                                      
+                                      if (Array.isArray(item)) {
+                                        category = item[0] || '-';
+                                        description = item[1] || '-';
+                                        amount = parseFloat(item[2]) || 0;
+                                        const gstValue = parseFloat(item[3]) || 0;
+                                        
+                                        // Determine if GST is percentage or amount
+                                        if (gstValue > 0 && gstValue <= 100) {
+                                          gst = (amount * gstValue) / 100;
+                                        } else if (gstValue > 100) {
+                                          gst = gstValue;
+                                        }
+                                        
+                                        total = parseFloat(item[4]) || (amount + gst);
+                                      } else if (typeof item === 'object' && item !== null) {
+                                        category = item.category || item.Category || '-';
+                                        description = item.description || item.Description || '-';
+                                        amount = parseFloat(item.amount) || parseFloat(item.Amount) || 0;
+                                        const gstValue = parseFloat(item.gst) || parseFloat(item.GST) || 0;
+                                        
+                                        // Determine if GST is percentage or amount
+                                        if (gstValue > 0 && gstValue <= 100) {
+                                          gst = (amount * gstValue) / 100;
+                                        } else if (gstValue > 100) {
+                                          gst = gstValue;
+                                        }
+                                        
+                                        total = parseFloat(item.total) || parseFloat(item.Total) || (amount + gst);
+                                      }
+                                      
+                                      return (
+                                        <tr key={index}>
+                                          <td>{index + 1}</td>
+                                          <td>{category}</td>
+                                          <td>{description}</td>
+                                          <td>{formatCurrency(amount)}</td>
+                                          <td>{formatCurrency(gst)}</td>
+                                          <td>{formatCurrency(total)}</td>
+                                        </tr>
+                                        
+                                      );
+                                    })}
+                                    <tr style={{ backgroundColor: '#f8f9fa', fontWeight: 600 }}>
+                                      <td colSpan={3} className="text-end">Subtotal:</td>
+                                      <td>{formatCurrency(
+                                        calculateAmountFromItems(selectedBill.bill_items)
+                                      )}</td>
+                                      <td>{formatCurrency(
+                                        calculateGSTFromItems(selectedBill.bill_items)
+                                      )}</td>
+                                      <td>{formatCurrency(
+                                        calculateTotalFromItems(selectedBill.bill_items)
+                                      )}</td>
+                                    </tr>
                                   </tbody>
                                 </Table>
                               </Col>
@@ -428,19 +722,66 @@ const AllBillsDetails = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                {selectedBillItems.bill_items.map((item, index) => (
-                                  <tr key={index}>
-                                    <td>{index + 1}</td>
-                                    <td>{item[0] || '-'}</td>
-                                    <td>{item[1] || '-'}</td>
-                                    <td>{formatCurrency(item[2])}</td>
-                                    <td>{formatCurrency(item[3])}</td>
-                                    <td style={{ fontWeight: 600 }}>{formatCurrency(item[4])}</td>
-                                  </tr>
-                                ))}
+                                 {selectedBillItems.bill_items.map((item, index) => {
+                                  // Extract values based on item structure
+                                  let category = '-';
+                                  let description = '-';
+                                  let amount = 0;
+                                  let gst = 0;
+                                  let total = 0;
+                                  
+                                  if (Array.isArray(item)) {
+                                    category = item[0] || '-';
+                                    description = item[1] || '-';
+                                    amount = parseFloat(item[2]) || 0;
+                                    const gstValue = parseFloat(item[3]) || 0;
+                                    
+                                    // Determine if GST is percentage or amount
+                                    if (gstValue > 0 && gstValue <= 100) {
+                                      gst = (amount * gstValue) / 100;
+                                    } else if (gstValue > 100) {
+                                      gst = gstValue;
+                                    }
+                                    
+                                    total = parseFloat(item[4]) || (amount + gst);
+                                  } else if (typeof item === 'object' && item !== null) {
+                                    category = item.category || item.Category || '-';
+                                    description = item.description || item.Description || '-';
+                                    amount = parseFloat(item.amount) || parseFloat(item.Amount) || 0;
+                                    const gstValue = parseFloat(item.gst) || parseFloat(item.GST) || 0;
+                                    
+                                    // Determine if GST is percentage or amount
+                                    if (gstValue > 0 && gstValue <= 100) {
+                                      gst = (amount * gstValue) / 100;
+                                    } else if (gstValue > 100) {
+                                      gst = gstValue;
+                                    }
+                                    
+                                    total = parseFloat(item.total) || parseFloat(item.Total) || (amount + gst);
+                                  }
+                                  
+                                  return (
+                                    <tr key={index}>
+                                      <td>{index + 1}</td>
+                                      <td>{category}</td>
+                                      <td>{description}</td>
+                                      <td>{formatCurrency(amount)}</td>
+                                      <td>{formatCurrency(gst)}</td>
+                                      <td style={{ fontWeight: 600 }}>{formatCurrency(total)}</td>
+                                    </tr>
+                                  );
+                                })}
                                 <tr style={{ backgroundColor: '#f8f9fa', fontWeight: 600 }}>
-                                  <td colSpan={5} className="text-end">Total:</td>
-                                  <td>{formatCurrency(calculateTotalFromItems(selectedBillItems.bill_items))}</td>
+                                  <td colSpan={3} className="text-end">Total:</td>
+                                  <td>{formatCurrency(
+                                    calculateAmountFromItems(selectedBillItems.bill_items)
+                                  )}</td>
+                                  <td>{formatCurrency(
+                                    calculateGSTFromItems(selectedBillItems.bill_items)
+                                  )}</td>
+                                  <td>{formatCurrency(
+                                    calculateTotalFromItems(selectedBillItems.bill_items)
+                                  )}</td>
                                 </tr>
                               </tbody>
                             </Table>

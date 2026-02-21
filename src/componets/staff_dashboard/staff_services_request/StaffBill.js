@@ -514,14 +514,14 @@ const StaffBill = () => {
                           </Form.Group>
                         </Col>
                       </Row>
-                      <Row>
+                      {/* <Row>
                         <Col md={12}>
                           <Form.Group className="mb-3" controlId="service_des">
                             <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}><i className="bi bi-card-text me-2"></i>Service Description</Form.Label>
                             <Form.Control as="textarea" rows={2} name="service_des" value={billData.service_des} onChange={handleChange} style={{ borderColor: "#52ab98", resize: "none" }} placeholder="Brief description of the service provided" />
                           </Form.Group>
                         </Col>
-                      </Row>
+                      </Row> */}
                       {/* Bill Items Section */}
                       <Row className="mb-4">
                         <Col md={12}>
