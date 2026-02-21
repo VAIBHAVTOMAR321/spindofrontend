@@ -55,7 +55,9 @@ function NavBar() {
         }
         const data = await response.json();
         if (data.status) {
-          setServices(data.data);
+          // Filter only published services, exclude draft services
+          const publishedServices = data.data.filter(service => service.status === 'published');
+          setServices(publishedServices);
         } else {
           setError("Failed to load services");
         }
