@@ -35,9 +35,22 @@ const StaffProfile = () => {
   const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [selectedAadharFile, setSelectedAadharFile] = useState(null);
   const [showAadharModal, setShowAadharModal] = useState(false);
+  const [previewType, setPreviewType] = useState(""); // 'image' or 'pdf'
   const staffImageInputRef = useRef();
   const aadharImageInputRef = useRef();
   const { user, tokens } = useAuth();
+
+  // Helper function to detect file type from URL
+  const getFileType = (url) => {
+    if (!url) return null;
+    const ext = url.toLowerCase().split('.').pop();
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+      return 'image';
+    } else if (ext === 'pdf') {
+      return 'pdf';
+    }
+    return 'unknown';
+  };
 
   // Refetch profile data
   const refetchProfile = async () => {
@@ -274,6 +287,7 @@ const StaffProfile = () => {
 
   const handleAadharPreviewClick = () => {
     if (aadharImagePreview) {
+      setPreviewType(getFileType(aadharImagePreview));
       setShowAadharModal(true);
     }
   };
@@ -446,16 +460,32 @@ const StaffProfile = () => {
                           title={isEditing ? "Change Aadhar Card" : "Click to view"}
                         >
                           {aadharImagePreview ? (
-                            <img 
-                              src={aadharImagePreview} 
-                              alt="Aadhar Card" 
-                              style={{ 
+                            getFileType(aadharImagePreview) === 'pdf' ? (
+                              <div style={{ 
                                 width: 250,
                                 height: 160,
-                                objectFit: 'cover',
+                                background: '#fee2e2',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexDirection: 'column',
                                 cursor: 'pointer'
-                              }}
-                            />
+                              }}>
+                                <i className="bi bi-file-pdf" style={{ fontSize: 48, color: '#dc2626', marginBottom: 8 }}></i>
+                                <span style={{ color: '#dc2626', fontWeight: 600, fontSize: 14 }}>PDF File</span>
+                              </div>
+                            ) : (
+                              <img 
+                                src={aadharImagePreview} 
+                                alt="Aadhar Card" 
+                                style={{ 
+                                  width: 250,
+                                  height: 160,
+                                  objectFit: 'cover',
+                                  cursor: 'pointer'
+                                }}
+                              />
+                            )
                           ) : (
                             <div 
                               style={{ 
@@ -474,7 +504,7 @@ const StaffProfile = () => {
                           )}
                           <input
                             type="file"
-                            accept="image/*"
+                            accept="image/*,.pdf"
                             ref={aadharImageInputRef}
                             style={{ display: 'none' }}
                             onChange={handleAadharImageChange}
@@ -593,11 +623,21 @@ const StaffProfile = () => {
             </Modal.Header>
             <Modal.Body style={{ textAlign: 'center', padding: '20px' }}>
               {aadharImagePreview && (
-                <img 
-                  src={aadharImagePreview} 
-                  alt="Aadhar Card" 
-                  style={{ maxWidth: '100%', height: 'auto', maxHeight: '500px', borderRadius: 8 }}
-                />
+                previewType === 'pdf' ? (
+                  <iframe
+                    src={aadharImagePreview}
+                    title="Aadhar Card PDF"
+                    width="100%"
+                    height="500px"
+                    style={{ border: "none", borderRadius: 8 }}
+                  />
+                ) : (
+                  <img 
+                    src={aadharImagePreview} 
+                    alt="Aadhar Card" 
+                    style={{ maxWidth: '100%', height: 'auto', maxHeight: '500px', borderRadius: 8 }}
+                  />
+                )
               )}
             </Modal.Body>
             <Modal.Footer>

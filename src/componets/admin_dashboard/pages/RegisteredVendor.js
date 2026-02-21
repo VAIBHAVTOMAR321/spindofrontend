@@ -80,6 +80,19 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
   const [showPdfModal, setShowPdfModal] = useState(false);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [previewType, setPreviewType] = useState(""); // 'aadhar' or 'vendor_image'
+
+  // Helper function to detect file type from URL
+  const getFileType = (url) => {
+    if (!url) return null;
+    const ext = url.toLowerCase().split('.').pop();
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+      return 'image';
+    } else if (ext === 'pdf') {
+      return 'pdf';
+    }
+    return 'unknown';
+  };
 
   const handleViewPDF = async () => {
     const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
@@ -110,8 +123,9 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
     setShowPdfModal(true);
   };
 
-  const handleImagePreview = (imageUrl) => {
+  const handleImagePreview = (imageUrl, type = 'aadhar') => {
     setImagePreviewUrl(imageUrl);
+    setPreviewType(type);
     setShowImageModal(true);
   };
 
@@ -395,18 +409,28 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
                   </Button>
                 </Modal.Footer>
               </Modal>
-              {/* Image Preview Modal */}
-              <Modal show={showImageModal} onHide={() => setShowImageModal(false)} centered>
+              {/* Image/PDF Preview Modal */}
+              <Modal show={showImageModal} onHide={() => setShowImageModal(false)} centered size="lg">
                 <Modal.Header closeButton>
-                  <Modal.Title>Aadhar Card Preview</Modal.Title>
+                  <Modal.Title>{previewType === 'vendor_image' ? 'Vendor Image' : 'Aadhar Card'} Preview</Modal.Title>
                 </Modal.Header>
                 <Modal.Body className="text-center">
                   {imagePreviewUrl && (
-                    <img
-                      src={imagePreviewUrl}
-                      alt="Aadhar Card"
-                      style={{ maxWidth: '100%', maxHeight: '500px', borderRadius: 8 }}
-                    />
+                    previewType === 'aadhar' && getFileType(imagePreviewUrl) === 'pdf' ? (
+                      <iframe
+                        src={imagePreviewUrl}
+                        title="Aadhar Card PDF"
+                        width="100%"
+                        height="500px"
+                        style={{ border: "none", borderRadius: 8 }}
+                      />
+                    ) : (
+                      <img
+                        src={imagePreviewUrl}
+                        alt={previewType === 'vendor_image' ? 'Vendor Image' : 'Aadhar Card'}
+                        style={{ maxWidth: '100%', maxHeight: '500px', borderRadius: 8 }}
+                      />
+                    )
                   )}
                 </Modal.Body>
               </Modal>
@@ -488,13 +512,24 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
                           </td>
                           <td>
                             {vendor.aadhar_card && (
-                              <img
-                                src={`${BASE_URL}${vendor.aadhar_card}`}
-                                alt="Aadhar"
-                                width="48"
-                                style={{ borderRadius: 6, border: '1px solid #e5e7eb', cursor: 'pointer' }}
-                                onClick={() => handleImagePreview(`${BASE_URL}${vendor.aadhar_card}`)}
-                              />
+                              getFileType(`${BASE_URL}${vendor.aadhar_card}`) === 'pdf' ? (
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => handleImagePreview(`${BASE_URL}${vendor.aadhar_card}`, 'aadhar')}
+                                  style={{ borderRadius: 6, padding: '2px 8px', fontSize: 12, fontWeight: 600 }}
+                                >
+                                  <i className="bi bi-file-pdf me-1"></i> PDF
+                                </Button>
+                              ) : (
+                                <img
+                                  src={`${BASE_URL}${vendor.aadhar_card}`}
+                                  alt="Aadhar"
+                                  width="48"
+                                  style={{ borderRadius: 6, border: '1px solid #e5e7eb', cursor: 'pointer' }}
+                                  onClick={() => handleImagePreview(`${BASE_URL}${vendor.aadhar_card}`, 'aadhar')}
+                                />
+                              )
                             )}
                           </td>
                           <td>{

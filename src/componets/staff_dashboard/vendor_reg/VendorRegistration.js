@@ -37,6 +37,19 @@ const VendorRegistration = () => {
   const [error, setError] = useState("");
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [previewType, setPreviewType] = useState(""); // 'image', 'pdf', or 'vendor_image'
+
+  // Helper function to detect file type from URL
+  const getFileType = (url) => {
+    if (!url) return null;
+    const ext = url.toLowerCase().split('.').pop();
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+      return 'image';
+    } else if (ext === 'pdf') {
+      return 'pdf';
+    }
+    return 'unknown';
+  };
 
   // --- NEW STATE FOR LOCATION DATA ---
   const [allDistricts, setAllDistricts] = useState([]);
@@ -573,11 +586,14 @@ const VendorRegistration = () => {
                        name="vendor_image"
                        onChange={handleFileChange}
                      />
-                     {imagePreviewUrl && (
+                     {imagePreviewUrl && formData.vendor_image && (
                        <div className="mt-3">
                          <Button 
                            variant="info" 
-                           onClick={() => setShowImageModal(true)}
+                           onClick={() => {
+                             setShowImageModal(true);
+                             setPreviewType('vendor_image');
+                           }}
                            size="sm"
                          >
                            Preview Vendor Image
@@ -608,7 +624,7 @@ const VendorRegistration = () => {
                 <Form.Label>Aadhar Card</Form.Label>
                 <Form.Control
                   type="file"
-                  accept="image/*"
+                  accept="image/*,.pdf"
                   name="aadhar_card"
                   ref={fileInputRef}
                   onChange={handleFileChange}
@@ -618,7 +634,10 @@ const VendorRegistration = () => {
                   <div className="mt-3">
                     <Button 
                       variant="info" 
-                      onClick={() => setShowImageModal(true)}
+                      onClick={() => {
+                        setShowImageModal(true);
+                        setPreviewType('aadhar');
+                      }}
                       size="sm"
                     >
                       Preview Aadhar Card
@@ -626,7 +645,7 @@ const VendorRegistration = () => {
                   </div>
                 )}
                 <Form.Text className="text-muted">
-                  Please upload a clear image of your Aadhar card (PNG, JPG, or JPEG format)
+                  Please upload a clear image or PDF of your Aadhar card (PNG, JPG, JPEG, or PDF format)
                 </Form.Text>
               </Form.Group>
               </Col>
@@ -649,18 +668,28 @@ const VendorRegistration = () => {
               </Button>
             </Form>
 
-            {/* Aadhar Card Preview Modal */}
-            <Modal show={showImageModal} onHide={() => setShowImageModal(false)} centered>
+            {/* Image/PDF Preview Modal */}
+            <Modal show={showImageModal} onHide={() => setShowImageModal(false)} centered size="lg">
               <Modal.Header closeButton>
-                <Modal.Title>Aadhar Card Preview</Modal.Title>
+                <Modal.Title>{previewType === 'vendor_image' ? 'Vendor Image' : 'Aadhar Card'} Preview</Modal.Title>
               </Modal.Header>
               <Modal.Body className="text-center">
                 {imagePreviewUrl && (
-                  <img
-                    src={imagePreviewUrl}
-                    alt="Aadhar Card"
-                    style={{ maxWidth: '100%', maxHeight: '500px', borderRadius: 8 }}
-                  />
+                  previewType === 'aadhar' && getFileType(imagePreviewUrl) === 'pdf' ? (
+                    <iframe
+                      src={imagePreviewUrl}
+                      title="Aadhar Card PDF"
+                      width="100%"
+                      height="500px"
+                      style={{ border: "none", borderRadius: 8 }}
+                    />
+                  ) : (
+                    <img
+                      src={imagePreviewUrl}
+                      alt={previewType === 'vendor_image' ? 'Vendor Image' : 'Aadhar Card'}
+                      style={{ maxWidth: '100%', maxHeight: '500px', borderRadius: 8 }}
+                    />
+                  )
                 )}
               </Modal.Body>
               <Modal.Footer>
