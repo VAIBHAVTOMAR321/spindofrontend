@@ -62,8 +62,47 @@ const AllBills = () => {
     setCurrentPage(1);
   };
 
+  // Function to process bill data and calculate totals
+  const processBillData = (bill) => {
+    // Calculate totals from bill_items
+    let totalAmount = 0;
+    let totalGST = 0;
+    let totalPayment = 0;
+    let serviceTypes = [];
+    let gstPercentage = 0;
+    
+    if (bill.bill_items && Array.isArray(bill.bill_items)) {
+      bill.bill_items.forEach(item => {
+        if (Array.isArray(item) && item.length >= 5) {
+          // Extract service type
+          if (item[0]) serviceTypes.push(item[0]);
+          
+          // Calculate totals
+          totalAmount += parseFloat(item[2]) || 0;
+          totalGST += parseFloat(item[3]) || 0;
+          totalPayment += parseFloat(item[4]) || 0;
+          
+          // Calculate GST percentage (assuming first item has the correct percentage)
+          if (gstPercentage === 0 && parseFloat(item[2]) > 0) {
+            gstPercentage = ((parseFloat(item[3]) / parseFloat(item[2])) * 100).toFixed(2);
+          }
+        }
+      });
+    }
+    
+    // Create a processed bill object with calculated values
+    return {
+      ...bill,
+      service_type: serviceTypes.join(', ') || 'N/A',
+      amount: totalAmount.toFixed(2),
+      gst: totalGST.toFixed(2),
+      gst_percentage: gstPercentage,
+      total_payment: totalPayment.toFixed(2)
+    };
+  };
+
   // Filtered data
-  const filteredData = billsData.filter(bill =>
+  const filteredData = billsData.map(bill => processBillData(bill)).filter(bill =>
     (!filters.bill_id || bill.bill_id?.toString().toLowerCase().includes(filters.bill_id.toLowerCase())) &&
     (!filters.vendor_id || bill.vendor_id?.toString().toLowerCase().includes(filters.vendor_id.toLowerCase())) &&
     (!filters.customer_name || bill.customer_name?.toLowerCase().includes(filters.customer_name.toLowerCase())) &&
@@ -97,9 +136,9 @@ const AllBills = () => {
       bill.customer_name,
       bill.service_type,
       `Rs. ${parseFloat(bill.amount).toFixed(2)}`,
-      `Rs. ${parseFloat(bill.gst).toFixed(2)}`,
+      `${bill.gst_percentage}%`,
       `Rs. ${parseFloat(bill.total_payment).toFixed(2)}`,
-      bill.payment_type,
+      bill.payment_type || 'N/A',
       bill.status,
       new Date(bill.bill_date_time).toLocaleDateString()
     ]);
@@ -304,7 +343,7 @@ const AllBills = () => {
                           <td>{bill.cust_mobile}</td>
                           <td>{bill.service_type}</td>
                           <td>Rs. {parseFloat(bill.amount).toFixed(2)}</td>
-                          <td>Rs. {parseFloat(bill.gst).toFixed(2)}</td>
+                          <td>{bill.gst_percentage}%</td>
                           <td style={{ fontWeight: 600 }}>Rs. {parseFloat(bill.total_payment).toFixed(2)}</td>
                           <td>
                             <span style={{
@@ -315,7 +354,7 @@ const AllBills = () => {
                               backgroundColor: bill.payment_type === 'UPI' ? '#dbeafe' : bill.payment_type === 'Cash' ? '#fef3c7' : '#d1fae5',
                               color: bill.payment_type === 'UPI' ? '#0369a1' : bill.payment_type === 'Cash' ? '#92400e' : '#065f46',
                             }}>
-                              {bill.payment_type}
+                              {bill.payment_type || 'N/A'}
                             </span>
                           </td>
                           <td>
