@@ -80,6 +80,10 @@ body {
   color: #1b4a8f;
 
 }
+.submit-btn{
+  font-size: 10px !important;
+  background-color: #0B488F;
+}
 .contact-img ul li{
   font-size: 12px;
   color: #5a5c69;

@@ -3,6 +3,7 @@ import { Container, Row, Col, Form, Button, Alert, Image } from 'react-bootstrap
 import axios from 'axios'
 import "../../assets/css/ContactUs.css";
 import SolarImg from "../../assets/images/solar.jpg"
+import { Link } from 'react-router-dom';
 
 function SolarInstallation() {
   const [formData, setFormData] = useState({
@@ -134,9 +135,21 @@ function SolarInstallation() {
                 <div className='contact-img'>
                 <h1>PRADHAN MANTRI SURYA GHAR MUFT BIJALI YOJNA</h1>
                 <ul>
-                    <li>Professional Solar Panel Installation</li>
-                    <li>Customized Solar Solutions</li>
-                    <li>Energy Efficient Systems</li>
+                    <li>Customized Solar Panel Installation.</li>
+                    <li>Energy-Efficient Design.</li>
+                    <li>edicated Maintenance and Support Services.</li>
+                    <li>We will help you get a Solar Rooftop at Easy EMIs.</li>
+      <li>      
+  <Link
+    to="https://spindo.in/pmsuryaghar.gov.in/consumerLogin" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    className="portal-link"
+  >
+    Login to PM Surya Ghar Portal
+  </Link>
+  </li>  
+
                 </ul>
             </div>
                 <img src={SolarImg} alt="Solar Installation" className="img-fluid rounded shadow" />
@@ -162,7 +175,8 @@ function SolarInstallation() {
                 )}
                 
                 <Form onSubmit={handleSubmit} noValidate> {/* noValidate prevents default browser validation */}
-                  <Row>
+                  <Row className='contact-img'>
+                    <h1>For Installation Booking</h1>
                     <Col md={6} xs={12}>
                       <Form.Group className="mb-3" controlId="formFullName">
                         <Form.Label className="spi-control form-label">Full Name</Form.Label>
@@ -247,7 +261,7 @@ function SolarInstallation() {
                       className="submit-btn"
                       disabled={isSubmitting}
                     >
-                      {isSubmitting ? 'Submitting...' : 'Submit'}
+                      {isSubmitting ? 'Submitting...' : 'Send Request'}
                     </Button>
                   </div>
                 </Form>
