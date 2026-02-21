@@ -78,7 +78,7 @@ function ServicesPage() {
             </div>
           ) : (
             <Row className="my-4">
-              {filteredServices.slice(0, 3).map(service => (
+              {filteredServices.map(service => (
                 <Col md={4} key={service.id} className="mb-4">
                   <Card className="service-card">
                     {/* Service Image */}
