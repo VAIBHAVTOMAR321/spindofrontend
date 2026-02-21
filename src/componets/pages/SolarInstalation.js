@@ -115,9 +115,9 @@ function SolarInstallation() {
         <div className="site-breadcrumb-wpr">
           <h2 className="breadcrumb-title">Solar Instalation Services</h2>
           <ul className="breadcrumb-menu clearfix">
-            <li><a className="breadcrumb-home" href="/" data-discover="true">Home</a></li>
+            <li><Link className="breadcrumb-home" to ="/" data-discover="true">Home</Link></li>
             <li className="px-2">/</li>
-            <li><a className="breadcrumb-contact" href="/solar-installation" data-discover="true">Solar Installation</a></li>
+            <li><Link className="breadcrumb-contact" to ="#" data-discover="true">Solar Installation</Link></li>
           </ul>
         </div>
       </div>

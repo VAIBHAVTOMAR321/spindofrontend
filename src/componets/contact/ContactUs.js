@@ -109,7 +109,7 @@ function ContactUs() {
           <ul className="breadcrumb-menu clearfix">
             <li><Link className="breadcrumb-home" to="/" data-discover="true">Home</Link></li>
             <li className="px-2">/</li>
-            <li><Link className="breadcrumb-contact" to="/contact" data-discover="true">Contact Us</Link></li>
+            <li><Link className="breadcrumb-contact" to="#" data-discover="true">Contact Us</Link></li>
           </ul>
         </div>
       </div>
