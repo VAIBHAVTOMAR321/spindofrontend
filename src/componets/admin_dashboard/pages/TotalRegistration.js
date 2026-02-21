@@ -76,7 +76,19 @@ const TotalRegistration = () => {
   // --- MODIFIED: Added state for image preview ---
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false);
-  const [imageType, setImageType] = useState(""); // To track if it's aadhar or staff image
+  const [imageType, setImageType] = useState(""); // To track if it's aadhar, staff image, or aadhar_pdf
+
+  // Helper function to detect file type from URL
+  const getFileType = (url) => {
+    if (!url) return null;
+    const ext = url.toLowerCase().split('.').pop();
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+      return 'image';
+    } else if (ext === 'pdf') {
+      return 'pdf';
+    }
+    return 'unknown';
+  };
 
   const handleViewPDF = async () => {
     const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
@@ -468,12 +480,22 @@ const TotalRegistration = () => {
                 </Modal.Header>
                 <Modal.Body className="text-center">
                   {imagePreviewUrl && (
-                    <img
-                      src={imagePreviewUrl}
-                      // --- MODIFIED: Dynamic alt text --- 
-                      alt={imageType === 'staff' ? 'Staff Image' : 'Aadhar Card'}
-                      style={{ maxWidth: '100%', maxHeight: '500px', borderRadius: 8 }}
-                    />
+                    imageType === 'aadhar_pdf' ? (
+                      <iframe
+                        src={imagePreviewUrl}
+                        title="Aadhar Card PDF"
+                        width="100%"
+                        height="500px"
+                        style={{ border: "none", borderRadius: 8 }}
+                      />
+                    ) : (
+                      <img
+                        src={imagePreviewUrl}
+                        // --- MODIFIED: Dynamic alt text --- 
+                        alt={imageType === 'staff' ? 'Staff Image' : 'Aadhar Card'}
+                        style={{ maxWidth: '100%', maxHeight: '500px', borderRadius: 8 }}
+                      />
+                    )
                   )}
                 </Modal.Body>
               </Modal>
@@ -523,20 +545,38 @@ const TotalRegistration = () => {
                               )}
                           </td>
                           <td>
-                            {staff.can_aadharcard && (
-                                <img
-                                  src={staff.can_aadharcard.startsWith('http') 
-                                    ? staff.can_aadharcard 
-                                    : `${BASE_URL}${staff.can_aadharcard.startsWith('/') ? staff.can_aadharcard : '/' + staff.can_aadharcard}`}
-                                  alt="Aadhar"
-                                  width="48"
-                                  style={{ borderRadius: 6, border: '1px solid #e5e7eb', cursor: 'pointer' }}
-                                  // --- MODIFIED: Added onClick with type 'aadhar' --- 
-                                  onClick={() => handleImagePreview(staff.can_aadharcard.startsWith('http') 
-                                    ? staff.can_aadharcard 
-                                    : `${BASE_URL}${staff.can_aadharcard.startsWith('/') ? staff.can_aadharcard : '/' + staff.can_aadharcard}`, 'aadhar')}
-                                />
-                              )}
+                            {staff.can_aadharcard && (() => {
+                              const fileType = getFileType(staff.can_aadharcard);
+                              const fullUrl = staff.can_aadharcard.startsWith('http') 
+                                ? staff.can_aadharcard 
+                                : `${BASE_URL}${staff.can_aadharcard.startsWith('/') ? staff.can_aadharcard : '/' + staff.can_aadharcard}`;
+                              
+                              if (fileType === 'image') {
+                                return (
+                                  <img
+                                    src={fullUrl}
+                                    alt="Aadhar"
+                                    width="48"
+                                    style={{ borderRadius: 6, border: '1px solid #e5e7eb', cursor: 'pointer' }}
+                                    onClick={() => handleImagePreview(fullUrl, 'aadhar')}
+                                  />
+                                );
+                              } else if (fileType === 'pdf') {
+                                return (
+                                  <Button
+                                    size="sm"
+                                    variant="outline-danger"
+                                    onClick={() => handleImagePreview(fullUrl, 'aadhar_pdf')}
+                                    style={{ borderRadius: 6, fontWeight: 600, fontSize: 12 }}
+                                    title="View Aadhar PDF"
+                                  >
+                                    <i className="bi bi-file-pdf me-1"></i> PDF
+                                  </Button>
+                                );
+                              } else {
+                                return <span className="text-muted">-</span>;
+                              }
+                            })()}
                           </td>
                           <td>
                             <span className={`badge px-3 py-2 ${Number(staff.is_active) === 1 ? 'bg-success' : 'bg-danger'}`}
