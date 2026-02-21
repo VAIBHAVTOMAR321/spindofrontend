@@ -3,6 +3,8 @@ import { Container, Row, Col, Card, Table, Button, Form, Modal, Alert } from "re
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import axios from "axios";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { useAuth } from "../../context/AuthContext";
 
 import "../../../assets/css/admindashboard.css";
@@ -61,6 +63,32 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
   // Detail view state
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [detailType, setDetailType] = useState(null); // 'services' or 'assignments'
+
+  // PDF preview state
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null);
+  const [showPdfModal, setShowPdfModal] = useState(false);
+
+  // Filter state
+  const [filters, setFilters] = useState({
+    request_id: '',
+    username: '',
+    contact_number: '',
+    status: ''
+  });
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+    setCurrentPage(1);
+  };
+
+  // Filtered data for requests
+  const filteredRequests = requestData.filter(request =>
+    (!filters.request_id || request.request_id?.toString().includes(filters.request_id)) &&
+    (!filters.username || request.username?.toLowerCase().includes(filters.username.toLowerCase())) &&
+    (!filters.contact_number || request.contact_number?.toString().includes(filters.contact_number)) &&
+    (!filters.status || request.status?.toLowerCase() === filters.status.toLowerCase())
+  );
 
   // Fetch request services
   const fetchRequestServices = async () => {
@@ -195,6 +223,106 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
     fetchVendorList(); // Fetch vendors when modal opens
   };
 
+  const handleViewPDF = () => {
+    const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    
+    if (showRequests) {
+      // PDF for Service Requests Table
+      const headers = [["Request ID", "Username", "Contact", "Email", "State", "District", "Assignments", "Status"]];
+      const rows = filteredRequests.map(request => {
+        // Format assignments with status and mobile
+        let assignmentsText = "Not Assigned";
+        if (Array.isArray(request.assignments) && request.assignments.length > 0) {
+          assignmentsText = request.assignments.map(assignment => {
+            if (Array.isArray(assignment) && Array.isArray(assignment[0])) {
+              const services = assignment[0];
+              const vendorName = assignment[2];
+              const assignmentStatus = assignment[3] || "assigned";
+              const vendorMobile = assignment[4] || "--";
+              return `${vendorName} (Mobile: ${vendorMobile}): ${services.join(', ')} (${assignmentStatus})`;
+            }
+            return JSON.stringify(assignment);
+          }).join('\n');
+        }
+        return [
+          request.request_id,
+          request.username,
+          request.contact_number,
+          request.email,
+          request.state,
+          request.district,
+          assignmentsText,
+          request.status
+        ];
+      });
+      autoTable(pdf, {
+        head: headers,
+        body: rows,
+        startY: 10,
+        margin: { top: 10, right: 10, left: 10, bottom: 10 },
+        theme: "grid",
+        headStyles: { fillColor: [99, 102, 241], textColor: [255, 255, 255], fontStyle: "bold" },
+        bodyStyles: { textColor: [30, 41, 59] },
+        alternateRowStyles: { fillColor: [248, 250, 252] }
+      });
+    } else {
+      // PDF for Vendors Table
+      const headers = [["Vendor ID", "Username", "Mobile", "Email", "State", "District", "Block", "Category", "Status"]];
+      const rows = vendorData.map(vendor => {
+        let categories = '';
+        if (Array.isArray(vendor.category)) {
+          categories = vendor.category.join(', ');
+        } else if (typeof vendor.category === 'string') {
+          categories = vendor.category;
+        } else if (typeof vendor.category === 'object' && vendor.category !== null) {
+          categories = Object.values(vendor.category).join(', ');
+        }
+        return [
+          vendor.unique_id,
+          vendor.username,
+          vendor.mobile_number,
+          vendor.email,
+          vendor.state,
+          vendor.district,
+          vendor.block,
+          categories,
+          vendor.is_active ? 'Active' : 'Inactive'
+        ];
+      });
+      autoTable(pdf, {
+        head: headers,
+        body: rows,
+        startY: 10,
+        margin: { top: 10, right: 10, left: 10, bottom: 10 },
+        theme: "grid",
+        headStyles: { fillColor: [99, 102, 241], textColor: [255, 255, 255], fontStyle: "bold" },
+        bodyStyles: { textColor: [30, 41, 59] },
+        alternateRowStyles: { fillColor: [248, 250, 252] }
+      });
+    }
+    
+    const pdfBlob = pdf.output("blob");
+    const url = URL.createObjectURL(pdfBlob);
+    setPdfPreviewUrl(url);
+    setShowPdfModal(true);
+  };
+
+  const handleDownloadPDF = () => {
+    if (pdfPreviewUrl) {
+      const link = document.createElement("a");
+      link.href = pdfPreviewUrl;
+      link.download = showRequests ? "ServiceRequests.pdf" : "VendorList.pdf";
+      link.click();
+    }
+    setShowPdfModal(false);
+    setPdfPreviewUrl(null);
+  };
+
+  const handleClosePdfModal = () => {
+    setShowPdfModal(false);
+    setPdfPreviewUrl(null);
+  };
+
   useEffect(() => {
     fetchRequestServices();
     fetchVendorData(); // Fetch vendor data when component mounts
@@ -291,6 +419,11 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                     </h2>
                   </Card>
                 </div>
+                <div className="d-flex gap-2">
+                  <Button variant="success" onClick={handleViewPDF} style={{ borderRadius: 10, fontWeight: 600 }}>
+                    View Table as PDF
+                  </Button>
+                </div>
               </div>
               
               {/* Modern Table */}
@@ -298,6 +431,44 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                 {showRequests ? (
                   // Service Requests Table
                   <>
+                    {/* Filters Row */}
+                    <div className="mb-3 d-flex gap-2 align-items-center" style={{ overflow: 'auto' }}>
+                      <Form className="d-flex gap-2" style={{ minWidth: 'fit-content' }}>
+                        <Form.Control
+                          name="request_id"
+                          value={filters.request_id}
+                          onChange={handleFilterChange}
+                          placeholder="Filter Request ID"
+                          style={{ minWidth: 130, borderRadius: 8 }}
+                        />
+                        <Form.Control
+                          name="username"
+                          value={filters.username}
+                          onChange={handleFilterChange}
+                          placeholder="Filter Username"
+                          style={{ minWidth: 130, borderRadius: 8 }}
+                        />
+                        <Form.Control
+                          name="contact_number"
+                          value={filters.contact_number}
+                          onChange={handleFilterChange}
+                          placeholder="Filter Contact"
+                          style={{ minWidth: 130, borderRadius: 8 }}
+                        />
+                        <Form.Select
+                          name="status"
+                          value={filters.status}
+                          onChange={handleFilterChange}
+                          style={{ minWidth: 130, borderRadius: 8 }}
+                        >
+                          <option value="">All Status</option>
+                          <option value="pending">Pending</option>
+                          <option value="assigned">Assigned</option>
+                          <option value="completed">Completed</option>
+                          <option value="cancelled">Cancelled</option>
+                        </Form.Select>
+                      </Form>
+                    </div>
                     <Table className="align-middle mb-0" style={{ minWidth: 700 }}>
                        <thead className="table-thead">
                           <tr style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
@@ -316,7 +487,7 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                           </tr>
                         </thead>
                       <tbody>
-                        {requestData
+                        {filteredRequests
                           .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                           .map((request) => (
                             <tr key={request.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
@@ -357,10 +528,14 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                                       if (Array.isArray(assignment) && assignment.length >= 3) {
                                         const vendorName = assignment[2];
                                         const assignmentStatus = assignment[3] || "assigned";
+                                        const vendorMobile = assignment[4] || "--";
                                         return (
-                                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                          <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, flexDirection: 'column' }}>
                                             <span style={{ fontSize: 12, fontWeight: 600, color: '#065f46' }}>
                                               {vendorName}
+                                            </span>
+                                            <span style={{ fontSize: 11, color: '#64748b' }}>
+                                              <b>Mobile:</b> {vendorMobile}
                                             </span>
                                             <span
                                               style={{
@@ -432,6 +607,26 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                                   variant="primary"
                                   size="sm"
                                   onClick={() => openAssignModal(request)}
+                                  disabled={(() => {
+                                    // Get all services from request
+                                    let allServices = [];
+                                    if (Array.isArray(request.request_for_services)) {
+                                      allServices = request.request_for_services;
+                                    } else if (typeof request.request_for_services === 'string') {
+                                      allServices = request.request_for_services.trim() ? [request.request_for_services] : [];
+                                    }
+                                    // Get all assigned services
+                                    const assignedServices = [];
+                                    if (Array.isArray(request.assignments)) {
+                                      request.assignments.forEach(assignment => {
+                                        if (Array.isArray(assignment) && Array.isArray(assignment[0])) {
+                                          assignedServices.push(...assignment[0]);
+                                        }
+                                      });
+                                    }
+                                    // Check if all services are assigned
+                                    return allServices.length > 0 && allServices.every(service => assignedServices.includes(service));
+                                  })()}
                                   style={{
                                     backgroundColor: '#6366f1',
                                     borderColor: '#6366f1',
@@ -456,12 +651,12 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                         Previous
                       </Button>
                       <span style={{ fontWeight: 600, fontSize: 15 }}>
-                        Page {currentPage} of {Math.ceil(requestData.length / itemsPerPage) || 1}
+                        Page {currentPage} of {Math.ceil(filteredRequests.length / itemsPerPage) || 1}
                       </span>
                       <Button
                         variant="outline-primary"
                         size="sm"
-                        disabled={currentPage === Math.ceil(requestData.length / itemsPerPage) || requestData.length === 0}
+                        disabled={currentPage === Math.ceil(filteredRequests.length / itemsPerPage) || filteredRequests.length === 0}
                         onClick={() => setCurrentPage((prev) => prev + 1)}
                         style={{ minWidth: 80 }}
                       >
@@ -619,11 +814,17 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                           const services = assignment[0];
                           const vendorName = assignment[2];
                           const assignmentStatus = assignment[3] || "assigned";
+                          const vendorMobile = assignment[4] || "--";
                           const serviceList = Array.isArray(services) ? services : [services];
                           return (
                             <div>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                                <h6 style={{ color: '#6366f1', fontWeight: 700, margin: 0 }}>{vendorName}</h6>
+                                <div>
+                                  <h6 style={{ color: '#6366f1', fontWeight: 700, margin: 0 }}>{vendorName}</h6>
+                                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
+                                    <b>Mobile:</b> {vendorMobile}
+                                  </div>
+                                </div>
                                 <span
                                   style={{
                                     padding: '4px 10px',
@@ -877,6 +1078,34 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
             </>
           )}
         </Modal.Body>
+      </Modal>
+
+      {/* PDF Preview Modal */}
+      <Modal show={showPdfModal} onHide={handleClosePdfModal} size="lg" centered>
+        <Modal.Header closeButton>
+          <Modal.Title>PDF Preview</Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ minHeight: 500 }}>
+          {pdfPreviewUrl ? (
+            <iframe
+              src={pdfPreviewUrl}
+              title="PDF Preview"
+              width="100%"
+              height="500px"
+              style={{ border: "none" }}
+            />
+          ) : (
+            <div>Loading PDF...</div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={handleDownloadPDF}>
+            Download PDF
+          </Button>
+          <Button variant="secondary" onClick={handleClosePdfModal}>
+            Close
+          </Button>
+        </Modal.Footer>
       </Modal>
     </>
   );

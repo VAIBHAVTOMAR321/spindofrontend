@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Table, Button, Modal } from "react-bootstrap";
+import { Container, Row, Col, Card, Table, Button, Modal, Form } from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -59,6 +59,20 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
 
+  // Filter state
+  const [filters, setFilters] = useState({
+    request_id: '',
+    username: '',
+    contact_number: '',
+    status: ''
+  });
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+    setCurrentPage(1);
+  };
+
   // Fetch all request services
   const fetchRequestServices = async () => {
     if (!tokens?.access) return;
@@ -98,6 +112,14 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
   // --- Main Component Render ---
   // Filter the requests to only show assigned ones for the table
   const assignedRequests = requestData.filter(req => Array.isArray(req.assignments) && req.assignments.length > 0);
+
+  // Filtered data - only assigned requests that match filters
+  const filteredRequests = assignedRequests.filter(request =>
+    (!filters.request_id || request.request_id?.toString().includes(filters.request_id)) &&
+    (!filters.username || request.username?.toLowerCase().includes(filters.username.toLowerCase())) &&
+    (!filters.contact_number || request.contact_number?.toString().includes(filters.contact_number)) &&
+    (!filters.status || request.status?.toLowerCase() === filters.status.toLowerCase())
+  );
 
   return (
     <>
@@ -154,6 +176,43 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
                 </Card>
               </div>
               
+              {/* Filters Row */}
+              <div className="mb-3 d-flex gap-2 align-items-center" style={{ overflow: 'auto' }}>
+                <Form className="d-flex gap-2" style={{ minWidth: 'fit-content' }}>
+                  <Form.Control
+                    name="request_id"
+                    value={filters.request_id}
+                    onChange={handleFilterChange}
+                    placeholder="Filter Request ID"
+                    style={{ minWidth: 130, borderRadius: 8 }}
+                  />
+                  <Form.Control
+                    name="username"
+                    value={filters.username}
+                    onChange={handleFilterChange}
+                    placeholder="Filter Username"
+                    style={{ minWidth: 130, borderRadius: 8 }}
+                  />
+                  <Form.Control
+                    name="contact_number"
+                    value={filters.contact_number}
+                    onChange={handleFilterChange}
+                    placeholder="Filter Contact"
+                    style={{ minWidth: 130, borderRadius: 8 }}
+                  />
+                  <Form.Select
+                    name="status"
+                    value={filters.status}
+                    onChange={handleFilterChange}
+                    style={{ minWidth: 130, borderRadius: 8 }}
+                  >
+                    <option value="">All Status</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </Form.Select>
+                </Form>
+              </div>
+
               {/* Modern Table for Assigned Requests */}
               <div className="table-responsive rounded-4 shadow-sm" style={{ background: '#fff', padding: '0.5rem 0.5rem 1rem 0.5rem' }}>
                 <Table className="align-middle mb-0" style={{ minWidth: 900 }}>
@@ -173,8 +232,8 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {assignedRequests.length > 0 ? (
-                      assignedRequests
+                    {filteredRequests.length > 0 ? (
+                      filteredRequests
                         .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                         .map((request) => (
                           <tr key={request.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
@@ -288,12 +347,12 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
                     Previous
                   </Button>
                   <span style={{ fontWeight: 600, fontSize: 15 }}>
-                    Page {currentPage} of {Math.ceil(assignedRequests.length / itemsPerPage) || 1}
+                    Page {currentPage} of {Math.ceil(filteredRequests.length / itemsPerPage) || 1}
                   </span>
                   <Button
                     variant="outline-primary"
                     size="sm"
-                    disabled={currentPage === Math.ceil(assignedRequests.length / itemsPerPage) || assignedRequests.length === 0}
+                    disabled={currentPage === Math.ceil(filteredRequests.length / itemsPerPage) || filteredRequests.length === 0}
                     onClick={() => setCurrentPage((prev) => prev + 1)}
                     style={{ minWidth: 80 }}
                   >
@@ -331,11 +390,17 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
                           const services = assignment[0];
                           const vendorName = assignment[2];
                           const assignmentStatus = assignment[3] || "assigned";
+                          const vendorMobile = assignment[4] || "--";
                           const serviceList = Array.isArray(services) ? services : [services];
                           return (
                             <div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                                <h6 style={{ color: '#6366f1', fontWeight: 700, margin: 0 }}>{vendorName}</h6>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+                                <div>
+                                  <h6 style={{ color: '#6366f1', fontWeight: 700, margin: 0 }}>{vendorName}</h6>
+                                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
+                                    <b>Mobile:</b> {vendorMobile}
+                                  </div>
+                                </div>
                                 <span
                                   style={{
                                     padding: '4px 10px',

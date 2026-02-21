@@ -66,7 +66,7 @@ const ViewRequestService = () => {
     const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
     const headers = [["Request ID", "Name", "Email", "Contact", "Alternate Contact", "Address", "Assignments", "Schedule", "Description", "Status"]];
     const rows = filteredRequests.map(req => {
-      // Format assignments with status
+      // Format assignments with status and mobile
       let assignmentsText = "Not Assigned";
       if (Array.isArray(req.assignments) && req.assignments.length > 0) {
         assignmentsText = req.assignments.map(assignment => {
@@ -74,7 +74,8 @@ const ViewRequestService = () => {
             const services = assignment[0];
             const vendorName = assignment[2];
             const assignmentStatus = assignment[3] || "assigned";
-            return `${vendorName}: ${services.join(', ')} (${assignmentStatus})`;
+            const vendorMobile = assignment[4] || "--";
+            return `${vendorName} (Mobile: ${vendorMobile}): ${services.join(', ')} (${assignmentStatus})`;
           }
           return JSON.stringify(assignment);
         }).join('\n');
@@ -337,18 +338,22 @@ const ViewRequestService = () => {
                                 {Array.isArray(req.assignments) && req.assignments.length > 0 ? (
                                   <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
                                     {req.assignments.map((assignment, idx) => {
-                                      // Handle nested assignment structure: [ [services], vendor_id, vendor_name, status ]
+                                      // Handle nested assignment structure: [ [services], vendor_id, vendor_name, status, mobile ]
                                       if (Array.isArray(assignment) && Array.isArray(assignment[0])) {
                                         const services = assignment[0];
                                         const vendorId = assignment[1];
                                         const vendorName = assignment[2];
                                         const assignmentStatus = assignment[3] || "assigned";
+                                        const vendorMobile = assignment[4] || "--";
                                         return (
                                           <li key={idx} style={{ fontSize: 12, marginBottom: 6, padding: '6px 8px', backgroundColor: '#f9fafb', borderRadius: 4 }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 8 }}>
                                               <div style={{ flex: 1 }}>
                                                 <div style={{ fontWeight: 600, color: '#065f46', marginBottom: 2 }}>
                                                   {vendorName || vendorId || '--'}
+                                                </div>
+                                                <div style={{ color: '#64748b', fontSize: 11, marginBottom: 2 }}>
+                                                  <b>Mobile:</b> {vendorMobile}
                                                 </div>
                                                 {services && services.length > 0 && (
                                                   <div style={{ color: '#64748b', fontSize: 11, lineHeight: 1.3 }}>
