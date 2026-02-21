@@ -180,53 +180,51 @@ function NavBar() {
       {/* Main navigation */}
       <Navbar expand="lg" className="bg-body-tertiary sticky-top">
         <Container>
-          <Navbar.Brand href="#home">
+          <Navbar.Brand as={Link} to="/">
             <div className="d-flex align-items-center">
-              <Link to="/" className="d-flex align-items-center text-decoration-none">
-                {logoLoading ? (
-                  <div className="spinner-border spinner-border-sm me-2" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                  </div>
-                ) : companyDetails?.logo ? (
-                  <img
-                    src={getLogoUrl(companyDetails.logo)}
-                    alt={`${companyDetails.company_name || 'Company'} Logo`}
-                    className="spi-logo img-fluid me-2"
-                    style={{ maxHeight: '50px', width: 'auto' }}
-                    onLoad={() => setLogoLoading(false)}
-                    onError={(e) => {
-                      console.error('Logo failed to load:', e.target.src);
-                      e.target.onerror = null;
-                      // Try with different path variations if the first attempt fails
-                      if (!companyDetails.logo.startsWith('http') && !companyDetails.logo.startsWith('/')) {
-                        e.target.src = `${API_BASE_URL}/${companyDetails.logo}`;
-                      } else if (companyDetails.logo.startsWith('/')) {
-                        e.target.src = `${API_BASE_URL}${companyDetails.logo}`;
-                      } else {
-                        e.target.src = "https://via.placeholder.com/150x50?text=Logo";
-                      }
-                      setLogoLoading(false);
-                    }}
-                  />
-                ) : (
-                  <div className="spi-logo-placeholder bg-primary text-white d-flex align-items-center justify-content-center me-2" style={{width: "150px", height: "50px", borderRadius: "4px"}}>
-                    Logo
-                  </div>
-                )}
-                {companyDetails?.company_name && (
-                  <span className="company-name fw-bold text-dark">{companyDetails.company_name}</span>
-                )}
-              </Link>
+              {logoLoading ? (
+                <div className="spinner-border spinner-border-sm me-2" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              ) : companyDetails?.logo ? (
+                <img
+                  src={getLogoUrl(companyDetails.logo)}
+                  alt={`${companyDetails.company_name || 'Company'} Logo`}
+                  className="spi-logo img-fluid me-2"
+                  style={{ maxHeight: '50px', width: 'auto' }}
+                  onLoad={() => setLogoLoading(false)}
+                  onError={(e) => {
+                    console.error('Logo failed to load:', e.target.src);
+                    e.target.onerror = null;
+                    // Try with different path variations if the first attempt fails
+                    if (!companyDetails.logo.startsWith('http') && !companyDetails.logo.startsWith('/')) {
+                      e.target.src = `${API_BASE_URL}/${companyDetails.logo}`;
+                    } else if (companyDetails.logo.startsWith('/')) {
+                      e.target.src = `${API_BASE_URL}${companyDetails.logo}`;
+                    } else {
+                      e.target.src = "https://via.placeholder.com/150x50?text=Logo";
+                    }
+                    setLogoLoading(false);
+                  }}
+                />
+              ) : (
+                <div className="spi-logo-placeholder bg-primary text-white d-flex align-items-center justify-content-center me-2" style={{width: "150px", height: "50px", borderRadius: "4px"}}>
+                  Logo
+                </div>
+              )}
+              {companyDetails?.company_name && (
+                <span className="company-name fw-bold text-dark">{companyDetails.company_name}</span>
+              )}
             </div>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             {/* Left side navigation items */}
             <Nav className="me-auto">
-              <Nav.Link href="/" className="custom-nav-link">
+              <Nav.Link as={Link} to="/" className="custom-nav-link">
                 HOME
               </Nav.Link>
-              <Nav.Link href="/AboutUs" className="custom-nav-link">
+              <Nav.Link as={Link} to="/AboutUs" className="custom-nav-link">
                 ABOUT
               </Nav.Link>
 
@@ -251,29 +249,27 @@ function NavBar() {
                 )}
                 <NavDropdown.Divider />
               </NavDropdown>
-              <Nav.Link href="/SolarInstalation" className="custom-nav-link">
+              <Nav.Link as={Link} to="/SolarInstalation" className="custom-nav-link">
                 Solar Instalation
               </Nav.Link>
-              <Nav.Link href="/ContactUs" className="custom-nav-link">
+              <Nav.Link as={Link} to="/ContactUs" className="custom-nav-link">
                 Get in Touch
               </Nav.Link>
-              <Nav.Link href="/PaymentQR" className="custom-nav-link">
+              <Nav.Link as={Link} to="/PaymentQR" className="custom-nav-link">
                 Payment
               </Nav.Link>
-              <Nav.Link href="/Login" className="custom-nav-link">
+              <Nav.Link as={Link} to="/Login" className="custom-nav-link">
                 Book Services
               </Nav.Link>
             </Nav>
 
             {/* Right side - Only Register and Login buttons */}
             <Nav className="ms-auto">
-              <Link to="/Registration">
-                <Button variant="outline-primary" className="me-2">
-                  Register
-                </Button>
+              <Link to="/Registration" className="btn btn-outline-primary me-2">
+                Register
               </Link>
-              <Link to="/Login">
-                <Button variant="primary">Login</Button>
+              <Link to="/Login" className="btn btn-primary">
+                Login
               </Link>
             </Nav>
 
