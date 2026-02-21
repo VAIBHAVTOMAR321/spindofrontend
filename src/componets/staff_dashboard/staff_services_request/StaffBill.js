@@ -290,10 +290,10 @@ const StaffBill = () => {
       setError("Please enter a valid 10-digit mobile number.");
       return false;
     }
-    if (!billData.service_type) {
-      setError("Please select a service type.");
-      return false;
-    }
+    // if (!billData.service_type) {
+    //   setError("Please select a service type.");
+    //   return false;
+    // }
     if (!billData.vendor_id) {
       setError("Please select a vendor.");
       return false;
@@ -487,7 +487,7 @@ const StaffBill = () => {
                         </Col>
                       </Row>
                       <Row>
-                        <Col md={6}>
+                        {/* <Col md={6}>
                           <Form.Group className="mb-3" controlId="service_type">
                             <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}><i className="bi bi-gear me-2"></i>Service Type</Form.Label>
                             <Form.Select name="service_type" value={billData.service_type} onChange={handleChange} required style={{ backgroundColor: "#e8f4f8", borderColor: "#52ab98" }}>
@@ -501,7 +501,7 @@ const StaffBill = () => {
                               )}
                             </Form.Select>
                           </Form.Group>
-                        </Col>
+                        </Col> */}
                         <Col md={6}>
                           <Form.Group className="mb-3" controlId="payment_type">
                             <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}><i className="bi bi-wallet2 me-2"></i>Payment Type</Form.Label>
