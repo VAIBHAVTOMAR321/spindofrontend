@@ -144,9 +144,9 @@ function VendorList() {
         <div className="site-breadcrumb-wpr">
           <h2 className="breadcrumb-title">Vendors</h2>
           <ul className="breadcrumb-menu clearfix">
-            <li><a className="breadcrumb-home" href="/" data-discover="true">Home</a></li>
+            <li><Link className="breadcrumb-home" to="/" data-discover="true">Home</Link></li>
             <li className="px-2">/</li>
-            <li><a className="breadcrumb-contact" href="/VendorList" data-discover="true">Vendors</a></li>
+            <li><Link className="breadcrumb-contact" to="/VendorList" data-discover="true">Vendors</Link></li>
           </ul>
         </div>
       </div>
@@ -261,9 +261,9 @@ function VendorList() {
                           <i className="bi bi-telephone-fill text-primary me-2"></i>
                           <strong>Phone:</strong> 
                         </div>
-                        <a href={`tel:${vendor.phone}`} className="ms-4 text-decoration-none">
+                        <Link to={`tel:${vendor.phone}`} className="ms-4 text-decoration-none">
                           {vendor.phone}
-                        </a>
+                        </Link>
                       </div>
                     )}
                     
@@ -273,9 +273,9 @@ function VendorList() {
                           <i className="bi bi-envelope-fill text-primary me-2"></i>
                           <strong>Email:</strong> 
                         </div>
-                        <a href={`mailto:${vendor.email}`} className="ms-4 text-decoration-none">
+                        <Link to={`mailto:${vendor.email}`} className="ms-4 text-decoration-none">
                           {vendor.email}
-                        </a>
+                        </Link>
                       </div>
                     )}
                     

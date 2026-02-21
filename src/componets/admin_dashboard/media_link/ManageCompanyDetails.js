@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Container, Card, Button, Form, Modal, Row, Col } from "react-bootstrap";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
@@ -304,9 +304,9 @@ const ManageCompanyDetails = ({ showCardOnly = false }) => {
                           <ul style={{ paddingLeft: 20, marginTop: 5 }}>
                             {companyData.profile_link && companyData.profile_link.map((link, index) => (
                               <li key={index}>
-                                <a href={link} target="_blank" rel="noopener noreferrer" style={{ color: '#1b4a8f', fontSize: 12 }}>
+                                <Link to ={link} target="_blank" rel="noopener noreferrer" style={{ color: '#1b4a8f', fontSize: 12 }}>
                                   {link}
-                                </a>
+                                </Link>
                               </li>
                             ))}
                           </ul>

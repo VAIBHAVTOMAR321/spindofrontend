@@ -3,6 +3,7 @@ import { Container, Form, Button, Alert, Row, Col, InputGroup } from 'react-boot
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
 import "../assets/css/registration.css";
+import { Link } from 'react-router-dom';
 
 // API base URL - updated to the production endpoint
 const API_BASE_URL = 'https://mahadevaaya.com/spindo/spindobackend';
@@ -642,7 +643,7 @@ function Registration() {
 </div>
             <div className="text-center mt-3">
               <span className="text-muted">Already have an account? </span>
-              <a href="/Login" className="text-primary text-decoration-none">Sign In</a>
+              <Link to="/Login" className="text-primary text-decoration-none">Sign In</Link>
             </div>
                </Row>
           </Form>

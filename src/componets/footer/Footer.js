@@ -167,17 +167,17 @@ const Footer = () => {
               {companyDetails?.phone && (
                 <p className="mb-2">
                   <i className="bi bi-telephone-fill me-2"></i>
-                  <a href={`tel:+91${companyDetails.phone}`} className="footer-contact-link">
+                  <Link to = {`tel:+91${companyDetails.phone}`} className="footer-contact-link">
                     +91 {companyDetails.phone}
-                  </a>
+                  </Link>
                 </p>
               )}
               {companyDetails?.email && (
                 <p className="mb-2">
                   <i className="bi bi-envelope-fill me-2"></i>
-                  <a href={`mailto:${companyDetails.email}`} className="footer-contact-link">
+                  <Link to = {`mailto:${companyDetails.email}`} className="footer-contact-link">
                     {companyDetails.email}
-                  </a>
+                  </Link>
                 </p>
               )}
               {companyDetails?.address && (

@@ -1,6 +1,7 @@
 import React from 'react'
 import { Container, Row, Col, Card } from 'react-bootstrap'
 import "../../assets/css/home.css"
+import { Link } from 'react-router-dom'
 
 function AboutUs({ showBanner = true }) {
   return (
@@ -11,9 +12,9 @@ function AboutUs({ showBanner = true }) {
           <div className="site-breadcrumb-wpr">
             <h2 className="breadcrumb-title">About Us</h2>
             <ul className="breadcrumb-menu clearfix">
-              <li><a className="breadcrumb-home" href="/" data-discover="true">Home</a></li>
+              <li><Link className="breadcrumb-home" to = "/" data-discover="true">Home</Link></li>
               <li className="px-2">/</li>
-              <li><a className="breadcrumb-contact" href="/contact" data-discover="true">About Us</a></li>
+              <li><Link className="breadcrumb-contact" to = "/contact" data-discover="true">About Us</Link></li>
             </ul>
           </div>
         </div>
