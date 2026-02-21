@@ -25,6 +25,7 @@ const SERVICE_API_URL = `${BASE_URL}/api/service-category/`;
 const REQUEST_SERVICES_API = `${BASE_URL}/api/customer/requestservices/`;
 const VENDOR_QUERIES_API = `${BASE_URL}/api/vendor/request/`;
 const BILLS_API = `${BASE_URL}/api/billing/`;
+const SOLAR_QUERY_API = `${BASE_URL}/api/solar-query/`;
 
 const AdminDashBoard = () => {
   // Check device width
@@ -43,6 +44,7 @@ const AdminDashBoard = () => {
   const [vendorQueriesCount, setVendorQueriesCount] = useState('--');
   const [totalQueriesCount, setTotalQueriesCount] = useState('--');
   const [billCount, setBillCount] = useState('--');
+  const [solarQueryCount, setSolarQueryCount] = useState('--');
   
   const { tokens } = useAuth();
   const navigate = useNavigate();
@@ -110,6 +112,13 @@ const AdminDashBoard = () => {
         });
         const billsData = billsRes.data.data?.length || 0;
         setBillCount(billsData);
+
+        // Fetch Solar Query Count
+        const solarRes = await axios.get(SOLAR_QUERY_API, {
+          headers: { Authorization: `Bearer ${tokens.access}` }
+        });
+        const solarData = Array.isArray(solarRes.data) ? solarRes.data.length : solarRes.data.data?.length || 0;
+        setSolarQueryCount(solarData);
 
         // Set total queries
         setTotalQueriesCount(userQueriesData + staffQueriesData + vendorQueriesData);
@@ -214,58 +223,85 @@ const AdminDashBoard = () => {
             {/* Services Section */}
             <div className="dashboard-section">
               <Row className="g-4" style={{ margin: 0, width: '100%' }}>
-                {/* Left Column - 8 cols on large, full width on mobile */}
-                <Col lg={8} md={12} sm={12} xs={12}>
+                {/* Left Column - Services Cards */}
+                <Col lg={12} md={12} sm={12} xs={12}>
                   <h2 className="section-title">Service Management</h2>
-                  <div className="dashboard-cards-grid">
-                    {/* Services Card */}
-                    <div className="card-wrapper" onClick={() => navigate('/ServiceCategory')}>
-                      <div className="dashboard-card card-services">
-                        <div className="dashboard-card-icon services-icon">
-                          <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
-                            <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
-                            <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
-                            <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
-                            <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
-                          </svg>
+                  <Row className="g-3" style={{ margin: 0, width: '100%' }}>
+                    {/* Services Card - col-3 */}
+                    <Col lg={3} md={6} sm={12} xs={12}>
+                      <div className="card-wrapper" onClick={() => navigate('/ServiceCategory')}>
+                        <div className="dashboard-card card-services">
+                          <div className="dashboard-card-icon services-icon">
+                            <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
+                              <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
+                              <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
+                              <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
+                              <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
+                            </svg>
+                          </div>
+                          <div className="dashboard-card-title">Service Categories</div>
+                          <div className="dashboard-card-value">{serviceCount}</div>
+                          <div className="card-footer-text">Total Services Available</div>
                         </div>
-                        <div className="dashboard-card-title">Service Categories</div>
-                        <div className="dashboard-card-value">{serviceCount}</div>
-                        <div className="card-footer-text">Total Services Available</div>
                       </div>
-                    </div>
+                    </Col>
 
-                    {/* Service Requests Card */}
-                    <div className="card-wrapper" onClick={() => navigate('/RequestServices')}>
-                      <div className="dashboard-card card-requests">
-                        <div className="dashboard-card-icon requests-icon">
-                          <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
-                            <path d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2"/>
-                          </svg>
+                    {/* Service Requests Card - col-3 */}
+                    <Col lg={3} md={6} sm={12} xs={12}>
+                      <div className="card-wrapper" onClick={() => navigate('/RequestServices')}>
+                        <div className="dashboard-card card-requests">
+                          <div className="dashboard-card-icon requests-icon">
+                            <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
+                              <path d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2"/>
+                            </svg>
+                          </div>
+                          <div className="dashboard-card-title">Service Requests</div>
+                          <div className="dashboard-card-value">{requestServicesCount}</div>
+                          <div className="card-footer-text">Pending & Active Requests</div>
                         </div>
-                        <div className="dashboard-card-title">Service Requests</div>
-                        <div className="dashboard-card-value">{requestServicesCount}</div>
-                        <div className="card-footer-text">Pending & Active Requests</div>
                       </div>
-                    </div>
-                  </div>
-                </Col>
+                    </Col>
 
-                {/* Right Column - 4 cols on large, full width on mobile */}
-                <Col lg={4} md={12} sm={12} xs={12}>
-                  <h2 className="section-title">Bills</h2>
-                  <div className="card-wrapper" onClick={() => navigate('/AllBills')}>
-                    <div className="dashboard-card card-bills">
-                      <div className="dashboard-card-icon bills-icon">
-                        <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
-                          <path d="M9 12h6m-6 4h6m2-13H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2z" stroke="currentColor" strokeWidth="2"/>
-                        </svg>
+                    {/* Bills Card - col-3 */}
+                    <Col lg={3} md={6} sm={12} xs={12}>
+                      <div className="card-wrapper" onClick={() => navigate('/AllBills')}>
+                        <div className="dashboard-card card-bills">
+                          <div className="dashboard-card-icon bills-icon">
+                            <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
+                              <path d="M9 12h6m-6 4h6m2-13H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2z" stroke="currentColor" strokeWidth="2"/>
+                            </svg>
+                          </div>
+                          <div className="dashboard-card-title">Bills</div>
+                          <div className="dashboard-card-value">{billCount}</div>
+                          <div className="card-footer-text">Total Bills</div>
+                        </div>
                       </div>
-                      <div className="dashboard-card-title">Bills</div>
-                      <div className="dashboard-card-value">{billCount}</div>
-                      <div className="card-footer-text">Total Bills</div>
-                    </div>
-                  </div>
+                    </Col>
+
+                    {/* Solar Query Card - col-3 */}
+                    <Col lg={3} md={6} sm={12} xs={12}>
+                      <div className="card-wrapper" onClick={() => navigate('/SolarQuery')}>
+                        <div className="dashboard-card card-solar">
+                          <div className="dashboard-card-icon solar-icon">
+                            <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
+                              <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2"/>
+                              <line x1="12" y1="1" x2="12" y2="3" stroke="currentColor" strokeWidth="2"/>
+                              <line x1="12" y1="21" x2="12" y2="23" stroke="currentColor" strokeWidth="2"/>
+                              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="currentColor" strokeWidth="2"/>
+                              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="currentColor" strokeWidth="2"/>
+                              <line x1="1" y1="12" x2="3" y2="12" stroke="currentColor" strokeWidth="2"/>
+                              <line x1="21" y1="12" x2="23" y2="12" stroke="currentColor" strokeWidth="2"/>
+                              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="currentColor" strokeWidth="2"/>
+                              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="currentColor" strokeWidth="2"/>
+                            </svg>
+                          </div>
+                          <div className="dashboard-card-title">Solar Queries</div>
+                          <div className="dashboard-card-value">{solarQueryCount}</div>
+                          <div className="card-footer-text">Solar Panel Inquiries</div>
+                        </div>
+                      </div>
+                    </Col>
+                  </Row>
                 </Col>
               </Row>
             </div>

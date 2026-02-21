@@ -9,7 +9,7 @@ import "../../assets/css/login.css";
 
 const Login = () => {
   const { login } = useAuth(); // Use the auth context
-  const [role, setRole] = useState('customer'); // Default role is 'customer'
+  const [role, setRole] = useState('admin'); // Default role is 'admin'
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [adminId, setAdminId] = useState('');
   const [staffAdminId, setStaffAdminId] = useState('');
@@ -206,18 +206,11 @@ const Login = () => {
         {/* Role Selection Tabs */}
         <div className="role-tabs">
           <button 
-            className={`role-tab ${role === 'customer' ? 'active' : ''}`}
-            onClick={() => setRole('customer')}
+            className={`role-tab ${role === 'admin' ? 'active' : ''}`}
+            onClick={() => setRole('admin')}
           >
-            <i className="fas fa-user"></i>
-            <span>LOGIN AS A CUSTOMER</span>
-          </button>
-          <button 
-            className={`role-tab ${role === 'vendor' ? 'active' : ''}`}
-            onClick={() => setRole('vendor')}
-          >
-            <i className="fas fa-store"></i>
-            <span>LOGIN AS A VENDOR</span>
+            <i className="fas fa-user-cog"></i>
+            <span>Admin</span>
           </button>
           <button 
             className={`role-tab ${role === 'staffadmin' ? 'active' : ''}`}
@@ -227,11 +220,18 @@ const Login = () => {
             <span>Staff Admin</span>
           </button>
           <button 
-            className={`role-tab ${role === 'admin' ? 'active' : ''}`}
-            onClick={() => setRole('admin')}
+            className={`role-tab ${role === 'vendor' ? 'active' : ''}`}
+            onClick={() => setRole('vendor')}
           >
-            <i className="fas fa-user-cog"></i>
-            <span>Admin</span>
+            <i className="fas fa-store"></i>
+            <span>VENDOR</span>
+          </button>
+          <button 
+            className={`role-tab ${role === 'customer' ? 'active' : ''}`}
+            onClick={() => setRole('customer')}
+          >
+            <i className="fas fa-user"></i>
+            <span>CUSTOMER</span>
           </button>
         </div>
         
@@ -387,7 +387,7 @@ const Login = () => {
               </div>
             </>
           )}
-          
+          <div className="d-flex justify-content-center">
           <button type="submit" className="login-button" disabled={isLoading}>
             {isLoading ? (
               <div className="loading-spinner">
@@ -398,6 +398,7 @@ const Login = () => {
               'Log In'
             )}
           </button>
+          </div>
         </form>
       </div>
     </div>

@@ -23,7 +23,8 @@ import {
   FaMusic,
   FaGlassCheers,
   FaChalkboardTeacher,
-  FaIndustry
+  FaIndustry,
+  FaSun
 } from "react-icons/fa";
 import axios from "axios";
 import "../../assets/css/admindashboard.css";
@@ -83,6 +84,11 @@ const menuItems = [
     icon: <FaBook />,
     label: "Generated Bills",
     path: "/AllBills",
+  },
+  {
+    icon: <FaSun />,
+    label: "Solar Queries",
+    path: "/SolarQuery",
   },
   {
     icon: <FaComments />,

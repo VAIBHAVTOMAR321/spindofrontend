@@ -13,7 +13,7 @@
 .main-content {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 60px; /* Space for the footer */
+  padding-bottom: 16px; 
 }
 
 /* Footer styling */
