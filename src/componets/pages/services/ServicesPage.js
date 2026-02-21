@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { Container, Row, Col, Card, Button, Image } from 'react-bootstrap'
 import "../../../assets/css/home.css";
 import "../../../assets/css/services.css";
+import { useNavigate } from 'react-router-dom';
 
 function ServicesPage() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+ const navigate = useNavigate(); 
   useEffect(() => {
     // Fetch data from the API
     fetch('https://mahadevaaya.com/spindo/spindobackend/api/service-category/')
@@ -34,7 +35,7 @@ function ServicesPage() {
   const handleBookService = (serviceId) => {
     console.log('Booking service:', serviceId);
     // Redirect to login page
-    window.location.href = '/login';
+      navigate('/login');
   };
 
   // Function to get the correct image path
