@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Container, Row, Col, Carousel, Button } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import "../../assets/css/home.css"
@@ -7,56 +7,103 @@ import HomeBg from "../../assets/images/home-img.jpg";
 import AboutUs from './AboutUs';
 
 function Home() {
+  const [carouselItems, setCarouselItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Fetch service categories from API
+    fetch('https://mahadevaaya.com/spindo/spindobackend/api/service-category/')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.status && data.data) {
+          // Filter published or accepted services and get first 5 items
+          const filteredServices = data.data
+            .filter(service => service.status === 'published' || service.status === 'accepted')
+            .slice(0, 5);
+          setCarouselItems(filteredServices);
+        } else {
+          console.error('Invalid data format received from API');
+        }
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching carousel data:', error);
+        setError(error.message);
+        setLoading(false);
+      });
+  }, []);
+
+  // Function to get the correct image path
+  const getImagePath = (imagePath) => {
+    if (!imagePath) return null;
+    
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    
+    return `https://mahadevaaya.com/spindo/spindobackend/${imagePath}`;
+  };
+
+  // Function to get slide style with background image
+  const getSlideStyle = (imageUrl) => {
+    if (!imageUrl) return {};
+    return {
+      backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${imageUrl}')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
+    };
+  };
+
   return (
     <div className="home-container">
       {/* Hero Carousel Section */}
       <div className="hero-carousel">
-        <Carousel controls={true} indicators={true} interval={3000} pause={false}>
-          <Carousel.Item>
-            <div className="carousel-slide slide-1">
-              <div className="carousel-overlay"></div>
-              <Carousel.Caption className="carousel-caption-custom">
-                <div className="caption-content">
-                  <h1 className="carousel-title">Carpenter </h1>
-                  <p className="carousel-subtitle"> Shaping, cutting, and installing wood for buildings or smaller structures involves a mix of precision, craftsmanship, and practical problem-solving. It starts with reading plans or measurements, selecting the right type of wood, and accurately cutting and shaping it using hand tools or power tools. Every cut matters—small errors can affect the strength, alignment, or appearance of the finished structure.</p>
-                  <Link to="/ServicesPage">
-                    <Button className="cta-button-carousel">View Services</Button>
-                  </Link>
-                </div>
-              </Carousel.Caption>
+        {loading ? (
+          <div className="carousel-loading">
+            <div className="spinner-border text-light" role="status">
+              <span className="sr-only">Loading...</span>
             </div>
-          </Carousel.Item>
-          
-          <Carousel.Item>
-            <div className="carousel-slide slide-2">
-              <div className="carousel-overlay"></div>
-              <Carousel.Caption className="carousel-caption-custom">
-                <div className="caption-content">
-                  <h1 className="carousel-title">Electrician </h1>
-                  <p className="carousel-subtitle"> Electricians offer a range of services including electrical inspections, installations, appliance installations, fault finding and repair and so on.              </p>
-                  <Link to="/ServicesPage">
-                    <Button className="cta-button-carousel">View Services</Button>
-                  </Link>
+          </div>
+        ) : error ? (
+          <div className="carousel-error">
+            <p>Error loading carousel: {error}</p>
+          </div>
+        ) : carouselItems.length > 0 ? (
+          <Carousel controls={true} indicators={true} interval={3000} pause={false}>
+            {carouselItems.map((service, index) => (
+              <Carousel.Item key={service.id}>
+                <div 
+                  className={`carousel-slide slide-${index + 1}`}
+                  style={getSlideStyle(getImagePath(service.prod_img))}
+                >
+                  <div className="carousel-overlay"></div>
+                  <Carousel.Caption className="carousel-caption-custom">
+                    <div className="caption-content">
+                      <h1 className="carousel-title">{service.prod_name}</h1>
+                      <p className="carousel-subtitle">
+                        {service.prod_desc}
+                      </p>
+                      <Link to="/ServicesPage">
+                        <Button className="cta-button-carousel">View Services</Button>
+                      </Link>
+                    </div>
+                  </Carousel.Caption>
                 </div>
-              </Carousel.Caption>
-            </div>
-          </Carousel.Item>
-          
-          <Carousel.Item>
-            <div className="carousel-slide slide-3">
-              <div className="carousel-overlay"></div>
-              <Carousel.Caption className="carousel-caption-custom">
-                <div className="caption-content">
-                  <h1 className="carousel-title">Plumber </h1>
-                  <p className="carousel-subtitle"> Plumbing service is drain services, which generally involves cleaning the traps and piping of a variety of drain types, including sewer drains, toilet drains, sink drains, and grease traps.</p>
-                  <Link to="/ServicesPage">
-                    <Button className="cta-button-carousel">Explore More</Button>
-                  </Link>
-                </div>
-              </Carousel.Caption>
-            </div>
-          </Carousel.Item>
-        </Carousel>
+              </Carousel.Item>
+            ))}
+          </Carousel>
+        ) : (
+          <div className="carousel-empty">
+            <p>No carousel items available</p>
+          </div>
+        )}
       </div>
 
       {/* Main Content Section */}
