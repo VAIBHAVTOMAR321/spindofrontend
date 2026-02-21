@@ -75,7 +75,7 @@ const ForgotPassword = () => {
       }
 
       if (data.success === true) {
-        setSuccessMessage('OTP sent successfully to your phone');
+        alert('OTP sent successfully to your phone');
         setShowOtpModal(true);
         setStep(2);
       } else {
