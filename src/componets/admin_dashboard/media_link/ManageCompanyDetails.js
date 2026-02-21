@@ -157,7 +157,7 @@ const ManageCompanyDetails = ({ showCardOnly = false }) => {
         },
       });
 
-      setFormSuccess("Company Details Updated Successfully");
+      alert("Company Details Updated Successfully");
       setTimeout(() => {
         setShowModal(false);
         setFormSuccess("");

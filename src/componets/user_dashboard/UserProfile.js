@@ -116,7 +116,7 @@ const UserProfile = () => {
         if (response.ok && data.status) {
           setProfile((prev) => ({ ...prev, image: file.name }));
           setEditProfile((prev) => ({ ...prev, image: file.name }));
-          setSuccess("Profile image updated successfully!");
+           alert("Profile image updated successfully!");
         } else {
           setError(data.message || "Failed to update profile image.");
         }
@@ -207,7 +207,7 @@ const UserProfile = () => {
       if (response.ok && data.status) {
         setProfile((prev) => ({ ...prev, ...payload }));
         setIsEditing(false);
-        setSuccess("Profile updated successfully!");
+         alert("Profile updated successfully!");
         setSelectedImageFile(null); // Reset file
       } else {
         setError(data.message || "Failed to update profile.");

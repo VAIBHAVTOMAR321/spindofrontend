@@ -217,7 +217,7 @@ const TotalRegistration = () => {
           },
         });
 
-        alert("Staff Updated Successfully ✅");
+        alert("Staff Updated Successfully ");
 
       } else {
         // ===== POST (CREATE) =====
@@ -243,7 +243,7 @@ const TotalRegistration = () => {
           },
         });
 
-        alert("Staff Created Successfully ✅");
+        alert("Staff Created Successfully ");
       }
 
       resetForm();

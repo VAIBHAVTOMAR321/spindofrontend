@@ -176,7 +176,7 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
         },
       });
 
-      setFormSuccess("Vendor Updated Successfully ✅");
+      alert("Vendor Updated Successfully");
       setTimeout(() => {
         setShowModal(false);
         setFormSuccess("");

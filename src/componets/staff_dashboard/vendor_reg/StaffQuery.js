@@ -169,7 +169,7 @@ const StaffQuery = () => {
         return;
       }
       if (response.ok && data.status) {
-        setSuccess("Your query has been submitted successfully! We'll get back to you soon.");
+         alert("Your query has been submitted successfully! We'll get back to you soon.");
         setQuery({
           name: profileName || user?.name || "",
           unique_id: user?.uniqueId || "",

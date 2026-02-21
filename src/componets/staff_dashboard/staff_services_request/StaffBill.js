@@ -356,7 +356,7 @@ const StaffBill = () => {
       console.log("Response data:", data);
 
       if (response.ok && data.status) {
-        setSuccess("Bill created successfully!");
+         alert("Bill created successfully!");
         // Reset form after successful submission
         setBillData({
           vendor_id: "",

@@ -128,7 +128,7 @@ const GenerateVendorQuery = () => {
       const data = await response.json();
       // ...existing code...
       if (response.ok && data.status) {
-        setSuccess("Query submitted successfully!");
+         alert("Query submitted successfully!");
         setForm({
           vendor: user?.uniqueId || "",
           username: user?.username || "",

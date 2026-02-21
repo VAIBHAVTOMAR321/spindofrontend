@@ -146,7 +146,7 @@ const VendorProfile = () => {
         if (response.ok && data.status) {
           setProfile((prev) => ({ ...prev, vendor_image: file.name }));
           setEditProfile((prev) => ({ ...prev, vendor_image: file.name }));
-          setSuccess("Vendor image updated successfully!");
+          alert("Vendor image updated successfully!");
         } else {
           setError(data.message || "Failed to update vendor image.");
         }
@@ -202,7 +202,7 @@ const VendorProfile = () => {
             }
           }
           setAadharImagePreview(aadharImageUrl);
-          setSuccess("Aadhar card image updated successfully!");
+           alert("Aadhar card image updated successfully!");
         } else {
           setError(data.message || "Failed to update aadhar card image.");
         }
@@ -326,7 +326,7 @@ const VendorProfile = () => {
       if (response.ok && data.status) {
         setProfile((prev) => ({ ...prev, ...editProfile }));
         setIsEditing(false);
-        setSuccess("Profile updated successfully!");
+         alert("Profile updated successfully!");
         setSelectedImageFile(null);
         setSelectedAadharFile(null);
       } else {

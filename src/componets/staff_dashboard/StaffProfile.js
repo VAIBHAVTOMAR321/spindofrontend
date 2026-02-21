@@ -179,7 +179,7 @@ const StaffProfile = () => {
         const data = await response.json();
         if (response.ok && data.status) {
           await refetchProfile();
-          setSuccess("Staff image updated successfully!");
+          alert("Staff image updated successfully!");
         } else {
           setError(data.message || "Failed to update staff image.");
         }
@@ -219,7 +219,7 @@ const StaffProfile = () => {
         const data = await response.json();
         if (response.ok && data && data.status) {
           await refetchProfile();
-          setSuccess("Aadhar card image updated successfully!");
+           alert("Aadhar card image updated successfully!");
         } else {
           setError((data && data.message) || "Failed to update aadhar card image.");
         }
@@ -328,7 +328,7 @@ const StaffProfile = () => {
       if (response.ok && data.status) {
         setProfile((prev) => ({ ...prev, ...editProfile }));
         setIsEditing(false);
-        setSuccess("Profile updated successfully!");
+         alert("Profile updated successfully!");
         setSelectedImageFile(null);
         setSelectedAadharFile(null);
       } else {

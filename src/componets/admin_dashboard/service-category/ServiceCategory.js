@@ -193,7 +193,7 @@ const ServiceCategory = () => {
           },
         });
 
-        setSuccess("Service category updated successfully!");
+        alert("Service category updated successfully!");
         setShowEditModal(false);
       } else {
         // POST (CREATE)
@@ -217,7 +217,7 @@ const ServiceCategory = () => {
           },
         });
 
-        setSuccess("Service category added successfully!");
+        alert("Service category added successfully!");
         setShowAddModal(false);
       }
 
@@ -278,7 +278,7 @@ const ServiceCategory = () => {
         data: deletePayload,
       });
 
-      setSuccess("Service category deleted successfully!");
+      alert("Service category deleted successfully!");
       setShowDeleteModal(false);
       fetchCategories();
     } catch (err) {

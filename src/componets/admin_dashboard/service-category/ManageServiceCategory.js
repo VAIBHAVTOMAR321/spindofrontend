@@ -149,7 +149,7 @@ const ManageServiceCategory = () => {
           },
         });
 
-        setSuccess("Service category updated successfully!");
+        alert("Service category updated successfully!");
         setShowEditForm(false);
       } else {
         // POST (CREATE)
@@ -236,7 +236,7 @@ const ManageServiceCategory = () => {
         data: deletePayload,
       });
 
-      setSuccess("Service category deleted successfully!");
+      alert("Service category deleted successfully!");
       setShowDeleteModal(false);
       fetchCategories();
     } catch (err) {
