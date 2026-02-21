@@ -11,8 +11,8 @@ import "../../assets/css/admindashboard.css";
 
 const statusColors = {
   pending: "warning",
-  approved: "success",
-  rejected: "danger"
+  approved: "success"
+  // rejected removed
 };
 
 const ViewRequestService = () => {
@@ -56,19 +56,34 @@ const ViewRequestService = () => {
 
   const handleViewPDF = async () => {
     const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-    const headers = [["Request ID", "Name", "Email", "Contact", "Alternate Contact", "Address", "Service(s)", "Schedule", "Description", "Status"]];
-    const rows = filteredRequests.map(req => [
-      req.request_id,
-      req.username,
-      req.email,
-      req.contact_number,
-      req.alternate_contact_number || '-',
-      req.address,
-      Array.isArray(req.request_for_services) ? req.request_for_services.join(", ") : req.request_for_services,
-      `${req.schedule_date} ${req.schedule_time}`,
-      req.description,
-      req.status
-    ]);
+    const headers = [["Request ID", "Name", "Email", "Contact", "Alternate Contact", "Address", "Assignments", "Schedule", "Description", "Status"]];
+    const rows = filteredRequests.map(req => {
+      // Format assignments with status
+      let assignmentsText = "Not Assigned";
+      if (Array.isArray(req.assignments) && req.assignments.length > 0) {
+        assignmentsText = req.assignments.map(assignment => {
+          if (Array.isArray(assignment) && Array.isArray(assignment[0])) {
+            const services = assignment[0];
+            const vendorName = assignment[2];
+            const assignmentStatus = assignment[3] || "assigned";
+            return `${vendorName}: ${services.join(', ')} (${assignmentStatus})`;
+          }
+          return JSON.stringify(assignment);
+        }).join('\n');
+      }
+      return [
+        req.request_id,
+        req.username,
+        req.email,
+        req.contact_number,
+        req.alternate_contact_number || '-',
+        req.address,
+        assignmentsText,
+        `${req.schedule_date} ${req.schedule_time}`,
+        req.description,
+        req.status
+      ];
+    });
     autoTable(pdf, {
       head: headers,
       body: rows,
@@ -112,7 +127,7 @@ const ViewRequestService = () => {
   useEffect(() => {
     if (location && location.state && location.state.filter) {
       const filter = location.state.filter.toLowerCase();
-      if (["approved", "pending", "rejected"].includes(filter)) {
+      if (["assigned", "pending", "cancelled", "completed"].includes(filter)) {
         setStatusFilter(filter);
       }
     }
@@ -241,8 +256,9 @@ const ViewRequestService = () => {
                           >
                             <option value="all">All Statuses</option>
                             <option value="pending">Pending</option>
-                            <option value="approved">Approved</option>
-                            <option value="rejected">Rejected</option>
+                            <option value="assigned">Assigned</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
                           </Form.Select>
                         </div>
                         <div>
@@ -290,7 +306,7 @@ const ViewRequestService = () => {
                             <th style={{ borderRight: '1px solid #fff' }}>Contact</th>
                             <th style={{ borderRight: '1px solid #fff' }}>Alternate Contact</th>
                             <th style={{ borderRight: '1px solid #fff' }}>Address</th>
-                            <th style={{ borderRight: '1px solid #fff' }}>Service(s)</th>
+                            <th style={{ borderRight: '1px solid #fff' }}>Assignments</th>
                             <th style={{ borderRight: '1px solid #fff' }}>Schedule</th>
                             <th style={{ borderRight: '1px solid #fff' }}>Description</th>
                             <th>Status</th>
@@ -309,11 +325,57 @@ const ViewRequestService = () => {
                                 <td>{req.contact_number}</td>
                                 <td>{req.alternate_contact_number || '-'}</td>
                                 <td>{req.address}</td>
-                                <td>
-                                  {Array.isArray(req.request_for_services) ? req.request_for_services.map((s, i) => (
-                                    <Badge key={i} bg="info" className="me-1">{s}</Badge>
-                                  )) : req.request_for_services}
-                                </td>
+                                {/* Assignments column: show vendor-service pairs with status */}
+                                {Array.isArray(req.assignments) && req.assignments.length > 0 ? (
+                                  <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                                    {req.assignments.map((assignment, idx) => {
+                                      // Handle nested assignment structure: [ [services], vendor_id, vendor_name, status ]
+                                      if (Array.isArray(assignment) && Array.isArray(assignment[0])) {
+                                        const services = assignment[0];
+                                        const vendorId = assignment[1];
+                                        const vendorName = assignment[2];
+                                        const assignmentStatus = assignment[3] || "assigned";
+                                        return (
+                                          <li key={idx} style={{ fontSize: 12, marginBottom: 6, padding: '6px 8px', backgroundColor: '#f9fafb', borderRadius: 4 }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 8 }}>
+                                              <div style={{ flex: 1 }}>
+                                                <div style={{ fontWeight: 600, color: '#065f46', marginBottom: 2 }}>
+                                                  {vendorName || vendorId || '--'}
+                                                </div>
+                                                {services && services.length > 0 && (
+                                                  <div style={{ color: '#64748b', fontSize: 11, lineHeight: 1.3 }}>
+                                                    {services.join(', ')}
+                                                  </div>
+                                                )}
+                                              </div>
+                                              <span
+                                                style={{
+                                                  padding: '2px 8px',
+                                                  borderRadius: 3,
+                                                  fontSize: 10,
+                                                  fontWeight: 600,
+                                                  backgroundColor: assignmentStatus === "completed" ? "#d4edda" : assignmentStatus === "assigned" ? "#cfe2ff" : assignmentStatus === "cancelled" ? "#e0e0e0" : "#f8f9fa",
+                                                  color: assignmentStatus === "completed" ? "#155724" : assignmentStatus === "assigned" ? "#004085" : assignmentStatus === "cancelled" ? "#6c757d" : "#6c757d",
+                                                  whiteSpace: 'nowrap'
+                                                }}
+                                              >
+                                                {assignmentStatus.charAt(0).toUpperCase() + assignmentStatus.slice(1)}
+                                              </span>
+                                            </div>
+                                          </li>
+                                        );
+                                      }
+                                      // fallback for other assignment formats
+                                      return (
+                                        <li key={idx} style={{ fontSize: 13, marginBottom: 2 }}>
+                                          <span style={{ fontWeight: 600, color: '#065f46' }}>{JSON.stringify(assignment)}</span>
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+                                ) : (
+                                  <span style={{ color: '#64748b', fontSize: 13 }}>Not Assigned</span>
+                                )}
                                 <td>
                                   {req.schedule_date} <br />
                                   <span style={{ fontSize: 12 }}>{req.schedule_time}</span>

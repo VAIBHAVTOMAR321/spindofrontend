@@ -49,10 +49,41 @@ const UserDashBoard = () => {
         setServiceLoading(false);
       });
   }, [user, tokens]);
-  // Service stats (Approved, Pending, Rejected only, case-insensitive)
-  const approvedServices = serviceRequests.filter(s => (s.status || '').toLowerCase() === "approved").length;
+  // Assignment stats
+  const [assignmentLoading, setAssignmentLoading] = useState(true);
+  const [assignmentError, setAssignmentError] = useState("");
+  const [assignmentCount, setAssignmentCount] = useState(0);
+
+  useEffect(() => {
+    if (!user?.uniqueId) {
+      setAssignmentError("User not logged in or missing unique ID.");
+      setAssignmentLoading(false);
+      return;
+    }
+    setAssignmentLoading(true);
+    fetch(`https://mahadevaaya.com/spindo/spindobackend/api/customer/requestservices/?unique_id=${user.uniqueId}`, {
+      headers: tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status && Array.isArray(data.data)) {
+          // Count assigned requests
+          setAssignmentCount(data.data.filter(s => (s.status || '').toLowerCase() === "assigned").length);
+        } else {
+          setAssignmentCount(0);
+        }
+        setAssignmentLoading(false);
+      })
+      .catch(() => {
+        setAssignmentError("Error fetching assignments.");
+        setAssignmentCount(0);
+        setAssignmentLoading(false);
+      });
+  }, [user, tokens]);
+
   const pendingServices = serviceRequests.filter(s => (s.status || '').toLowerCase() === "pending").length;
   const rejectedServices = serviceRequests.filter(s => (s.status || '').toLowerCase() === "rejected").length;
+  const cancelledServices = serviceRequests.filter(s => (s.status || '').toLowerCase() === "cancelled").length;
 
   useEffect(() => {
     const checkDevice = () => {
@@ -190,20 +221,48 @@ const UserDashBoard = () => {
               <div className="mb-3">
                 <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Services</h6>
                 <Row className="g-2 mb-2" style={{ margin: 0 }}>
-                  <Col xs={12} sm={6} md={6} lg={4}>
-                    <Link to="/ViewRequestService" state={{ filter: 'Approved' }} style={{ textDecoration: 'none' }}>
+                  <Col xs={12} sm={6} md={2} lg={3}>
+                    <Link to="/ViewRequestService" state={{ filter: 'Assigned' }} style={{ textDecoration: 'none' }}>
+                      <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#007bff', width: 28, height: 28, borderRadius: '50%' }}>
+                            <i className="bi bi-clipboard-check" style={{ fontSize: 14 }}></i>
+                          </div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Assigned</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{assignmentLoading ? <Spinner size="sm" /> : assignmentCount}</div>
+                        </Card.Body>
+                      </Card>
+                    </Link>
+                  </Col>
+                  <Col xs={12} sm={6} md={2} lg={3}>
+                    <Link to="/ViewRequestService" state={{ filter: 'Completed' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
                           <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#28a745', width: 28, height: 28, borderRadius: '50%' }}>
                             <i className="bi bi-check-circle" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Approved</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{serviceLoading ? <Spinner size="sm" /> : approvedServices}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Completed</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{serviceLoading ? <Spinner size="sm" /> : serviceRequests.filter(s => (s.status || '').toLowerCase() === 'completed').length}</div>
                         </Card.Body>
                       </Card>
                     </Link>
                   </Col>
-                  <Col xs={12} sm={6} md={6} lg={4}>
+                  <Col xs={12} sm={6} md={2} lg={3}>
+                    <Link to="/ViewRequestService" state={{ filter: 'Cancelled' }} style={{ textDecoration: 'none' }}>
+                      <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
+                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
+                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e0e0e0', color: '#6c757d', width: 28, height: 28, borderRadius: '50%' }}>
+                            <i className="bi bi-x-square" style={{ fontSize: 14 }}></i>
+                          </div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Cancelled</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{serviceLoading ? <Spinner size="sm" /> : cancelledServices}</div>
+                        </Card.Body>
+                      </Card>
+                    </Link>
+                  </Col>
+                
+                  {/* Rejected card removed as requested */}
+                    <Col xs={12} sm={6} md={2} lg={3}>
                     <Link to="/ViewRequestService" state={{ filter: 'Pending' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -212,19 +271,6 @@ const UserDashBoard = () => {
                           </div>
                           <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Pending</div>
                           <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{serviceLoading ? <Spinner size="sm" /> : pendingServices}</div>
-                        </Card.Body>
-                      </Card>
-                    </Link>
-                  </Col>
-                  <Col xs={12} sm={6} md={6} lg={4}>
-                    <Link to="/ViewRequestService" state={{ filter: 'Rejected' }} style={{ textDecoration: 'none' }}>
-                      <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
-                        <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
-                          <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#ffe3e3', color: '#e53935', width: 28, height: 28, borderRadius: '50%' }}>
-                            <i className="bi bi-x-circle" style={{ fontSize: 14 }}></i>
-                          </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Rejected</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{serviceLoading ? <Spinner size="sm" /> : rejectedServices}</div>
                         </Card.Body>
                       </Card>
                     </Link>
@@ -264,7 +310,7 @@ const UserDashBoard = () => {
                       </Card>
                     </Link>
                   </Col>
-                  <Col xs={12} sm={6} md={4}>
+                  <Col xs={12} sm={6} md={3}>
                     <Link to="/UserAllQuery" state={{ filter: 'Pending' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">

@@ -67,9 +67,17 @@ const VendorRequests = ({ showCardOnly = false }) => {
       // Check if request has an assignment for this vendor
       const vendorUniqueId = user?.uniqueId || tokens?.unique_id;
       if (Array.isArray(request.assignments) && vendorUniqueId) {
-        return request.assignments.some(
-          (a) => Array.isArray(a) && a[1] === vendorUniqueId && (a[3] === "assigned" || a[3] === "completed")
-        );
+        // If a filter is applied for status, only include requests with that assignment status for this vendor
+        if (filters.status) {
+          return request.assignments.some(
+            (a) => Array.isArray(a) && a[1] === vendorUniqueId && a[3]?.toLowerCase() === filters.status.toLowerCase()
+          );
+        } else {
+          // No status filter: include assigned, completed, cancelled
+          return request.assignments.some(
+            (a) => Array.isArray(a) && a[1] === vendorUniqueId && ["assigned", "completed", "cancelled"].includes(a[3])
+          );
+        }
       }
       return false;
     })
@@ -95,19 +103,7 @@ const VendorRequests = ({ showCardOnly = false }) => {
         (!filters.district ||
           request.district
             ?.toLowerCase()
-            .includes(filters.district.toLowerCase())) &&
-        (!filters.status ||
-          (() => {
-            const vendorUniqueId = user?.uniqueId || tokens?.unique_id;
-            if (Array.isArray(request.assignments) && vendorUniqueId) {
-              for (const assignment of request.assignments) {
-                if (Array.isArray(assignment) && assignment[1] === vendorUniqueId) {
-                  return assignment[3]?.toLowerCase() === filters.status.toLowerCase();
-                }
-              }
-            }
-            return false;
-          })())
+            .includes(filters.district.toLowerCase()))
     );
 
   // Handle view details button click
@@ -374,6 +370,7 @@ const VendorRequests = ({ showCardOnly = false }) => {
                     <option value="pending">Pending</option>
                     <option value="assigned">Assigned</option>
                     <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
                   </Form.Select>
                 </Form>
               </div>
@@ -500,7 +497,20 @@ const VendorRequests = ({ showCardOnly = false }) => {
                                       fontSize: 12,
                                     }}
                                   >
-                                    {assignmentStatus}
+                                    {assignmentStatus.charAt(0).toUpperCase() + assignmentStatus.slice(1)}
+                                  </span>
+                                ) : assignmentStatus === "cancelled" ? (
+                                  <span
+                                    style={{
+                                      padding: "4px 8px",
+                                      borderRadius: 6,
+                                      backgroundColor: "#ffe3e3",
+                                      color: "#e53935",
+                                      fontWeight: 600,
+                                      fontSize: 12,
+                                    }}
+                                  >
+                                    {assignmentStatus.charAt(0).toUpperCase() + assignmentStatus.slice(1)}
                                   </span>
                                 ) : (
                                   <Form.Select
