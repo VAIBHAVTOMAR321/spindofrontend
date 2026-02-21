@@ -47,7 +47,7 @@ const Footer = () => {
       <Container>
         <Row>
           {/* Company Info Column */}
-          <Col lg={6} md={6} className="mb-4 mb-lg-0">
+          <Col lg={4} md={6} className="mb-4 mb-lg-0">
             <div className="footer-brand mb-3">
               <h4 className="mb-0">{companyDetails?.company_name || "SPINDO"}</h4>
               <p className="mb-0 small">All Services Under One Roof</p>
@@ -132,35 +132,36 @@ const Footer = () => {
               <Nav.Link 
                 as="button" 
                 onClick={() => handleNavigation("/")} 
-                className="footer-nav-link p-0 mb-2 text-center"
+                className="footer-nav-link p-0 mb-2 text-start"
               >
                 Home
               </Nav.Link>
               <Nav.Link 
                 as="button" 
                 onClick={() => handleNavigation("/AboutUs")} 
-                className="footer-nav-link p-0 mb-2 text-center"
+                className="footer-nav-link p-0 mb-2 text-start"
               >
                 About Us
               </Nav.Link>
               <Nav.Link 
                 as="button" 
                 onClick={() => handleNavigation("/ServicesPage")} 
-                className="footer-nav-link p-0 mb-2 text-center"
+                className="footer-nav-link p-0 mb-2 text-start"
               >
                 Services
               </Nav.Link>
               <Nav.Link 
                 as="button" 
                 onClick={() => handleNavigation("/ContactUs")} 
-                className="footer-nav-link p-0 mb-2 text-center"
+                className="footer-nav-link p-0 mb-2 text-start"
               >
                 Contact
               </Nav.Link>
             </Nav>
           </Col>
           
-          <Col lg={2} md={6} className="mb-4 mb-lg-0">
+          {/* Contact Info Column */}
+          <Col lg={4} md={12} className="mb-4 mb-lg-0">
             <h5 className="footer-heading mb-3">Contact Info</h5>
             <div className="footer-contact">
               {companyDetails?.phone && (
@@ -201,10 +202,7 @@ const Footer = () => {
               Copyright ©{currentYear} SPINDO. All rights reserved
             </p>
           </Col>
-        </Row>
-
-        <Row className="mt-3">
-          <Col className="text-center">
+          <Col md={6} className="text-center text-md-end mb-3 mb-md-0">
             <p className="mb-0 footer-developer">
               Design and Developed by Brainrock
             </p>

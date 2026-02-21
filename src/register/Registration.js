@@ -329,6 +329,16 @@ function Registration() {
       setServerResponse(response.data);
       setRegistrationSuccess(true);
       setIsLoading(false);
+      
+      // Show success alert
+      alert("Successfully registered!");
+      
+      // Remove the success message after showing the alert
+      setTimeout(() => {
+        setRegistrationSuccess(false);
+        setServerResponse(null);
+        resetForm();
+      }, 1000);
     } catch (error) {
       console.error('Registration error:', error);
       // Handle different types of errors
@@ -401,7 +411,7 @@ function Registration() {
         {registrationSuccess && (
           <div className="success-message">
             <Alert variant="success" className="text-center">
-              <Alert.Heading>Registration Successful!</Alert.Heading>
+              <Alert.Heading className='reg-fully'>Registration Successful!</Alert.Heading>
               <p>{serverResponse?.message || 'Your account has been created successfully.'}</p>
               {serverResponse?.data && (
                 <div>
