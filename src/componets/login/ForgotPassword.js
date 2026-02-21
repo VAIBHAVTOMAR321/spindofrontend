@@ -7,6 +7,7 @@ const ForgotPassword = () => {
   // State for Step 1: Mobile Input
   const [step, setStep] = useState(1); // 1: Mobile, 2: OTP, 3: Password Reset
   const [phone, setPhone] = useState('');
+  const [role, setRole] = useState('customer');
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -73,7 +74,7 @@ const ForgotPassword = () => {
         throw new Error(errorMsg);
       }
 
-      if (data.status === true) {
+      if (data.success === true) {
         setSuccessMessage('OTP sent successfully to your phone');
         setShowOtpModal(true);
         setStep(2);
@@ -126,7 +127,7 @@ const ForgotPassword = () => {
         throw new Error(errorMsg);
       }
 
-      if (data.status === true) {
+      if (data.success === true) {
         setSuccessMessage('OTP verified successfully');
         setShowOtpModal(false);
         setOtp('');
@@ -177,7 +178,7 @@ const ForgotPassword = () => {
         },
         body: JSON.stringify({ 
           phone: phone,
-          role: 'customer',
+          role: role,
           new_password: newPassword
         }),
       });
@@ -193,19 +194,24 @@ const ForgotPassword = () => {
             })
             .join(' | ');
         }
-        throw new Error(errorMsg);
+        setError(errorMsg);
+        setSuccessMessage('');
+        return;
       }
 
-      if (data.status === true) {
-        setSuccessMessage('Password reset successfully! Redirecting to login...');
+      if (data.success === true) {
+        setSuccessMessage(data.message || 'Password reset successfully! Redirecting to login...');
+        setError('');
         setTimeout(() => {
           navigate('/Login', { replace: true });
         }, 2000);
       } else {
-        throw new Error(data.message || 'Password reset failed');
+        setError(data.message || 'Password reset failed');
+        setSuccessMessage('');
       }
     } catch (err) {
       setError(err.message || 'An error occurred while resetting password');
+      setSuccessMessage('');
     } finally {
       setIsLoading(false);
     }
@@ -240,6 +246,20 @@ const ForgotPassword = () => {
             {/* Step 1: Mobile Number Input */}
             {step === 1 && (
               <form onSubmit={handleSendOtp} className="login-form">
+                <div className="form-group">
+                  <label htmlFor="role">Select Role</label>
+                  <select
+                    id="role"
+                    value={role}
+                    onChange={e => setRole(e.target.value)}
+                    disabled={isLoading}
+                  >
+                    <option value="customer">Customer</option>
+                    <option value="admin">Admin</option>
+                    <option value="staffadmin">Staff Admin</option>
+                    <option value="vendor">Vendor</option>
+                  </select>
+                </div>
                 <div className="form-group">
                   <label htmlFor="phone">Mobile Number</label>
                   <input
