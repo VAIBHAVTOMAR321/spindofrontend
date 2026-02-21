@@ -23,7 +23,9 @@ function PaymentQR() {
       <Container className="my-2 container-box ">
        <div className='qr-heading'>
         <h1>For Booking Confirmation make Payment</h1>
+        <div className='d-flex justify-content-center'>
         <img src={Payment} alt='Payment QR Code' className='img-fluid'></img>
+        </div>
        </div>
          
       </Container>
