@@ -130,6 +130,22 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
 }
+.registration-page h2{
+  font-size: 14px;
+  font-weight: 600;
+  color: #1b4a8f;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.reg-fully{
+  font-size: 12px;
+}
+.registration-page p{
+  font-size: 12px;
+}
+.api-star{
+  color: red;
+}
 .container-box{
   background-color: #fff;
   border-radius: 10px;
