@@ -18,8 +18,26 @@ const RequestService = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [serviceOptions, setServiceOptions] = useState([]);
+  const [serviceError, setServiceError] = useState("");
   // Ref for scrolling to top of form
   const formTopRef = useRef();
+  // Ref for scrolling to service field
+  const serviceFieldRef = useRef();
+
+  // Calculate min and max dates for booking (today to next 10 days)
+  const getMinMaxDates = () => {
+    const today = new Date();
+    const minDate = today.toISOString().split('T')[0]; // Today in YYYY-MM-DD format
+    
+    const maxDate = new Date(today);
+    maxDate.setDate(maxDate.getDate() + 10); // Add 10 days
+    const maxDateStr = maxDate.toISOString().split('T')[0]; // Max date in YYYY-MM-DD format
+    
+    return { minDate, maxDate: maxDateStr };
+  };
+
+  const { minDate, maxDate } = getMinMaxDates();
+
   // Fetch service categories/subcategories for dropdown
   useEffect(() => {
     fetch("https://mahadevaaya.com/spindo/spindobackend/api/get-service/categories/")
@@ -124,11 +142,42 @@ const RequestService = () => {
     });
   };
 
+  const requiredFields = [
+    "username",
+    "unique_id",
+    "contact_number",
+    "state",
+    "district",
+    "block",
+    "address",
+    "schedule_date",
+    "schedule_time"
+  ];
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
     setSuccess("");
+    setServiceError("");
+    // Validation for required fields (except description, email, alternate_contact_number, and request_for_services)
+    for (const field of requiredFields) {
+      if (!form[field] || form[field].toString().trim() === "") {
+        setError("Please fill all required fields.");
+        setLoading(false);
+        return;
+      }
+    }
+    // Validate at least one service selected
+    if (!form.request_for_services || form.request_for_services.length === 0 || form.request_for_services.every(s => !s || s.trim() === "")) {
+      setServiceError("Please select at least one service.");
+      setLoading(false);
+      // Scroll to service field
+      if (serviceFieldRef.current) {
+        serviceFieldRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return;
+    }
     const payload = { ...form };
     if (!payload.email) delete payload.email;
     if (!payload.alternate_contact_number) delete payload.alternate_contact_number;
@@ -196,6 +245,7 @@ const RequestService = () => {
                   <h3 className="mb-4 text-center" style={{ color: '#2b6777', fontWeight: 700, letterSpacing: 1 }}>Request a Service</h3>
                   {error && <Alert variant="danger">{error}</Alert>}
                   {success && <Alert variant="success">{success}</Alert>}
+                  {serviceError && <div style={{color: 'red', fontWeight: 500, marginBottom: 8}}>{serviceError}</div>}
                   <Form onSubmit={handleSubmit} autoComplete="off">
                     <Row>
                       <Col md={6}>
@@ -236,7 +286,7 @@ const RequestService = () => {
                         <Form.Label>Request For Services</Form.Label>
                         <Form.Group className="mb-3">
                           <Form.Label>Select Service(s)</Form.Label>
-                          <div className="selected-services">
+                          <div ref={serviceFieldRef}>
                             {form.request_for_services.map((service, idx) => {
                               const label = serviceOptions.find(opt => opt.value === service)?.label || service;
                               return (
@@ -287,7 +337,16 @@ const RequestService = () => {
                         </Form.Group>
                         <Form.Group className="mb-3 mt-3">
                           <Form.Label>Schedule Date</Form.Label>
-                          <Form.Control type="date" name="schedule_date" value={form.schedule_date} onChange={handleChange} required />
+                          <Form.Control 
+                            type="date" 
+                            name="schedule_date" 
+                            value={form.schedule_date} 
+                            onChange={handleChange} 
+                            min={minDate}
+                            max={maxDate}
+                            required 
+                          />
+                          <Form.Text className="text-muted">Select a date between today and next 10 days</Form.Text>
                         </Form.Group>
                         <Form.Group className="mb-3">
                           <Form.Label>Schedule Time</Form.Label>

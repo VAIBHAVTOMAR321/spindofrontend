@@ -387,7 +387,7 @@ const ViewRequestService = () => {
                                     })}
                                   </ul>
                                 ) : (
-                                  <span style={{ color: '#64748b', fontSize: 13 }}>Not Assigned</span>
+                                  <div style={{ color: '#64748b', fontSize: 13, padding: '4px 6px', backgroundColor: '#f9fafb', borderRadius: 4, display: 'inline-block', maxWidth: '100%', wordBreak: 'break-word' }}>Not Assigned</div>
                                 )}
                                 <td>
                                   {req.schedule_date} <br />
