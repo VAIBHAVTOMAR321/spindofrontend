@@ -248,7 +248,9 @@
   border-radius: 16px; /* Gives the box rounded corners */
   overflow: hidden; /* Ensures the rounded corners clip any content inside */
   background-color: #ffffff; /* Make sure the background is solid white */
-  margin: 30px;
+  /* margin: 30px; */
+  margin-top:12px;
+
 }
 /* Style for when the button is disabled (e.g., during loading) */
 .password-toggle-btn:disabled {
