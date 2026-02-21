@@ -16,6 +16,14 @@ const statusColors = {
 };
 
 const ViewRequestService = () => {
+    // Modal for cancellation
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [cancelRequestId, setCancelRequestId] = useState(null);
+    const [cancelVendors, setCancelVendors] = useState([]);
+    const [cancelVendorOptions, setCancelVendorOptions] = useState([]);
+    const [cancelLoading, setCancelLoading] = useState(false);
+    const [cancelError, setCancelError] = useState("");
+    const [cancelSuccess, setCancelSuccess] = useState("");
   const { user, tokens } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -382,8 +390,113 @@ const ViewRequestService = () => {
                                 </td>
                                 <td style={{ maxWidth: 200, whiteSpace: 'pre-line', wordBreak: 'break-word' }}>{req.description}</td>
                                 <td>
-                                  <Badge bg={statusColors[req.status?.toLowerCase()] || "secondary"} style={{ fontSize: 14, textTransform: 'capitalize' }}>{req.status}</Badge>
+                                  {req.status?.toLowerCase() === "cancelled" ? (
+                                    <Badge bg="secondary" style={{ fontSize: 14, textTransform: 'capitalize' }}>Cancelled</Badge>
+                                  ) : req.status?.toLowerCase() === "completed" ? (
+                                    <Badge bg="success" style={{ fontSize: 14, textTransform: 'capitalize' }}>Completed</Badge>
+                                  ) : (
+                                    <Form.Select
+                                      size="sm"
+                                      style={{ width: 120, fontSize: 13 }}
+                                      value={req.status}
+                                      onChange={e => {
+                                        if (e.target.value === "cancelled") {
+                                          setCancelRequestId(req.request_id);
+                                            if (Array.isArray(req.assignments)) {
+                                              const options = req.assignments
+                                                .filter(a => Array.isArray(a) && a[1] && a[2] && (a[3]?.toLowerCase() !== "cancelled"))
+                                                .map(a => ({ vendorId: a[1], vendorName: a[2], services: a[0] }));
+                                              setCancelVendorOptions(options);
+                                            } else {
+                                              setCancelVendorOptions([]);
+                                            }
+                                          setCancelVendors([]);
+                                          setShowCancelModal(true);
+                                        }
+                                      }}
+                                    >
+                                      <option value={req.status}>{req.status}</option>
+                                      <option value="cancelled">Cancelled</option>
+                                    </Form.Select>
+                                  )}
                                 </td>
+                                    {/* Cancel Modal */}
+                                    <Modal show={showCancelModal} onHide={() => setShowCancelModal(false)} centered>
+                                      <Modal.Header closeButton>
+                                        <Modal.Title>Cancel Request</Modal.Title>
+                                      </Modal.Header>
+                                      <Modal.Body>
+                                        {cancelError && <Alert variant="danger">{cancelError}</Alert>}
+                                        {cancelSuccess && <Alert variant="success">{cancelSuccess}</Alert>}
+                                        <div className="mb-2">Select vendor(s) and service(s) to cancel for request <b>{cancelRequestId}</b>:</div>
+                                        <Form>
+                                          {cancelVendorOptions.length === 0 ? (
+                                            <div>No vendors found for this request.</div>
+                                          ) : (
+                                            cancelVendorOptions.map((opt, idx) => (
+                                              <Form.Check
+                                                key={opt.vendorId}
+                                                type="checkbox"
+                                                id={`cancel-vendor-${opt.vendorId}`}
+                                                label={<span><b>{opt.vendorName}</b> <span style={{ fontSize: 12, color: '#888' }}>({opt.services.join(', ')})</span></span>}
+                                                checked={cancelVendors.includes(opt.vendorId)}
+                                                onChange={e => {
+                                                  if (e.target.checked) {
+                                                    setCancelVendors(prev => [...prev, opt.vendorId]);
+                                                  } else {
+                                                    setCancelVendors(prev => prev.filter(id => id !== opt.vendorId));
+                                                  }
+                                                }}
+                                              />
+                                            ))
+                                          )}
+                                        </Form>
+                                      </Modal.Body>
+                                      <Modal.Footer>
+                                        <Button variant="secondary" onClick={() => setShowCancelModal(false)} disabled={cancelLoading}>Close</Button>
+                                        <Button
+                                          variant="danger"
+                                          disabled={cancelLoading || cancelVendors.length === 0}
+                                          onClick={async () => {
+                                            setCancelLoading(true);
+                                            setCancelError("");
+                                            setCancelSuccess("");
+                                            try {
+                                              const payload = {
+                                                request_id: cancelRequestId,
+                                                vendor_unique_id: cancelVendors,
+                                                status: "cancelled"
+                                              };
+                                              const res = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/customer/requestservices/", {
+                                                method: "PUT",
+                                                headers: {
+                                                  "Content-Type": "application/json",
+                                                  ...(tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {})
+                                                },
+                                                body: JSON.stringify(payload)
+                                              });
+                                              const data = await res.json();
+                                              if (data.status) {
+                                                setCancelSuccess("Request cancelled successfully.");
+                                                setTimeout(() => {
+                                                  setShowCancelModal(false);
+                                                  setCancelSuccess("");
+                                                  // Optionally refresh requests
+                                                  window.location.reload();
+                                                }, 1200);
+                                              } else {
+                                                setCancelError(data.message || "Failed to cancel request.");
+                                              }
+                                            } catch (err) {
+                                              setCancelError("Error cancelling request.");
+                                            }
+                                            setCancelLoading(false);
+                                          }}
+                                        >
+                                          Cancel Selected
+                                        </Button>
+                                      </Modal.Footer>
+                                    </Modal>
                               </tr>
                             ))
                           )}
