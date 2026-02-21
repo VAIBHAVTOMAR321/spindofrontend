@@ -9,7 +9,7 @@ function ContactUs() {
     full_name: '',
     email: '',
     mobile_number: '',
-    subject: '',
+    subject: '', 
     message: ''
   });
   
