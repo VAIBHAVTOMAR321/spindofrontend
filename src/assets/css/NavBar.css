@@ -75,8 +75,9 @@
 .top-bar {
   background-color: #1b4a8f  !important;
   color: white;
-  padding: 8px 0;
-  font-size: 0.9rem;
+  /* padding: 8px 0; */
+  /* font-size: 0.9rem; */
+  padding: 2px !important;
 }
 
 .navbar-nav {
@@ -299,7 +300,7 @@
 
 /* Ensure proper spacing in mobile view */
 .navbar-nav {
-  padding: 0.5rem 0;
+  padding: 4px !important;
 }
 
 /* Additional dropdown toggle styling */

@@ -91,7 +91,7 @@ function Home() {
         </div>
       </Container>
       
-      <AboutUs />
+      <AboutUs showBanner={false} />
       <ServicesPage />
     </div>
   )
