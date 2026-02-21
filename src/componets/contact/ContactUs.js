@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap'
+import { Link } from 'react-router-dom';
 import axios from 'axios'
 import "../../assets/css/ContactUs.css";
 
@@ -106,9 +107,9 @@ function ContactUs() {
         <div className="site-breadcrumb-wpr">
           <h2 className="breadcrumb-title">Contact Us</h2>
           <ul className="breadcrumb-menu clearfix">
-            <li><a className="breadcrumb-home" href="/" data-discover="true">Home</a></li>
+            <li><Link className="breadcrumb-home" to="/" data-discover="true">Home</Link></li>
             <li className="px-2">/</li>
-            <li><a className="breadcrumb-contact" href="/contact" data-discover="true">Contact Us</a></li>
+            <li><Link className="breadcrumb-contact" to="/contact" data-discover="true">Contact Us</Link></li>
           </ul>
         </div>
       </div>

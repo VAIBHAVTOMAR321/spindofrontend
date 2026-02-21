@@ -1,4 +1,4 @@
-// Minimal CSS for tag-style multi-select
+/* Minimal CSS for tag-style multi-select */
 .selected-services {
   display: flex;
   flex-wrap: wrap;

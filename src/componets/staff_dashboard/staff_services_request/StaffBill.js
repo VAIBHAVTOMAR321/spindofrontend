@@ -37,7 +37,7 @@ const StaffBill = () => {
     amount: "",
     gst: "18", // Default GST percentage
     total_payment: "0.00",
-    payment_type: "UPI",
+    payment_type: "",
     bill_date_time: new Date().toISOString().slice(0, 19).replace('T', ' '),
     status: "Paid",
   });
@@ -278,10 +278,10 @@ const StaffBill = () => {
       setError("Please enter a valid 10-digit mobile number.");
       return false;
     }
-    // if (!billData.service_type) {
-    //   setError("Please select a service type.");
-    //   return false;
-    // }
+      if (!billData.payment_type || billData.payment_type === "none") {
+        setError("Please select a valid payment type.");
+        return false;
+      }
     if (!billData.vendor_id) {
       setError("Please select a vendor.");
       return false;
@@ -333,6 +333,7 @@ const StaffBill = () => {
         payment_id: billData.payment_id,
         customer_name: billData.customer_name,
         cust_mobile: billData.cust_mobile,
+        payment_type: billData.payment_type,
         bill_date_time: billData.bill_date_time,
         bill_items: formattedBillItems,
         status: billData.status
@@ -366,7 +367,7 @@ const StaffBill = () => {
           amount: "",
           gst: "18",
           total_payment: "0.00",
-          payment_type: "UPI",
+          payment_type: "",
           bill_date_time: new Date().toISOString().slice(0, 19).replace('T', ' '),
           status: "Paid",
         });
@@ -402,7 +403,7 @@ const StaffBill = () => {
       amount: "",
       gst: "18",
       total_payment: "0.00",
-      payment_type: "UPI",
+      payment_type: "",
       bill_date_time: new Date().toISOString().slice(0, 19).replace('T', ' '),
       status: "Paid",
     });
@@ -504,6 +505,7 @@ const StaffBill = () => {
                           <Form.Group className="mb-3" controlId="payment_type">
                             <Form.Label style={{ color: "#2b6777", fontWeight: 600 }}><i className="bi bi-wallet2 me-2"></i>Payment Type</Form.Label>
                             <Form.Select name="payment_type" value={billData.payment_type} onChange={handleChange} required style={{ backgroundColor: "#e8f4f8", borderColor: "#52ab98" }}>
+                              <option value="" disabled>-- Select Payment Type --</option>
                               <option value="UPI">UPI</option>
                               <option value="Cash">Cash</option>
                               <option value="Card">Card</option>
