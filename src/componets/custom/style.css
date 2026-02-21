@@ -95,6 +95,9 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
 }
+.company-name{
+  font-size: 12px;
+}
 .box-style h3 {
  font-size: 14px;
  color:#000;

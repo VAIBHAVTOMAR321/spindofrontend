@@ -15,7 +15,6 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "../../assets/css/NavBar.css";
-import Logo from "../../assets/images/splogo.png";
 
 function NavBar() {
   const [services, setServices] = useState([]);
@@ -23,14 +22,33 @@ function NavBar() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [companyDetails, setCompanyDetails] = useState(null);
+  const [logoLoading, setLogoLoading] = useState(true);
   const navigate = useNavigate();
+
+  // Base URL for API
+  const API_BASE_URL = "https://mahadevaaya.com/spindo/spindobackend";
+
+  // Function to get full logo URL
+  const getLogoUrl = (logoPath) => {
+    if (!logoPath) return null;
+    
+    // If it's already a full URL (starts with http), return as is
+    if (logoPath.startsWith('http')) {
+      return logoPath;
+    }
+    
+    // If it's a relative path, prepend the base URL
+    // Remove leading slash if present to avoid double slashes
+    const cleanPath = logoPath.startsWith('/') ? logoPath.slice(1) : logoPath;
+    return `${API_BASE_URL}/${cleanPath}`;
+  };
 
   // Fetch services from API
   useEffect(() => {
     const fetchServices = async () => {
       try {
         const response = await fetch(
-          "https://mahadevaaya.com/spindo/spindobackend/api/service-category/",
+          `${API_BASE_URL}/api/service-category/`,
         );
         if (!response.ok) {
           throw new Error("Failed to fetch services");
@@ -56,7 +74,7 @@ function NavBar() {
     const fetchCompanyDetails = async () => {
       try {
         const response = await fetch(
-          "https://mahadevaaya.com/spindo/spindobackend/api/company-details/",
+          `${API_BASE_URL}/api/company-details/`,
         );
         if (!response.ok) {
           throw new Error("Failed to fetch company details");
@@ -67,6 +85,8 @@ function NavBar() {
         }
       } catch (err) {
         console.error("Error fetching company details:", err);
+      } finally {
+        setLogoLoading(false);
       }
     };
 
@@ -150,7 +170,6 @@ function NavBar() {
             )}
           </div>
           <div className="social-links">
-            {/* --- UPDATED SECTION --- */}
             {renderSocialLinks()}
           </div>
         </div>
@@ -161,13 +180,40 @@ function NavBar() {
         <Container>
           <Navbar.Brand href="#home">
             <div className="d-flex align-items-center">
-              <Link to="/">
-                {" "}
-                <img
-                  src={Logo}
-                  alt="Spindo Logo"
-                  className="spi-logo img-fluid me-2"
-                />
+              <Link to="/" className="d-flex align-items-center text-decoration-none">
+                {logoLoading ? (
+                  <div className="spinner-border spinner-border-sm me-2" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                ) : companyDetails?.logo ? (
+                  <img
+                    src={getLogoUrl(companyDetails.logo)}
+                    alt={`${companyDetails.company_name || 'Company'} Logo`}
+                    className="spi-logo img-fluid me-2"
+                    style={{ maxHeight: '50px', width: 'auto' }}
+                    onLoad={() => setLogoLoading(false)}
+                    onError={(e) => {
+                      console.error('Logo failed to load:', e.target.src);
+                      e.target.onerror = null;
+                      // Try with different path variations if the first attempt fails
+                      if (!companyDetails.logo.startsWith('http') && !companyDetails.logo.startsWith('/')) {
+                        e.target.src = `${API_BASE_URL}/${companyDetails.logo}`;
+                      } else if (companyDetails.logo.startsWith('/')) {
+                        e.target.src = `${API_BASE_URL}${companyDetails.logo}`;
+                      } else {
+                        e.target.src = "https://via.placeholder.com/150x50?text=Logo";
+                      }
+                      setLogoLoading(false);
+                    }}
+                  />
+                ) : (
+                  <div className="spi-logo-placeholder bg-primary text-white d-flex align-items-center justify-content-center me-2" style={{width: "150px", height: "50px", borderRadius: "4px"}}>
+                    Logo
+                  </div>
+                )}
+                {companyDetails?.company_name && (
+                  <span className="company-name fw-bold text-dark">{companyDetails.company_name}</span>
+                )}
               </Link>
             </div>
           </Navbar.Brand>
