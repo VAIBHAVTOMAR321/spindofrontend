@@ -199,7 +199,9 @@ const StaffDashBoard = () => {
                       <h6 className="fw-bold mb-1 text-center" style={{ fontSize: 'clamp(13px, 2vw, 15px)' }}>Welcome, {profile.username || "Staff"}!</h6>
                       <div className="text-muted mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>{profile.email}</div>
                       <div className="mb-0" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}><b>Mobile:</b> {profile.mobile_number}</div>
-                      <div className="mb-2" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}><b>Location:</b> {profile.state}, {profile.district}, {profile.block}</div>
+                      <div className="mb-2" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>
+                        <b>Location:</b> {profile.address || (profile.state && profile.district && profile.block ? `${profile.state}, ${profile.district}, ${profile.block}` : profile.state || profile.district || profile.block || 'N/A')}
+                      </div>
                       <Link to="/StaffProfile">
                         <Button variant="outline-primary" size="sm" className="mt-1" style={{ fontSize: 'clamp(11px, 2vw, 13px)' }}>View Profile</Button>
                       </Link>

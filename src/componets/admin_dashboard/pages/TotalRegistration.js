@@ -192,7 +192,12 @@ const TotalRegistration = () => {
         data.append("mobile_number", formData.mobile_number);
         data.append("email_id", formData.email_id);
         data.append("address", formData.address);
-        data.append("password", formData.password);
+        
+        // Only append password if it has been changed/entered
+        if (formData.password && formData.password.trim() !== '') {
+          data.append("password", formData.password);
+        }
+        
         data.append("is_active", formData.is_active ? 1 : 0);
 
         if (formData.can_aadharcard) {

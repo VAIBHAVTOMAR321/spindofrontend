@@ -163,7 +163,10 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
       const data = new FormData();
       data.append("unique_id", editingVendor?.unique_id);
       data.append("mobile_number", formData.mobile_number);
-      if (formData.password) data.append("password", formData.password);
+      // Only append password if it has been changed/entered
+      if (formData.password && formData.password.trim() !== '') {
+        data.append("password", formData.password);
+      }
       data.append("is_active", formData.is_active);
 
       await axios.put(API_URL, data, {
