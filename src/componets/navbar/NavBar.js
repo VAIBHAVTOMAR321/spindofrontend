@@ -22,6 +22,7 @@ function NavBar() {
   const [selectedService, setSelectedService] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [companyDetails, setCompanyDetails] = useState(null);
   const navigate = useNavigate();
 
   // Fetch services from API
@@ -50,6 +51,28 @@ function NavBar() {
     fetchServices();
   }, []);
 
+  // Fetch company details from API
+  useEffect(() => {
+    const fetchCompanyDetails = async () => {
+      try {
+        const response = await fetch(
+          "https://mahadevaaya.com/spindo/spindobackend/api/company-details/",
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch company details");
+        }
+        const data = await response.json();
+        if (data.length > 0) {
+          setCompanyDetails(data[0]);
+        }
+      } catch (err) {
+        console.error("Error fetching company details:", err);
+      }
+    };
+
+    fetchCompanyDetails();
+  }, []);
+
   const handleServiceSelect = (service) => {
     setSelectedService(service);
     console.log("Selected Service for Vendor List:", service);
@@ -64,32 +87,71 @@ function NavBar() {
     });
   };
 
+  // --- Helper function to render social links correctly ---
+  const renderSocialLinks = () => {
+    if (!companyDetails?.profile_link || companyDetails.profile_link.length === 0) {
+      return null;
+    }
+
+    const links = companyDetails.profile_link;
+    const socialIcons = [];
+
+    if (links.some(link => link.includes('facebook.com'))) {
+      const facebookLink = links.find(l => l.includes('facebook.com'));
+      socialIcons.push(
+        <a key="facebook" href={facebookLink} target="_blank" rel="noopener noreferrer" className="text-white me-3">
+          <FaFacebook />
+        </a>
+      );
+    }
+    if (links.some(link => link.includes('twitter.com'))) {
+      const twitterLink = links.find(l => l.includes('twitter.com'));
+      socialIcons.push(
+        <a key="twitter" href={twitterLink} target="_blank" rel="noopener noreferrer" className="text-white me-3">
+          <FaTwitter />
+        </a>
+      );
+    }
+    if (links.some(link => link.includes('linkedin.com'))) {
+      const linkedinLink = links.find(l => l.includes('linkedin.com'));
+      socialIcons.push(
+        <a key="linkedin" href={linkedinLink} target="_blank" rel="noopener noreferrer" className="text-white me-3">
+          <FaLinkedin />
+        </a>
+      );
+    }
+    if (links.some(link => link.includes('instagram.com'))) {
+      const instagramLink = links.find(l => l.includes('instagram.com'));
+      socialIcons.push(
+        <a key="instagram" href={instagramLink} target="_blank" rel="noopener noreferrer" className="text-white">
+          <FaInstagram />
+        </a>
+      );
+    }
+
+    return socialIcons;
+  };
+
   return (
     <>
       {/* Top bar with contact info and social links */}
       <div className="top-bar bg-dark text-white py-2 d-none d-lg-block">
         <div className="d-flex justify-content-between align-items-center nav-p">
           <div className="contact-info">
-            <span className="me-3">
-              <FaEnvelope />  info.spindo@gmail.com
-            </span>
-            <span>
-              <FaPhoneAlt /> 91 94563 46582{" "}
-            </span>
+            {companyDetails?.email && (
+              <span className="me-3">
+                <FaEnvelope />  {companyDetails.email}
+              </span>
+            )}
+            {companyDetails?.phone && (
+              <span>
+                <FaPhoneAlt /> 91 {companyDetails.phone}{" "}
+              </span>
+            )}
           </div>
           <div className="social-links">
-            <Link to="#" className="text-white me-3">
-              <FaFacebook />
-            </Link>
-            <Link to="#" className="text-white me-3">
-              <FaTwitter />
-            </Link>
-            <Link to="#" className="text-white me-3">
-              <FaLinkedin />
-            </Link>
-            <Link to="#" className="text-white">
-              <FaInstagram />
-            </Link>
+            {/* --- UPDATED SECTION --- */}
+            {renderSocialLinks()}
           </div>
         </div>
       </div>
@@ -140,11 +202,8 @@ function NavBar() {
                   ))
                 )}
                 <NavDropdown.Divider />
-               
-                
-                
               </NavDropdown>
- <Nav.Link href="/SolarInstalation" className="custom-nav-link">
+              <Nav.Link href="/SolarInstalation" className="custom-nav-link">
                 Solar Instalation
               </Nav.Link>
               <Nav.Link href="/ContactUs" className="custom-nav-link">
@@ -172,15 +231,19 @@ function NavBar() {
 
             {/* Mobile contact info - only shows in mobile view */}
             <Nav className="mobile-contact d-lg-none">
-              <Nav.Link
-                href="mailto: info.spindo@gmail.com"
-                className="custom-nav-link"
-              >
-                <FaEnvelope /> Email
-              </Nav.Link>
-              <Nav.Link href="tel:+11234567890" className="custom-nav-link">
-                <FaPhone /> Phone
-              </Nav.Link>
+              {companyDetails?.email && (
+                <Nav.Link
+                  href={`mailto:${companyDetails.email}`}
+                  className="custom-nav-link"
+                >
+                  <FaEnvelope /> Email
+                </Nav.Link>
+              )}
+              {companyDetails?.phone && (
+                <Nav.Link href={`tel:+91${companyDetails.phone}`} className="custom-nav-link">
+                  <FaPhone /> Phone
+                </Nav.Link>
+              )}
             </Nav>
           </Navbar.Collapse>
         </Container>

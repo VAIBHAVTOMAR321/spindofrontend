@@ -95,6 +95,11 @@ const menuItems = [
     label: "Online Query (feedback/Suggestion)",
     path: "/OnlineQuery",
   },
+   {
+    icon: <FaComments />,
+    label: "Company Details",
+    path: "/ManageCompanyDetails",
+  },
 ];
 
   //  Auto-close sidebar when switching to mobile or tablet

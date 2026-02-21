@@ -57,6 +57,7 @@ import VendorAllQueries from "./componets/vendor_dashboard/vendorpages/VendorAll
 import AllBills from "./componets/admin_dashboard/pages/AllBills";
 import SolarInstalation from "./componets/pages/SolarInstalation";
 import SolarQuery from "./componets/admin_dashboard/pages/SolarQuery";
+import ManageCompanyDetails from "./componets/admin_dashboard/media_link/ManageCompanyDetails";
 
 
 
@@ -98,7 +99,8 @@ function App() {
     "/VendorAllQueries",
     "/StaffProfile",
     "/AllBills",
-    "/SolarQuery"
+    "/SolarQuery",
+    "/ManageCompanyDetails"
   ]);
 
   const shouldHideNavbar = hiddenPaths.has(location.pathname);
@@ -289,10 +291,18 @@ function App() {
             } 
           />
            <Route 
-            path="/StaffQuery" 
+            path="/SolarQuery" 
             element={
-              <Protected allowedRoles={['staffadmin']}>
-                <StaffQuery />
+              <Protected allowedRoles={['admin']}>
+                <SolarQuery />
+              </Protected>
+            } 
+          />
+           <Route 
+            path="/ManageCompanyDetails" 
+            element={
+              <Protected allowedRoles={['admin']}>
+                <ManageCompanyDetails />
               </Protected>
             } 
           />
