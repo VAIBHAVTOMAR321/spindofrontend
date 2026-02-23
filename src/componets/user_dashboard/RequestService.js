@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Container, Card, Form, Button, Row, Col, Spinner, Alert, InputGroup, Dropdown } from "react-bootstrap";
+import { Container, Card, Form, Button, Row, Col, Spinner, Alert, InputGroup, Dropdown, Modal } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import UserLeftNav from "../user_dashboard/UserLeftNav";
 import UserHeader from "../user_dashboard/UserHeader";
@@ -19,8 +19,32 @@ const RequestService = () => {
   const [success, setSuccess] = useState("");
   const [serviceOptions, setServiceOptions] = useState([]);
   const [serviceError, setServiceError] = useState("");
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [alertType, setAlertType] = useState("success"); // success or error
+  const [alertMessage, setAlertMessage] = useState("");
   // Ref for scrolling to top of form
   const formTopRef = useRef();
+
+  // Auto-dismiss alerts after 5 seconds
+  useEffect(() => {
+    if (success) {
+      setAlertType("success");
+      setAlertMessage(success);
+      setShowAlertModal(true);
+      const timer = setTimeout(() => setShowAlertModal(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
+
+  useEffect(() => {
+    if (error) {
+      setAlertType("error");
+      setAlertMessage(error);
+      setShowAlertModal(true);
+      const timer = setTimeout(() => setShowAlertModal(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
   // Ref for scrolling to service field
   const serviceFieldRef = useRef();
 
@@ -243,9 +267,48 @@ const RequestService = () => {
                   {/* Ref for scrolling to top of form */}
                   <div ref={formTopRef}></div>
                   <h3 className="mb-4 text-center" style={{ color: '#2b6777', fontWeight: 700, letterSpacing: 1 }}>Request a Service</h3>
-                  {error && <Alert variant="danger">{error}</Alert>}
-                  {success && <Alert variant="success">{success}</Alert>}
-                  {serviceError && <div style={{color: 'red', fontWeight: 500, marginBottom: 8}}>{serviceError}</div>}
+                  {serviceError && (
+                    <Alert 
+                      variant="warning" 
+                      onClose={() => setServiceError("")} 
+                      dismissible
+                      style={{ marginBottom: 16, borderRadius: 8, fontWeight: 500 }}
+                    >
+                      <i className="bi bi-info-circle me-2"></i>{serviceError}
+                    </Alert>
+                  )}
+
+                  {/* Popup Alert Modal */}
+                  <Modal show={showAlertModal} onHide={() => setShowAlertModal(false)} centered>
+                    <Modal.Body style={{ 
+                      textAlign: 'center', 
+                      padding: '40px 30px',
+                      background: alertType === 'success' ? '#ecfdf5' : '#fef2f2'
+                    }}>
+                      {alertType === 'success' ? (
+                        <>
+                          <i className="bi bi-check-circle" style={{ fontSize: '48px', color: '#10b981', marginBottom: 16 }}></i>
+                          <h5 style={{ color: '#065f46', fontWeight: 700, marginBottom: 8 }}>Success!</h5>
+                          <p style={{ color: '#047857', marginBottom: 0, fontSize: 15 }}>{alertMessage}</p>
+                        </>
+                      ) : (
+                        <>
+                          <i className="bi bi-exclamation-circle" style={{ fontSize: '48px', color: '#ef4444', marginBottom: 16 }}></i>
+                          <h5 style={{ color: '#7f1d1d', fontWeight: 700, marginBottom: 8 }}>Error!</h5>
+                          <p style={{ color: '#b91c1c', marginBottom: 0, fontSize: 15 }}>{alertMessage}</p>
+                        </>
+                      )}
+                    </Modal.Body>
+                    <Modal.Footer style={{ borderTop: 'none', paddingTop: 0, justifyContent: 'center' }}>
+                      <Button 
+                        variant={alertType === 'success' ? 'success' : 'danger'} 
+                        onClick={() => setShowAlertModal(false)}
+                        style={{ minWidth: 100, borderRadius: 8, fontWeight: 600 }}
+                      >
+                        {alertType === 'success' ? 'OK' : 'Close'}
+                      </Button>
+                    </Modal.Footer>
+                  </Modal>
                   <Form onSubmit={handleSubmit} autoComplete="off">
                     <Row>
                       <Col md={3}>

@@ -970,7 +970,7 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                           className="border rounded-lg p-2 bg-white"
                         >
                           <option value="">Select a vendor</option>
-                          {vendorList.filter(v => !usedVendors.includes(v.unique_id)).map((vendor) => {
+                          {vendorList.filter(v => !usedVendors.includes(v.unique_id) && v.is_active).map((vendor) => {
                             let categories = '';
                             if (Array.isArray(vendor.category)) {
                               categories = vendor.category.join(', ');
