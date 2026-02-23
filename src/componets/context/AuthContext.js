@@ -23,6 +23,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [tokens, setTokens] = useState({ access: null, refresh: null });
   const [isLoading, setIsLoading] = useState(true);
+  const [intendedDestination, setIntendedDestination] = useState(null);
 
   // Function to refresh access token
   const refreshAccessToken = async (refreshToken) => {
@@ -97,13 +98,37 @@ export const AuthProvider = ({ children }) => {
     sessionStorage.setItem('user', JSON.stringify(userInfo));
   };
 
-  // Logout function - clears state in React context and sessionStorage
+  // Logout function - clears state in React context and all storage
   const logout = () => {
     setTokens({ access: null, refresh: null });
     setUser(null);
     setIsAuthenticated(false);
+    setIntendedDestination(null);
+    
+    // Clear sessionStorage
     sessionStorage.removeItem('tokens');
     sessionStorage.removeItem('user');
+    sessionStorage.removeItem('intendedDestination');
+    
+    // Clear localStorage (if anything was stored there)
+    localStorage.removeItem('tokens');
+    localStorage.removeItem('user');
+    localStorage.removeItem('intendedDestination');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('refreshToken');
+    
+    // Clear all sessionStorage and localStorage as a safety measure
+    // Comment this out if you need selective clearing
+    // sessionStorage.clear();
+    // localStorage.clear();
+  };
+
+  const setDestination = (destination) => {
+    setIntendedDestination(destination);
+  };
+
+  const clearDestination = () => {
+    setIntendedDestination(null);
   };
 
   const value = {
@@ -113,7 +138,10 @@ export const AuthProvider = ({ children }) => {
     isLoading,
     login,
     logout,
-    refreshAccessToken
+    refreshAccessToken,
+    intendedDestination,
+    setDestination,
+    clearDestination
   };
 
   // Prevent rendering children until auth state is checked

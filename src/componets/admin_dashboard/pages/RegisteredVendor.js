@@ -41,7 +41,6 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
   const [formData, setFormData] = useState({
     id: '',
     mobile_number: '',
-    password: '',
     is_active: 1
   });
   const [formError, setFormError] = useState("");
@@ -150,8 +149,7 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
     setFormData({
       id: vendor.id,
       mobile_number: vendor.mobile_number,
-      password: '',
-      is_active: vendor.is_active ? 1 : 0
+      is_active: Number(vendor.is_active) === 1 ? 1 : 0 // Convert to number first to handle string values
     });
     setShowModal(true);
     setFormError("");
@@ -177,10 +175,6 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
       const data = new FormData();
       data.append("unique_id", editingVendor?.unique_id);
       data.append("mobile_number", formData.mobile_number);
-      // Only append password if it has been changed/entered
-      if (formData.password && formData.password.trim() !== '') {
-        data.append("password", formData.password);
-      }
       data.append("is_active", formData.is_active);
 
       await axios.put(API_URL, data, {
@@ -603,16 +597,6 @@ const RegisteredVendor = ({ showCardOnly = false }) => {
                         value={formData.mobile_number}
                         onChange={handleChange}
                         required
-                        style={{ borderRadius: 8, fontSize: 15 }}
-                      />
-                    </Form.Group>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Password (leave blank to keep current)</Form.Label>
-                      <Form.Control
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
                         style={{ borderRadius: 8, fontSize: 15 }}
                       />
                     </Form.Group>

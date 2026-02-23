@@ -3,12 +3,14 @@ import { Container, Row, Col, Card, Button, Image } from 'react-bootstrap'
 import "../../../assets/css/home.css";
 import "../../../assets/css/services.css";
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 function ServicesPage() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
- const navigate = useNavigate(); 
+  const navigate = useNavigate();
+  const { isAuthenticated, setDestination } = useAuth(); 
   useEffect(() => {
     // Fetch data from the API
     fetch('https://mahadevaaya.com/spindo/spindobackend/api/service-category/')
@@ -33,9 +35,17 @@ function ServicesPage() {
   }, []);
 
   const handleBookService = (serviceId) => {
-    console.log('Booking service:', serviceId);
-    // Redirect to login page
-      navigate('/login');
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      // Store the intended destination (RequestService page)
+      setDestination('/RequestService');
+      // Redirect to login page
+      navigate('/Login');
+      return;
+    }
+    
+    // If user is authenticated, directly navigate to RequestService
+    navigate('/RequestService');
   };
 
   // Function to get the correct image path

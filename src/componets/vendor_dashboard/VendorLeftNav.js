@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Nav, Offcanvas, Collapse } from "react-bootstrap";
 import {
   FaTachometerAlt,
@@ -28,6 +28,7 @@ import {
 import axios from "axios";
 import "../../assets/css/admindashboard.css";
 import { Link, useNavigate } from "react-router-dom";
+import AuthContext from "../context/AuthContext";
 import {
   FaInfoCircle,
   FaBullseye,
@@ -39,7 +40,7 @@ import { FaCodePullRequest, FaReceipt } from "react-icons/fa6";
 
 const VendorLeftNav = ({ sidebarOpen, setSidebarOpen, isMobile, isTablet }) => {
   const navigate = useNavigate();
-    // const { logout } = useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
     // const { user } = useContext(AuthContext);
 // const emp_id = user?.unique_id;  // This is the correct value
 
@@ -128,8 +129,8 @@ const menuItems = [
 
   // Logout handler
   const handleLogout = () => {
-    localStorage.removeItem("auth");
-    navigate("/Login", { replace: true });
+    logout();
+    navigate("/", { replace: true });
   };
   //  Auto-close sidebar when switching to mobile or tablet
 

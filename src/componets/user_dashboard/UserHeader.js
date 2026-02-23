@@ -29,7 +29,7 @@ function UserHeader({ toggleSidebar, searchTerm, setSearchTerm }) {
 
 
   // Use AuthContext for authentication (like VendorHeader)
-  const { user, tokens } = useAuth();
+  const { user, tokens, logout } = useAuth();
 
   const [notifications, setNotifications] = useState([
     {
@@ -161,7 +161,7 @@ function UserHeader({ toggleSidebar, searchTerm, setSearchTerm }) {
   
   // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem('auth');
+    logout();
     navigate("/", { replace: true });
   };
   return (

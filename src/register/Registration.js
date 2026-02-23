@@ -3,13 +3,16 @@ import { Container, Form, Button, Alert, Row, Col, InputGroup } from 'react-boot
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
 import "../assets/css/registration.css";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../componets/context/AuthContext';
 
 // API base URL - updated to the production endpoint
 const API_BASE_URL = 'https://mahadevaaya.com/spindo/spindobackend';
 const DISTRICT_BLOCKS_API = `${API_BASE_URL}/api/district-blocks/`;
 
 function Registration() {
+  const navigate = useNavigate();
+  const { setDestination } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     mobile_number: '',
@@ -334,11 +337,12 @@ function Registration() {
       // Show success alert
       alert("Successfully registered!");
       
-      // Remove the success message after showing the alert
+      // Set the intended destination to RequestService before redirecting to Login
+      setDestination('/RequestService');
+      
+      // Redirect to login page after successful registration
       setTimeout(() => {
-        setRegistrationSuccess(false);
-        setServerResponse(null);
-        resetForm();
+        navigate('/Login', { replace: true });
       }, 1000);
     } catch (error) {
       console.error('Registration error:', error);

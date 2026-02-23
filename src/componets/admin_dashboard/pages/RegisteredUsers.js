@@ -44,8 +44,7 @@ const RegisteredUsers = ({ showCardOnly = false }) => {
   const [editingUser, setEditingUser] = useState(null);
   const [formData, setFormData] = useState({
     id: '',
-    mobile_number: '',
-    password: ''
+    mobile_number: ''
   });
   const [formError, setFormError] = useState("");
 
@@ -79,8 +78,7 @@ const RegisteredUsers = ({ showCardOnly = false }) => {
     setEditingUser(user);
     setFormData({
       id: user.id,
-      mobile_number: user.mobile_number,
-      password: ''
+      mobile_number: user.mobile_number
     });
     setShowModal(true);
     setFormError("");
@@ -152,7 +150,6 @@ const RegisteredUsers = ({ showCardOnly = false }) => {
       const data = new FormData();
       data.append("unique_id", editingUser?.unique_id);
       data.append("mobile_number", formData.mobile_number);
-      if (formData.password) data.append("password", formData.password);
 
       await axios.put(API_URL, data, {
         headers: {
@@ -179,7 +176,7 @@ const RegisteredUsers = ({ showCardOnly = false }) => {
   const resetForm = () => {
     setShowModal(false);
     setEditingUser(null);
-    setFormData({ id: '', mobile_number: '', password: '' });
+    setFormData({ id: '', mobile_number: '' });
     setFormError("");
   };
 
@@ -457,16 +454,6 @@ const RegisteredUsers = ({ showCardOnly = false }) => {
                         value={formData.mobile_number}
                         onChange={handleChange}
                         required
-                        style={{ borderRadius: 8, fontSize: 15 }}
-                      />
-                    </Form.Group>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Password (leave blank to keep current)</Form.Label>
-                      <Form.Control
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
                         style={{ borderRadius: 8, fontSize: 15 }}
                       />
                     </Form.Group>

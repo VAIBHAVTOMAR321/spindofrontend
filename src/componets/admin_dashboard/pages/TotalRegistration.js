@@ -148,10 +148,9 @@ const TotalRegistration = () => {
     mobile_number: "",
     email_id: "",
     address: "",
-    password: "",
     is_active: true,
     can_aadharcard: null,
-    staff_image: null, // Add staff_image to the initial state
+    staff_image: null,
   });
 
   // ================= FETCH =================
@@ -204,12 +203,6 @@ const TotalRegistration = () => {
         data.append("mobile_number", formData.mobile_number);
         data.append("email_id", formData.email_id);
         data.append("address", formData.address);
-        
-        // Only append password if it has been changed/entered
-        if (formData.password && formData.password.trim() !== '') {
-          data.append("password", formData.password);
-        }
-        
         data.append("is_active", formData.is_active ? 1 : 0);
 
         if (formData.can_aadharcard) {
@@ -237,7 +230,6 @@ const TotalRegistration = () => {
         data.append("mobile_number", formData.mobile_number);
         data.append("email_id", formData.email_id);
         data.append("address", formData.address);
-        data.append("password", formData.password);
         data.append("is_active", formData.is_active ? 1 : 0);
 
         if (formData.can_aadharcard) {
@@ -303,15 +295,13 @@ const TotalRegistration = () => {
     setEditingId(staff.id);
     setFormError(""); // Clear form error when opening edit modal
 
-    // --- MODIFIED: Added staff_image to the form data state ---
     setFormData({
       unique_id: staff.unique_id,
       can_name: staff.can_name,
       mobile_number: staff.mobile_number,
       email_id: staff.email_id,
       address: staff.address,
-      password: "", // Keep password empty on edit for security
-      is_active: staff.is_active === 1, // Ensure is_active is a boolean
+      is_active: Number(staff.is_active) === 1, // Convert to number first, then check
       can_aadharcard: null, // Reset file input
       staff_image: null, // Reset file input
     });
@@ -324,14 +314,12 @@ const TotalRegistration = () => {
     setEditingId(null);
     setShowModal(false);
     setFormError(""); // Clear form error
-    // --- MODIFIED: Added staff_image to the reset form data ---
     setFormData({
       unique_id: "",
       can_name: "",
       mobile_number: "",
       email_id: "",
       address: "",
-      password: "",
       is_active: true,
       can_aadharcard: null,
       staff_image: null,
@@ -679,17 +667,6 @@ const TotalRegistration = () => {
                       value={formData.address}
                       onChange={handleChange}
                       className="mb-3"
-                      style={{ borderRadius: 8, fontSize: 15 }}
-                    />
-
-                    <Form.Control
-                      type="password"
-                      name="password"
-                      placeholder="Password (leave blank to keep current)"
-                      value={formData.password}
-                      onChange={handleChange}
-                      className="mb-3"
-                      required={!editingId}
                       style={{ borderRadius: 8, fontSize: 15 }}
                     />
 

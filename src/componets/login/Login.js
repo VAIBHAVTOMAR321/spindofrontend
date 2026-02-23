@@ -8,7 +8,7 @@ import { Container } from 'react-bootstrap';
 import "../../assets/css/login.css";
 
 const Login = () => {
-  const { login } = useAuth(); // Use the auth context
+  const { login, intendedDestination, clearDestination } = useAuth(); // Use the auth context
   const [role, setRole] = useState('admin'); // Default role is 'admin'
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [adminId, setAdminId] = useState('');
@@ -146,10 +146,16 @@ const Login = () => {
         } else if (data.data.role === 'vendor') {
           redirectTo = "/VendorDashBoard";
         } else if (data.data.role === 'customer') {
-          redirectTo = "/UserDashBoard";
+          // For customers, check if there's an intended destination (e.g., from /Services)
+          if (intendedDestination) {
+            redirectTo = intendedDestination;
+            clearDestination(); // Clear the intended destination after use
+          } else {
+            redirectTo = "/UserDashBoard";
+          }
         } 
 
-        // Redirect the user to their role-specific dashboard
+        // Redirect the user to their role-specific page or dashboard
         navigate(redirectTo, { replace: true });
       } else {
         // Handle field-specific errors for non-200 responses as well

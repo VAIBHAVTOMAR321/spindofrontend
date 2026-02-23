@@ -18,7 +18,8 @@ import {
 } from "react-icons/fa";
 import axios from "axios";
 import "../../assets/css/admindashboard.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import {
   FaInfoCircle,
   FaBullseye,
@@ -27,14 +28,18 @@ import {
 // import BRLogo from "../../assets/images/brainrock_logo.png";
 
 const StaffLeftNav = ({ sidebarOpen, setSidebarOpen, isMobile, isTablet }) => {
-    // const { logout } = useContext(AuthContext);
-    // const { user } = useContext(AuthContext);
-// const emp_id = user?.unique_id;  // This is the correct value
-
-    const [userRole, setUserRole] = useState(null);
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+  const [userRole, setUserRole] = useState(null);
   const [openSubmenu, setOpenSubmenu] = useState(null);
   const toggleSubmenu = (index) => {
     setOpenSubmenu(openSubmenu === index ? null : index);
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    logout();
+    navigate("/", { replace: true });
   };
  
 const menuItems = [
@@ -200,7 +205,7 @@ const menuItems = [
         <div className="sidebar-footer">
           <Nav.Link
             className="nav-item logout-btn"
-        //    onClick={logout}
+            onClick={handleLogout}
           >
             <span className="nav-icon">
               <FaSignOutAlt />

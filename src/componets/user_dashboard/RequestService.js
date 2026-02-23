@@ -248,45 +248,93 @@ const RequestService = () => {
                   {serviceError && <div style={{color: 'red', fontWeight: 500, marginBottom: 8}}>{serviceError}</div>}
                   <Form onSubmit={handleSubmit} autoComplete="off">
                     <Row>
-                      <Col md={6}>
+                      <Col md={3}>
                         <Form.Group className="mb-3">
                           <Form.Label>Full Name</Form.Label>
                           <Form.Control type="text" name="username" value={form.username} disabled />
                         </Form.Group>
+                      </Col>
+                      <Col md={3}>
                         <Form.Group className="mb-3">
                           <Form.Label>Contact Number</Form.Label>
                           <Form.Control type="text" name="contact_number" value={form.contact_number} disabled />
                         </Form.Group>
+                      </Col>
+                      <Col md={3}>
                         <Form.Group className="mb-3">
                           <Form.Label>Alternate Contact Number</Form.Label>
                           <Form.Control type="text" name="alternate_contact_number" value={form.alternate_contact_number} onChange={handleChange} placeholder="Enter alternate contact number (optional)" />
                         </Form.Group>
+                      </Col>
+                      <Col md={3}>
                         <Form.Group className="mb-3">
                           <Form.Label>Email</Form.Label>
                           <Form.Control type="email" name="email" value={form.email} onChange={handleChange} placeholder="Enter your email (optional)" />
                         </Form.Group>
+                      </Col>
+                      <Col md={3}>
                         <Form.Group className="mb-3">
                           <Form.Label>State</Form.Label>
                           <Form.Control type="text" name="state" value={form.state} onChange={handleChange} required />
                         </Form.Group>
+                      </Col>
+                      <Col md={3}>
                         <Form.Group className="mb-3">
                           <Form.Label>District</Form.Label>
                           <Form.Control type="text" name="district" value={form.district} onChange={handleChange} required />
                         </Form.Group>
+                      </Col>
+                      <Col md={3}>
                         <Form.Group className="mb-3">
                           <Form.Label>Block</Form.Label>
                           <Form.Control type="text" name="block" value={form.block} onChange={handleChange} required />
                         </Form.Group>
+                      </Col>
+                      <Col md={3}>
                         <Form.Group className="mb-3">
-                          <Form.Label>Address</Form.Label>
-                          <Form.Control type="text" name="address" value={form.address} onChange={handleChange} required />
+                          <Form.Label>Schedule Date</Form.Label>
+                          <Form.Control 
+                            type="date" 
+                            name="schedule_date" 
+                            value={form.schedule_date} 
+                            onChange={handleChange} 
+                            min={minDate}
+                            max={maxDate}
+                            required 
+                          />
+                          <Form.Text className="text-muted" style={{ fontSize: '0.8rem' }}>Today to +10 days</Form.Text>
                         </Form.Group>
                       </Col>
-                      <Col md={6}>
-                        <Form.Label>Request For Services</Form.Label>
+                      <Col md={3}>
                         <Form.Group className="mb-3">
-                          <Form.Label>Select Service(s)</Form.Label>
-                          <div ref={serviceFieldRef}>
+                          <Form.Label>Schedule Time</Form.Label>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <Form.Select
+                              name="schedule_time"
+                              value={form.schedule_time}
+                              onChange={handleChange}
+                              required
+                              style={{ maxWidth: 140 }}
+                            >
+                              <option value="">Select time</option>
+                              {Array.from({ length: 14 }, (_, i) => {
+                                // 6:00 to 19:00 (7 PM)
+                                const hour = 6 + i;
+                                const hourStr = hour.toString().padStart(2, '0');
+                                return [
+                                  <option key={hourStr + ':00'} value={hourStr + ':00'}>{`${hour <= 12 ? hour : hour - 12}:00 ${hour < 12 ? 'AM' : 'PM'}`}</option>,
+                                  <option key={hourStr + ':30'} value={hourStr + ':30'}>{`${hour <= 12 ? hour : hour - 12}:30 ${hour < 12 ? 'AM' : 'PM'}`}</option>
+                                ];
+                              })}
+                            </Form.Select>
+                          </div>
+                          <Form.Text className="text-muted" style={{ fontSize: '0.8rem' }}>6:00 AM - 7:00 PM</Form.Text>
+                        </Form.Group>
+                      </Col>
+                      <Col md={3}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>Request For Services</Form.Label>
+                          <div ref={serviceFieldRef} style={{ marginBottom: 8 }}>
                             {form.request_for_services.map((service, idx) => {
                               const label = serviceOptions.find(opt => opt.value === service)?.label || service;
                               return (
@@ -310,7 +358,7 @@ const RequestService = () => {
                             })}
                           </div>
                           <Dropdown>
-                            <Dropdown.Toggle variant="outline-primary" id="dropdown-basic">
+                            <Dropdown.Toggle variant="outline-primary" id="dropdown-basic" size="sm">
                               {serviceOptions.length === 0 ? "Loading..." : "Add Service"}
                             </Dropdown.Toggle>
                             <Dropdown.Menu style={{ maxHeight: 250, overflowY: 'auto' }}>
@@ -335,55 +383,16 @@ const RequestService = () => {
                             </Dropdown.Menu>
                           </Dropdown>
                         </Form.Group>
-                        <Form.Group className="mb-3 mt-3">
-                          <Form.Label>Schedule Date</Form.Label>
-                          <Form.Control 
-                            type="date" 
-                            name="schedule_date" 
-                            value={form.schedule_date} 
-                            onChange={handleChange} 
-                            min={minDate}
-                            max={maxDate}
-                            required 
-                          />
-                          <Form.Text className="text-muted">Select a date between today and next 10 days</Form.Text>
-                        </Form.Group>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col md={6}>
                         <Form.Group className="mb-3">
-                          <Form.Label>Schedule Time</Form.Label>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Form.Select
-                              name="schedule_time"
-                              value={form.schedule_time}
-                              onChange={handleChange}
-                              required
-                              style={{ maxWidth: 140 }}
-                            >
-                              <option value="">Select time</option>
-                              {Array.from({ length: 14 }, (_, i) => {
-                                // 6:00 to 19:00 (7 PM)
-                                const hour = 6 + i;
-                                const hourStr = hour.toString().padStart(2, '0');
-                                return [
-                                  <option key={hourStr + ':00'} value={hourStr + ':00'}>{`${hour <= 12 ? hour : hour - 12}:00 ${hour < 12 ? 'AM' : 'PM'}`}</option>,
-                                  <option key={hourStr + ':30'} value={hourStr + ':30'}>{`${hour <= 12 ? hour : hour - 12}:30 ${hour < 12 ? 'AM' : 'PM'}`}</option>
-                                ];
-                              })}
-                            </Form.Select>
-                            {form.schedule_time && (
-                              <span style={{ fontWeight: 500 }}>
-                                {(() => {
-                                  const [h, m] = form.schedule_time.split(":");
-                                  let hour = parseInt(h, 10);
-                                  const ampm = hour >= 12 ? "PM" : "AM";
-                                  hour = hour % 12;
-                                  if (hour === 0) hour = 12;
-                                  return `${hour}:${m} ${ampm}`;
-                                })()}
-                              </span>
-                            )}
-                          </div>
-                          <Form.Text className="text-muted">Allowed time: 06:00 AM to 07:00 PM</Form.Text>
+                          <Form.Label>Address</Form.Label>
+                          <Form.Control as="textarea" name="address" value={form.address} onChange={handleChange} rows={3} required />
                         </Form.Group>
+                      </Col>
+                      <Col md={6}>
                         <Form.Group className="mb-3">
                           <Form.Label>Description</Form.Label>
                           <Form.Control as="textarea" name="description" value={form.description} onChange={handleChange} rows={3} required />

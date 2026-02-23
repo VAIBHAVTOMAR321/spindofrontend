@@ -28,7 +28,7 @@ const API_URL = `${BASE_URL}/api/vendor/register/`;
 // Accept toggleSidebar as prop
 function VendorHeader({ toggleSidebar }) {
   const navigate = useNavigate();
-  const { user, tokens } = useAuth();
+  const { user, tokens, logout } = useAuth();
 
   // Vendor profile data state
   const [vendorData, setVendorData] = useState({
@@ -108,7 +108,7 @@ function VendorHeader({ toggleSidebar }) {
 
   // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem("auth");
+    logout();
     navigate("/", { replace: true });
   };
   return (

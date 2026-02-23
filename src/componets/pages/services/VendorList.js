@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Row, Col, Button, Alert, Spinner, Badge } from 'react-bootstrap';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 function VendorList() {
   const [vendors, setVendors] = useState([]);
@@ -8,7 +9,8 @@ function VendorList() {
   const [error, setError] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null);
   const location = useLocation();
-  const navigate = useNavigate(); // Added useNavigate hook
+  const navigate = useNavigate();
+  const { isAuthenticated, setDestination } = useAuth();
   const selectedService = location.state?.service;
 
   const formatDisplayValue = (value) => {
@@ -26,6 +28,20 @@ function VendorList() {
 
   const toLowerCaseString = (value) => {
     return value ? value.toString().toLowerCase() : '';
+  };
+
+  // Handle Book Now button click with authentication check
+  const handleBookNow = () => {
+    if (!isAuthenticated) {
+      // Store the intended destination
+      setDestination('/RequestService');
+      // Redirect to login page
+      navigate('/Login');
+      return;
+    }
+    
+    // If user is authenticated, directly navigate to RequestService
+    navigate('/RequestService');
   };
 
   useEffect(() => {
@@ -297,7 +313,7 @@ function VendorList() {
                       <Button 
                         variant="primary" 
                         className="fw-bold btn-book"
-                        onClick={() => navigate('/login')} // Added onClick handler to navigate to login
+                        onClick={handleBookNow}
                       >
                         Book Now
                       </Button>
