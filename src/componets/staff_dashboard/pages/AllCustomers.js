@@ -94,13 +94,7 @@ const AllCustomers = () => {
       );
   });
   
-  const totalPages = Math.ceil(filteredCustomers.length / customersPerPage);
   const paginatedCustomers = filteredCustomers.slice((currentPage - 1) * customersPerPage, currentPage * customersPerPage);
-
-  // Handle page change
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
 
   // Format date for display
   const formatDate = (date) => {
@@ -177,7 +171,6 @@ const AllCustomers = () => {
                               <th>Email</th>
                               <th>Mobile</th>
                               <th>Location</th>
-                              <th>Status</th>
                               <th>Created</th>
                               <th>View</th>
                             </tr>
@@ -185,7 +178,7 @@ const AllCustomers = () => {
                           <tbody>
                             {paginatedCustomers.length === 0 ? (
                               <tr>
-                                <td colSpan={9} className="text-center">No customers found.</td>
+                                <td colSpan={8} className="text-center">No customers found.</td>
                               </tr>
                             ) : (
                               paginatedCustomers.map((customer, index) => (
@@ -210,11 +203,6 @@ const AllCustomers = () => {
                                   <td>{customer.email}</td>
                                   <td>{customer.mobile_number}</td>
                                   <td>{customer.state}, {customer.district}</td>
-                                  <td>
-                                    <span className={`badge ${customer.is_active ? 'bg-success' : 'bg-danger'}`}>
-                                      {customer.is_active ? 'Active' : 'Inactive'}
-                                    </span>
-                                  </td>
                                   <td>{formatDate(customer.created_at)}</td>
                                   <td>
                                     <Button variant="outline-primary" size="sm" onClick={() => handleView(customer)}>
@@ -228,25 +216,29 @@ const AllCustomers = () => {
                         </Table>
                       </div>
                       {/* Pagination */}
-                      {totalPages > 1 && (
-                        <div className="d-flex justify-content-center align-items-center mt-3">
-                          <nav>
-                            <ul className="pagination mb-0">
-                              <li className={`page-item${currentPage === 1 ? ' disabled' : ''}`}>
-                                <button className="page-link" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>&laquo;</button>
-                              </li>
-                              {Array.from({ length: totalPages }, (_, i) => (
-                                <li key={i + 1} className={`page-item${currentPage === i + 1 ? ' active' : ''}`}>
-                                  <button className="page-link" onClick={() => handlePageChange(i + 1)}>{i + 1}</button>
-                                </li>
-                              ))}
-                              <li className={`page-item${currentPage === totalPages ? ' disabled' : ''}`}>
-                                <button className="page-link" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>&raquo;</button>
-                              </li>
-                            </ul>
-                          </nav>
-                        </div>
-                      )}
+                      <div className="d-flex justify-content-center align-items-center mt-3 gap-2">
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          disabled={currentPage === 1}
+                          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                          style={{ minWidth: 80 }}
+                        >
+                          Previous
+                        </Button>
+                        <span style={{ fontWeight: 600, fontSize: 15 }}>
+                          Page {currentPage} of {Math.ceil(filteredCustomers.length / customersPerPage) || 1}
+                        </span>
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          disabled={currentPage === Math.ceil(filteredCustomers.length / customersPerPage) || filteredCustomers.length === 0}
+                          onClick={() => setCurrentPage((prev) => prev + 1)}
+                          style={{ minWidth: 80 }}
+                        >
+                          Next
+                        </Button>
+                      </div>
                     </>
                   )}
                   {!loading && !error && customers.length === 0 && (
@@ -267,9 +259,6 @@ const AllCustomers = () => {
                               <p><strong>Email:</strong> {selectedCustomer.email}</p>
                               <p><strong>Mobile:</strong> {selectedCustomer.mobile_number}</p>
                               <p><strong>Location:</strong> {selectedCustomer.state}, {selectedCustomer.district}</p>
-                              <p><strong>Status:</strong> <span className={`badge ${selectedCustomer.is_active ? 'bg-success' : 'bg-danger'}`}>
-                                {selectedCustomer.is_active ? 'Active' : 'Inactive'}
-                              </span></p>
                             </Col>
                             <Col md={6}>
                               <p><strong>Created At:</strong> {formatDate(selectedCustomer.created_at)}</p>

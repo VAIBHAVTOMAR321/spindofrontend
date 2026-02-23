@@ -194,9 +194,9 @@ const Login = () => {
       case 'vendor':
         return 'Vendor Login';
       case 'customer':
-        return 'Customer Login';
+        return 'User Login';
       default:
-        return 'Customer Login';
+        return 'User Login';
     }
   };
 
@@ -241,7 +241,7 @@ const Login = () => {
             onClick={() => setRole('customer')}
           >
             <i className="fas fa-user"></i>
-            <span>CUSTOMER</span>
+            <span>USER</span>
           </button>
         </div>
         

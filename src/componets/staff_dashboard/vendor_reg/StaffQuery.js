@@ -49,17 +49,19 @@ const StaffQuery = () => {
       return;
     }
     setProfileLoading(true);
-    const apiUrl = `https://mahadevaaya.com/spindo/spindobackend/api/staffadmin/issue/?unique_id=${user.uniqueId}`;
+    const apiUrl = `https://mahadevaaya.com/spindo/spindobackend/api/staffadmin/register/?unique_id=${user.uniqueId}`;
     fetch(apiUrl, {
       headers: tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}
     })
       .then((res) => res.json())
       .then((data) => {
         if (data.status && data.data) {
-          setProfileName(data.data.name || "");
+          const staffData = Array.isArray(data.data) ? data.data[0] : data.data;
+          const staffName = staffData.can_name || "";
+          setProfileName(staffName);
           setQuery((prev) => ({
             ...prev,
-            name: data.data.name || "",
+            name: staffName,
             unique_id: user.uniqueId,
           }));
         } else {

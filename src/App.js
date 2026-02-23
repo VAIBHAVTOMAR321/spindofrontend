@@ -135,6 +135,14 @@ function App() {
               </Protected>
             } 
           />
+          <Route
+            path="/StaffQuery"
+            element={
+              <Protected allowedRoles={['staffadmin']}>
+                <StaffQuery />
+              </Protected>
+            } 
+          />
           <Route 
             path="/UserDashBoard" 
             element={
