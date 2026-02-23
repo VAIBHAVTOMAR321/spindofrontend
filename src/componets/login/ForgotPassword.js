@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Modal, Button } from 'react-bootstrap';
 import "../../assets/css/login.css";
@@ -19,8 +19,80 @@ const ForgotPassword = () => {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // OTP Timer State
+  const [timer, setTimer] = useState(120); // 2 minutes in seconds
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
 
   const navigate = useNavigate();
+
+  // Timer Effect
+  useEffect(() => {
+    let interval;
+    if (isTimerRunning && timer > 0) {
+      interval = setInterval(() => {
+        setTimer(prev => {
+          const newTimer = prev - 1;
+          if (newTimer === 0) {
+            setIsTimerRunning(false);
+          }
+          return newTimer;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerRunning, timer]);
+
+  // Format timer as MM:SS
+  const formatTimer = () => {
+    const minutes = Math.floor(timer / 60);
+    const seconds = timer % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  };
+
+  // Resend OTP function
+  const handleResendOtp = async () => {
+    setError('');
+    setSuccessMessage('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('https://mahadevaaya.com/spindo/spindobackend/api/send-otp/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phone: phone }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        let errorMsg = data.message || `Request failed with status ${response.status}`;
+        if (data.errors && typeof data.errors === 'object') {
+          errorMsg = Object.entries(data.errors)
+            .map(([field, msgs]) => {
+              return Array.isArray(msgs) ? msgs.join(', ') : msgs;
+            })
+            .join(' | ');
+        }
+        throw new Error(errorMsg);
+      }
+
+      if (data.success === true) {
+        setSuccessMessage('OTP resent successfully to your phone');
+        // Reset timer
+        setTimer(120);
+        setIsTimerRunning(true);
+      } else {
+        throw new Error(data.message || 'Failed to resend OTP');
+      }
+    } catch (err) {
+      setError(err.message || 'An error occurred while resending OTP');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Validation Functions
   const validatePhone = (phoneNumber) => {
@@ -78,6 +150,9 @@ const ForgotPassword = () => {
         alert('OTP sent successfully to your phone');
         setShowOtpModal(true);
         setStep(2);
+        // Start timer
+        setTimer(120);
+        setIsTimerRunning(true);
       } else {
         throw new Error(data.message || 'Failed to send OTP');
       }
@@ -361,6 +436,7 @@ const ForgotPassword = () => {
         <Modal.Body>
           <form onSubmit={handleVerifyOtp}>
             {error && <div className="error-message">{error}</div>}
+            {successMessage && <div className="success-message">{successMessage}</div>}
             <div className="form-group">
               <label htmlFor="otp">Enter OTP</label>
               <input
@@ -374,7 +450,34 @@ const ForgotPassword = () => {
                 autoFocus
               />
             </div>
-            <div className="d-flex gap-2 justify-content-end">
+            
+            {/* Timer Display */}
+            <div className="mt-3 text-center">
+              <span className="timer-display">
+                {isTimerRunning ? formatTimer() : '00:00'}
+              </span>
+            </div>
+            
+            {/* Resend OTP Button */}
+            <div className="mt-3 text-center">
+              <Button
+                variant="link"
+                onClick={handleResendOtp}
+                disabled={isLoading}
+                className="resend-otp-btn"
+              >
+                {isLoading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Resending...
+                  </>
+                ) : (
+                  'Resend OTP'
+                )}
+              </Button>
+            </div>
+            
+            <div className="d-flex gap-2 justify-content-end mt-4">
               <Button 
                 variant="secondary" 
                 onClick={handleCloseModal}

@@ -79,6 +79,34 @@
           font-size: 11px;
         }
         
+        .timer-display {
+          font-size: 18px;
+          font-weight: bold;
+          color: #1b4a8f;
+          background-color: #f8f9fa;
+          padding: 8px 16px;
+          border-radius: 8px;
+          border: 1px solid #dee2e6;
+        }
+        
+        .resend-otp-btn {
+          color: #1b4a8f;
+          font-weight: 500;
+          text-decoration: none;
+          padding: 0;
+        }
+        
+        .resend-otp-btn:hover {
+          color: #0d2a5a;
+          text-decoration: underline;
+        }
+        
+        .resend-otp-btn:disabled {
+          color: #6c757d;
+          cursor: not-allowed;
+          text-decoration: none;
+        }
+        
         .role-tabs {
           display: flex;
           background-color: #f8f9fa;
