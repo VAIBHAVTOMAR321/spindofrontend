@@ -257,6 +257,7 @@ const Login = () => {
                   value={emailOrPhone}
                   onChange={(e) => setEmailOrPhone(e.target.value)}
                   required
+                  placeholder="Mobile Number"
                   disabled={isLoading}
                 />
               </div>
@@ -269,6 +270,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    placeholder="Password"
                     disabled={isLoading}
                   />
                   <button
@@ -294,7 +296,8 @@ const Login = () => {
                   id="staffAdminId"
                   value={staffAdminId} 
                   onChange={(e) => setStaffAdminId(e.target.value)}
-                  required placeholder='9999999999' 
+                  required
+                  placeholder="Mobile Number"
                   disabled={isLoading}
                 />
               </div>
@@ -307,6 +310,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    placeholder="Password"
                     disabled={isLoading}
                   />
                   <button
@@ -332,7 +336,8 @@ const Login = () => {
                   id="adminId"
                   value={adminId} 
                   onChange={(e) => setAdminId(e.target.value)}
-                  required placeholder='9999999999' 
+                  required
+                  placeholder="Mobile Number"
                   disabled={isLoading}
                 />
               </div>
@@ -345,6 +350,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    placeholder="Password"
                     disabled={isLoading}
                   />
                   <button
@@ -371,6 +377,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  placeholder="Mobile Number"
                   disabled={isLoading}
                 />
               </div>
@@ -383,6 +390,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    placeholder="Password"
                     disabled={isLoading}
                   />
                   <button

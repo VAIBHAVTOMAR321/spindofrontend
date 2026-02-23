@@ -45,6 +45,7 @@ import StaffServicesRequest from "./componets/staff_dashboard/staff_services_req
 import StaffCompleteRequest from "./componets/staff_dashboard/staff_services_request/StaffCompleteRequest";
 import StaffBill from "./componets/staff_dashboard/staff_services_request/StaffBill";
 import AllBillsDetails from "./componets/staff_dashboard/staff_services_request/AllBillsDetails";
+import UploadBills from "./componets/staff_dashboard/staff_services_request/UploadBills";
 import Footer from "./componets/footer/Footer";
 import ContactUs from "./componets/contact/ContactUs";
 import VendorRequests from "./componets/vendor_dashboard/VendorRequests";
@@ -56,6 +57,7 @@ import VendorAllBills from "./componets/vendor_dashboard/VendorAllBills";
 import GenerateVendorQuery from "./componets/vendor_dashboard/vendorpages/GenerateVendorQuery";
 import VendorAllQueries from "./componets/vendor_dashboard/vendorpages/VendorAllQueries";
 import AllBills from "./componets/admin_dashboard/pages/AllBills";
+import UploadedBills from "./componets/admin_dashboard/pages/UploadedBills";
 import SolarInstalation from "./componets/pages/SolarInstalation";
 import SolarQuery from "./componets/admin_dashboard/pages/SolarQuery";
 import ManageCompanyDetails from "./componets/admin_dashboard/media_link/ManageCompanyDetails";
@@ -97,10 +99,12 @@ function App() {
     "/StaffServicesRequest",
     "/StaffBill",
 	"/AllBillsDetails",
+	"/UploadBills",
 	"/GenerateVendorQuery",
     "/VendorAllQueries",
     "/StaffProfile",
     "/AllBills",
+    "/UploadedBills",
     "/SolarQuery",
     "/ManageCompanyDetails"
   ]);
@@ -296,6 +300,14 @@ function App() {
             } 
           />
           <Route 
+            path="/UploadedBills" 
+            element={
+              <Protected allowedRoles={['admin']}>
+                <UploadedBills />
+              </Protected>
+            } 
+          />
+          <Route 
             path="/SolarQuery" 
             element={
               <Protected allowedRoles={['admin']}>
@@ -364,6 +376,14 @@ function App() {
             element={
               <Protected allowedRoles={['staffadmin']}>
                 <AllBillsDetails />
+              </Protected>
+            } 
+          />
+            <Route
+            path="/UploadBills"
+            element={
+              <Protected allowedRoles={['staffadmin']}>
+                <UploadBills />
               </Protected>
             } 
           />

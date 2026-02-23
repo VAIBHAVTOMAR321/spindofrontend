@@ -14,7 +14,8 @@ import {
   FaTasks,
   FaCheckSquare,
   FaFileInvoiceDollar,
-  FaCommentDots
+  FaCommentDots,
+  FaCloudUploadAlt
 } from "react-icons/fa";
 import axios from "axios";
 import "../../assets/css/admindashboard.css";
@@ -99,6 +100,11 @@ const menuItems = [
         icon: <FaListUl />, // View Bill
         label: "View Bill",
         path: "/AllBillsDetails",
+      },
+      {
+        icon: <FaCloudUploadAlt />, // Upload Bills
+        label: "Upload Bills",
+        path: "/UploadBills",
       },
     ],
   },

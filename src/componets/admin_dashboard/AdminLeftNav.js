@@ -32,7 +32,8 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   FaInfoCircle,
   FaBullseye,
-  FaTasks
+  FaTasks,
+  FaCloudUploadAlt
 } from "react-icons/fa";
 import { useAuth } from '../context/AuthContext';
 
@@ -82,8 +83,19 @@ const menuItems = [
   },
   {
     icon: <FaBook />,
-    label: "Generated Bills",
-    path: "/AllBills",
+    label: "Bills",
+    submenu: [
+      {
+        icon: <FaListUl />,
+        label: "Generated Bills",
+        path: "/AllBills",
+      },
+      {
+        icon: <FaCloudUploadAlt />,
+        label: "Uploaded Bills",
+        path: "/UploadedBills",
+      },
+    ],
   },
   {
     icon: <FaSun />,
