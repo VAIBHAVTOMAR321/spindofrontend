@@ -220,7 +220,7 @@ const UserDashBoard = () => {
               <div className="mb-3">
                 <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Services</h6>
                 <Row className="g-2 mb-2" style={{ margin: 0 }}>
-                  <Col xs={4} sm={6} md={2} lg={3}>
+                  <Col xs={3} sm={6} md={2} lg={3}>
                     <Link to="/ViewRequestService" state={{ filter: 'Assigned' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -233,7 +233,7 @@ const UserDashBoard = () => {
                       </Card>
                     </Link>
                   </Col>
-                  <Col xs={4} sm={6} md={2} lg={3}>
+                  <Col xs={3} sm={6} md={2} lg={3}>
                     <Link to="/ViewRequestService" state={{ filter: 'Completed' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -246,7 +246,7 @@ const UserDashBoard = () => {
                       </Card>
                     </Link>
                   </Col>
-                  <Col xs={4} sm={6} md={2} lg={3}>
+                  <Col xs={3} sm={6} md={2} lg={3}>
                     <Link to="/ViewRequestService" state={{ filter: 'Cancelled' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -261,7 +261,7 @@ const UserDashBoard = () => {
                   </Col>
                 
                   {/* Rejected card removed as requested */}
-                    <Col xs={4} sm={6} md={2} lg={3}>
+                    <Col xs={3} sm={6} md={2} lg={3}>
                     <Link to="/ViewRequestService" state={{ filter: 'Pending' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
