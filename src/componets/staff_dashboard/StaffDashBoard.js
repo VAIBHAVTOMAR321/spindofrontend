@@ -225,7 +225,7 @@ const StaffDashBoard = () => {
                  
                 </div>
                 <Row className="g-2 mb-2" style={{ margin: 0 }}>
-                  <Col xs={12} sm={6} md={6} lg={6}>
+                  <Col xs={6} sm={6} md={6} lg={6}>
                     <Link to="/AllVendors" state={{ viewType: 'vendors' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -238,7 +238,7 @@ const StaffDashBoard = () => {
                       </Card>
                     </Link>
                   </Col>
-                  <Col xs={12} sm={6} md={6} lg={6}>
+                  <Col xs={6} sm={6} md={6} lg={6}>
                     <Link to="/AllCustomers" style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -258,7 +258,7 @@ const StaffDashBoard = () => {
               <div className="mb-3">
                 <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Service Requests</h6>
                 <Row className="g-2 mb-2" style={{ margin: 0 }}>
-                  <Col xs={12} sm={6} md={6} lg={4}>
+                  <Col xs={4} sm={6} md={6} lg={4}>
                     <Link to="/StaffServicesRequest" style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -271,7 +271,7 @@ const StaffDashBoard = () => {
                       </Card>
                     </Link>
                   </Col>
-                  <Col xs={12} sm={6} md={6} lg={4}>
+                  <Col xs={4} sm={6} md={6} lg={4}>
                     <Link to="/StaffServicesRequest" state={{ filter: 'Pending' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -284,7 +284,7 @@ const StaffDashBoard = () => {
                       </Card>
                     </Link>
                   </Col>
-                  <Col xs={12} sm={6} md={6} lg={4}>
+                  <Col xs={4} sm={6} md={6} lg={4}>
                     <Link to="/StaffCompleteRequest" style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -304,7 +304,7 @@ const StaffDashBoard = () => {
               <div>
                 <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Staff Queries</h6>
                 <Row className="g-2" style={{ margin: 0 }}>
-                   <Col xs={12} sm={6} md={4}>
+                   <Col xs={4} sm={6} md={4}>
                     <Link to="/StaffQueryView" state={{ filter: 'Accepted' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -317,7 +317,7 @@ const StaffDashBoard = () => {
                       </Card>
                     </Link>
                   </Col>
-                  <Col xs={12} sm={6} md={4}>
+                  <Col xs={4} sm={6} md={4}>
                     <Link to="/StaffQueryView" state={{ filter: 'Pending' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -330,7 +330,7 @@ const StaffDashBoard = () => {
                       </Card>
                     </Link>
                   </Col>
-                  <Col xs={12} sm={6} md={4}>
+                  <Col xs={4} sm={6} md={4}>
                     <Link to="/StaffQueryView" state={{ filter: 'Rejected' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -354,25 +354,25 @@ const StaffDashBoard = () => {
               <Card className="border-0 shadow-sm" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
                 <Card.Body className="p-3">
                   <Row className="text-center">
-                    <Col xs={6} sm={6} md={3}>
+                    <Col xs={3} sm={6} md={3}>
                       <Link to="/StaffQueryView" state={{ filter: 'all' }} style={{ textDecoration: 'none', color: 'inherit' }}>
                         <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600, cursor: 'pointer' }}>All Queries</div>
                         <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700, cursor: 'pointer' }}>{totalStaffQueries}</div>
                       </Link>
                     </Col>
-                    <Col xs={6} sm={6} md={3}>
+                    <Col xs={3} sm={6} md={3}>
                       <Link to="/StaffQueryView" state={{ filter: 'pending' }} style={{ textDecoration: 'none', color: 'inherit' }}>
                         <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600, cursor: 'pointer' }}>Pending</div>
                         <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700, cursor: 'pointer' }}>{pendingStaffQueries}</div>
                       </Link>
                     </Col>
-                    <Col xs={6} sm={6} md={3}>
+                    <Col xs={3} sm={6} md={3}>
                       <Link to="/StaffQueryView" state={{ filter: 'accepted' }} style={{ textDecoration: 'none', color: 'inherit' }}>
                         <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600, cursor: 'pointer' }}>Accepted</div>
                         <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700, cursor: 'pointer' }}>{acceptedStaffQueries}</div>
                       </Link>
                     </Col>
-                    <Col xs={6} sm={6} md={3}>
+                    <Col xs={3} sm={6} md={3}>
                       <Link to="/StaffQueryView" state={{ filter: 'rejected' }} style={{ textDecoration: 'none', color: 'inherit' }}>
                         <div className="mb-1" style={{ fontSize: 'clamp(12px, 2vw, 14px)', fontWeight: 600, cursor: 'pointer' }}>Rejected</div>
                         <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700, cursor: 'pointer' }}>{rejectedStaffQueries}</div>

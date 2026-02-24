@@ -170,54 +170,60 @@ const AdminDashBoard = () => {
             {/* Primary Statistics Row */}
             <div className="dashboard-section">
               <h2 className="section-title">User Management</h2>
-              <div className="dashboard-cards-grid">
+              <Row className="g-3" style={{ margin: 0, width: '100%' }}>
                 {/* Registered Users Card */}
-                <div className="card-wrapper" onClick={() => navigate('/RegisteredUsers')}>
-                  <div className="dashboard-card card-users">
-                    <div className="dashboard-card-icon users-icon">
-                      <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
-                        <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2"/>
-                        <path d="M2 20c0-2.5 4-4 10-4s10 1.5 10 4" stroke="currentColor" strokeWidth="2"/>
-                      </svg>
+                <Col xs={4} sm={4} md={4} lg={4}>
+                  <div className="card-wrapper" onClick={() => navigate('/RegisteredUsers')}>
+                    <div className="dashboard-card card-users">
+                      <div className="dashboard-card-icon users-icon">
+                        <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
+                          <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2"/>
+                          <path d="M2 20c0-2.5 4-4 10-4s10 1.5 10 4" stroke="currentColor" strokeWidth="2"/>
+                        </svg>
+                      </div>
+                      <div className="dashboard-card-title">Registered Users</div>
+                      <div className="dashboard-card-value">{userCount}</div>
+                      <div className="card-footer-text">View & Manage Users</div>
                     </div>
-                    <div className="dashboard-card-title">Registered Users</div>
-                    <div className="dashboard-card-value">{userCount}</div>
-                    <div className="card-footer-text">View & Manage Users</div>
                   </div>
-                </div>
+                </Col>
 
                 {/* Registered Vendors Card */}
-                <div className="card-wrapper" onClick={() => navigate('/RegisteredVendor')}>
-                  <div className="dashboard-card card-vendors">
-                    <div className="dashboard-card-icon vendors-icon">
-                      <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
-                        <path d="M13 16h-2v-4h2v4z" stroke="currentColor" strokeWidth="2" fill="currentColor"/>
-                        <path d="M21 19V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2z" stroke="currentColor" strokeWidth="2"/>
-                      </svg>
+                <Col xs={4} sm={4} md={4} lg={4}>
+                  <div className="card-wrapper" onClick={() => navigate('/RegisteredVendor')}>
+                    <div className="dashboard-card card-vendors">
+                      <div className="dashboard-card-icon vendors-icon">
+                        <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
+                          <path d="M13 16h-2v-4h2v4z" stroke="currentColor" strokeWidth="2" fill="currentColor"/>
+                          <path d="M21 19V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2z" stroke="currentColor" strokeWidth="2"/>
+                        </svg>
+                      </div>
+                      <div className="dashboard-card-title">Registered Vendors</div>
+                      <div className="dashboard-card-value">{vendorCount}</div>
+                      <div className="card-footer-text">View & Manage Vendors</div>
                     </div>
-                    <div className="dashboard-card-title">Registered Vendors</div>
-                    <div className="dashboard-card-value">{vendorCount}</div>
-                    <div className="card-footer-text">View & Manage Vendors</div>
                   </div>
-                </div>
+                </Col>
 
                 {/* Registered Staff Card */}
-                <div className="card-wrapper" onClick={() => navigate('/TotalRegistration')}>
-                  <div className="dashboard-card card-staff">
-                    <div className="dashboard-card-icon staff-icon">
-                      <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
-                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="2"/>
-                        <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
-                        <path d="M23 21v-2a4 4 0 00-3-3.87" stroke="currentColor" strokeWidth="2"/>
-                        <path d="M16 3.13a4 4 0 010 7.75" stroke="currentColor" strokeWidth="2"/>
-                      </svg>
+                <Col xs={4} sm={4} md={4} lg={4}>
+                  <div className="card-wrapper" onClick={() => navigate('/TotalRegistration')}>
+                    <div className="dashboard-card card-staff">
+                      <div className="dashboard-card-icon staff-icon">
+                        <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
+                          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="2"/>
+                          <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
+                          <path d="M23 21v-2a4 4 0 00-3-3.87" stroke="currentColor" strokeWidth="2"/>
+                          <path d="M16 3.13a4 4 0 010 7.75" stroke="currentColor" strokeWidth="2"/>
+                        </svg>
+                      </div>
+                      <div className="dashboard-card-title">Registered Staff</div>
+                      <div className="dashboard-card-value">{staffCount}</div>
+                      <div className="card-footer-text">View & Manage Staff</div>
                     </div>
-                    <div className="dashboard-card-title">Registered Staff</div>
-                    <div className="dashboard-card-value">{staffCount}</div>
-                    <div className="card-footer-text">View & Manage Staff</div>
                   </div>
-                </div>
-              </div>
+                </Col>
+              </Row>
             </div>
 
             {/* Services Section */}
@@ -228,7 +234,7 @@ const AdminDashBoard = () => {
                   <h2 className="section-title">Service Management</h2>
                   <Row className="g-3" style={{ margin: 0, width: '100%' }}>
                     {/* Services Card - col-3 */}
-                    <Col lg={3} md={6} sm={12} xs={12}>
+                    <Col xs={6} sm={6} md={3} lg={3}>
                       <div className="card-wrapper" onClick={() => navigate('/ServiceCategory')}>
                         <div className="dashboard-card card-services">
                           <div className="dashboard-card-icon services-icon">
@@ -247,7 +253,7 @@ const AdminDashBoard = () => {
                     </Col>
 
                     {/* Service Requests Card - col-3 */}
-                    <Col lg={3} md={6} sm={12} xs={12}>
+                    <Col xs={6} sm={6} md={3} lg={3}>
                       <div className="card-wrapper" onClick={() => navigate('/RequestServices')}>
                         <div className="dashboard-card card-requests">
                           <div className="dashboard-card-icon requests-icon">
@@ -263,7 +269,7 @@ const AdminDashBoard = () => {
                     </Col>
 
                     {/* Bills Card - col-3 */}
-                    <Col lg={3} md={6} sm={12} xs={12}>
+                    <Col xs={6} sm={6} md={3} lg={3}>
                       <div className="card-wrapper" onClick={() => navigate('/AllBills')}>
                         <div className="dashboard-card card-bills">
                           <div className="dashboard-card-icon bills-icon">
@@ -279,7 +285,7 @@ const AdminDashBoard = () => {
                     </Col>
 
                     {/* Solar Query Card - col-3 */}
-                    <Col lg={3} md={6} sm={12} xs={12}>
+                    <Col xs={6} sm={6} md={3} lg={3}>
                       <div className="card-wrapper" onClick={() => navigate('/SolarQuery')}>
                         <div className="dashboard-card card-solar">
                           <div className="dashboard-card-icon solar-icon">
@@ -309,63 +315,71 @@ const AdminDashBoard = () => {
             {/* Queries & Support Section */}
             <div className="dashboard-section">
               <h2 className="section-title">Queries & Support</h2>
-              <div className="dashboard-cards-grid">
+              <Row className="g-3" style={{ margin: 0, width: '100%' }}>
                 {/* Total Queries Card */}
-                <div className="card-wrapper" onClick={() => navigate('/OnlineQuery', { state: { tab: 'user' } })}>
-                  <div className="dashboard-card card-total-queries">
-                    <div className="dashboard-card-icon total-queries-icon">
-                      <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
-                        <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V4a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-5l-5 5v-5z" stroke="currentColor" strokeWidth="2"/>
-                      </svg>
+                <Col xs={4} sm={4} md={3} lg={3}>
+                  <div className="card-wrapper" onClick={() => navigate('/OnlineQuery', { state: { tab: 'user' } })}>
+                    <div className="dashboard-card card-total-queries">
+                      <div className="dashboard-card-icon total-queries-icon">
+                        <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
+                          <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V4a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-5l-5 5v-5z" stroke="currentColor" strokeWidth="2"/>
+                        </svg>
+                      </div>
+                      <div className="dashboard-card-title">Total Queries</div>
+                      <div className="dashboard-card-value">{totalQueriesCount}</div>
+                      <div className="card-footer-text">All Support Tickets</div>
                     </div>
-                    <div className="dashboard-card-title">Total Queries</div>
-                    <div className="dashboard-card-value">{totalQueriesCount}</div>
-                    <div className="card-footer-text">All Support Tickets</div>
                   </div>
-                </div>
+                </Col>
 
                 {/* User Queries Card */}
-                <div className="card-wrapper" onClick={() => navigate('/OnlineQuery', { state: { tab: 'user' } })}>
-                  <div className="dashboard-card card-user-queries">
-                    <div className="dashboard-card-icon user-queries-icon">
-                      <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
-                        <path d="M13 16h-2v-4h2v4zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2"/>
-                      </svg>
+                <Col xs={4} sm={4} md={3} lg={3}>
+                  <div className="card-wrapper" onClick={() => navigate('/OnlineQuery', { state: { tab: 'user' } })}>
+                    <div className="dashboard-card card-user-queries">
+                      <div className="dashboard-card-icon user-queries-icon">
+                        <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
+                          <path d="M13 16h-2v-4h2v4zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2"/>
+                        </svg>
+                      </div>
+                      <div className="dashboard-card-title">User Queries</div>
+                      <div className="dashboard-card-value">{userQueriesCount}</div>
+                      <div className="card-footer-text">Feedback & Suggestions</div>
                     </div>
-                    <div className="dashboard-card-title">User Queries</div>
-                    <div className="dashboard-card-value">{userQueriesCount}</div>
-                    <div className="card-footer-text">Feedback & Suggestions</div>
                   </div>
-                </div>
+                </Col>
 
                 {/* Staff Queries Card */}
-                <div className="card-wrapper" onClick={() => navigate('/OnlineQuery', { state: { tab: 'staff' } })}>
-                  <div className="dashboard-card card-staff-queries">
-                    <div className="dashboard-card-icon staff-queries-icon">
-                      <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
-                        <path d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" stroke="currentColor" strokeWidth="2"/>
-                      </svg>
+                <Col xs={4} sm={4} md={3} lg={3}>
+                  <div className="card-wrapper" onClick={() => navigate('/OnlineQuery', { state: { tab: 'staff' } })}>
+                    <div className="dashboard-card card-staff-queries">
+                      <div className="dashboard-card-icon staff-queries-icon">
+                        <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
+                          <path d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" stroke="currentColor" strokeWidth="2"/>
+                        </svg>
+                      </div>
+                      <div className="dashboard-card-title">Staff Queries</div>
+                      <div className="dashboard-card-value">{staffQueriesCount}</div>
+                      <div className="card-footer-text">Internal Support</div>
                     </div>
-                    <div className="dashboard-card-title">Staff Queries</div>
-                    <div className="dashboard-card-value">{staffQueriesCount}</div>
-                    <div className="card-footer-text">Internal Support</div>
                   </div>
-                </div>
+                </Col>
 
                 {/* Vendor Queries Card */}
-                <div className="card-wrapper" onClick={() => navigate('/OnlineQuery', { state: { tab: 'vendor' } })}>
-                  <div className="dashboard-card card-vendor-queries">
-                    <div className="dashboard-card-icon vendor-queries-icon">
-                      <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
-                        <path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4" stroke="currentColor" strokeWidth="2"/>
-                      </svg>
+                <Col xs={12} sm={12} md={3} lg={3}>
+                  <div className="card-wrapper" onClick={() => navigate('/OnlineQuery', { state: { tab: 'vendor' } })}>
+                    <div className="dashboard-card card-vendor-queries">
+                      <div className="dashboard-card-icon vendor-queries-icon">
+                        <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
+                          <path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4" stroke="currentColor" strokeWidth="2"/>
+                        </svg>
+                      </div>
+                      <div className="dashboard-card-title">Vendor Queries</div>
+                      <div className="dashboard-card-value">{vendorQueriesCount}</div>
+                      <div className="card-footer-text">Vendor Support</div>
                     </div>
-                    <div className="dashboard-card-title">Vendor Queries</div>
-                    <div className="dashboard-card-value">{vendorQueriesCount}</div>
-                    <div className="card-footer-text">Vendor Support</div>
                   </div>
-                </div>
-              </div>
+                </Col>
+              </Row>
             </div>
 
           </Container>

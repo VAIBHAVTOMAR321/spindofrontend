@@ -253,7 +253,7 @@
 /* The button that toggles password visibility */
 .password-toggle-btn {
   position: absolute;
-  right: 28px; /* Adjust as needed */
+  right: 10px; /* Adjust as needed */
   background: none;
   border: none;
   cursor: pointer;
