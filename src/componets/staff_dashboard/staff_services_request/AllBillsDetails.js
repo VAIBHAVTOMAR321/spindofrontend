@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Spinner, Alert, Table, Button, Modal, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Container, Row, Col, Card, Spinner, Alert, Table, Button, Modal } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
 import "../../../assets/css/admindashboard.css";
@@ -9,6 +9,10 @@ import StaffLeftNav from "../StaffLeftNav";
 import StaffHeader from "../StaffHeader";
 
 const AllBillsDetails = () => {
+  // Result Modal state for success/error messages
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [resultType, setResultType] = useState(""); // 'success' or 'error'
+  const [resultMessage, setResultMessage] = useState("");
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -17,11 +21,11 @@ const AllBillsDetails = () => {
   const [error, setError] = useState("");
   const [bills, setBills] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [showItemsModal, setShowItemsModal] = useState(false);
   const [selectedBill, setSelectedBill] = useState(null);
-  const [selectedBillItems, setSelectedBillItems] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+  const [billPdf, setBillPdf] = useState(null);
   const billsPerPage = 10;
   const { user, tokens } = useAuth();
 
@@ -44,35 +48,17 @@ const AllBillsDetails = () => {
       return;
     }
     setLoading(true);
-    // Fetch all bills for this staff user
     const apiUrl = `https://mahadevaaya.com/spindo/spindobackend/api/billing/`;
     fetch(apiUrl, {
       headers: tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {}
     })
       .then((res) => res.json())
       .then((data) => {
-        // Debug: Log the API response
-        console.log("API Response:", data);
-        
-        // Check if data is an array or has data property
         if (Array.isArray(data)) {
-          // Debug: Log first bill to check structure
-          if (data.length > 0) {
-            console.log("First bill structure:", data[0]);
-            console.log("Bill items structure:", data[0].bill_items);
-          }
           setBills(data);
         } else if (data.status && Array.isArray(data.data)) {
-          // Debug: Log first bill to check structure
-          if (data.data.length > 0) {
-            console.log("First bill structure:", data.data[0]);
-            console.log("Bill items structure:", data.data[0].bill_items);
-          }
           setBills(data.data);
         } else {
-          // If single object is returned, wrap in array
-          console.log("Single bill structure:", data);
-          console.log("Bill items structure:", data.bill_items);
           setBills([data]);
         }
         setLoading(false);
@@ -86,783 +72,533 @@ const AllBillsDetails = () => {
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
-  const handleView = (bill) => {
-    setSelectedBill(bill);
-    setShowModal(true);
+  // Construct full PDF URL
+  const constructPdfUrl = (billPdfPath) => {
+    if (!billPdfPath) return null;
+    if (billPdfPath.startsWith("http")) return billPdfPath;
+    return `https://mahadevaaya.com/spindo/spindobackend${billPdfPath}`;
+  };
+
+  const handleView = async (bill) => {
+    setLoadingDetails(true);
+    try {
+      const invoiceNo = bill.invoice_no?.[0] || "";
+      const response = await fetch(`https://mahadevaaya.com/spindo/spindobackend/api/billing/`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...(tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {})
+        }
+      });
+      const data = await response.json();
+      
+      // Find the specific bill with matching invoice number
+      let foundBill = bill;
+      if (Array.isArray(data)) {
+        const matchedBill = data.find(b => b.invoice_no?.[0] === invoiceNo);
+        if (matchedBill) foundBill = matchedBill;
+      } else if (data.status && Array.isArray(data.data)) {
+        const matchedBill = data.data.find(b => b.invoice_no?.[0] === invoiceNo);
+        if (matchedBill) foundBill = matchedBill;
+      }
+      
+      setSelectedBill(foundBill);
+      if (foundBill.bill_pdf) setBillPdf(constructPdfUrl(foundBill.bill_pdf));
+      setShowModal(true);
+    } catch (err) {
+      console.error("Error fetching bill details:", err);
+      setResultType("error");
+      setResultMessage("Error loading bill details. Please try again");
+      setShowResultModal(true);
+    } finally {
+      setLoadingDetails(false);
+    }
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedBill(null);
+    setBillPdf(null);
   };
 
-  const handleViewItems = (bill) => {
-    setSelectedBillItems(bill);
-    setShowItemsModal(true);
-  };
-
-  const handleCloseItemsModal = () => {
-    setShowItemsModal(false);
-    setSelectedBillItems(null);
-  };
-
-  // Handle search
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
     setCurrentPage(1);
   };
 
-  // Filtered and paginated bills - only search filter
   const filteredBills = bills.filter(bill => {
-    // Apply search filter
-    return searchQuery === '' || 
-      Object.values(bill).some(value => 
-        value && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      );
+    if (searchQuery === '') return true;
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      bill.invoice_no?.[0]?.toLowerCase().includes(searchLower) ||
+      bill.address_1?.[0]?.toLowerCase().includes(searchLower) ||
+      bill.mode_of_pay?.toLowerCase().includes(searchLower)
+    );
   });
-  
+
   const totalPages = Math.ceil(filteredBills.length / billsPerPage);
   const paginatedBills = filteredBills.slice((currentPage - 1) * billsPerPage, currentPage * billsPerPage);
 
-  // Handle page change
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  // Format date time for display
-  const formatDateTime = (dateTime) => {
-    if (!dateTime) return '-';
-    try {
-      const date = new Date(dateTime);
-      return date.toLocaleString();
-    } catch (e) {
-      return dateTime;
+  const calculateTotals = (bill) => {
+    if (!bill.bill_item || !Array.isArray(bill.bill_item)) {
+      return { amount: "0.00", gst: "0.00", igst: "0.00", grand_total: "0.00" };
     }
-  };
 
-  // Format currency with proper null checks
-  const formatCurrency = (value) => {
-    if (value === null || value === undefined || value === '' || isNaN(parseFloat(value))) return '₹0.00';
-    return `₹${parseFloat(value).toFixed(2)}`;
-  };
-
-  // Calculate total from bill_items if amount is null
-  const calculateTotalFromItems = (billItems) => {
-    if (!billItems || !Array.isArray(billItems)) return 0;
-    return billItems.reduce((total, item) => {
-      let itemTotal = 0;
-      let amount = 0;
-      let gstAmount = 0;
-      
-      if (Array.isArray(item)) {
-        // Check if item has total at index 4
-        if (item.length > 4) {
-          const storedTotal = parseFloat(item[4]);
-          if (!isNaN(storedTotal)) {
-            itemTotal = storedTotal;
-          } else {
-            // Calculate total if stored total is invalid
-            amount = parseFloat(item[2]) || 0;
-            const gstValue = parseFloat(item[3]) || 0;
-            
-            if (gstValue > 0 && gstValue <= 100) {
-              gstAmount = (amount * gstValue) / 100;
-            } else if (gstValue > 100) {
-              gstAmount = gstValue;
-            }
-            
-            itemTotal = amount + gstAmount;
-          }
-        } else if (item.length > 3) {
-          // Calculate total from amount and GST
-          amount = parseFloat(item[2]) || 0;
-          const gstValue = parseFloat(item[3]) || 0;
-          
-          if (gstValue > 0 && gstValue <= 100) {
-            gstAmount = (amount * gstValue) / 100;
-          } else if (gstValue > 100) {
-            gstAmount = gstValue;
-          }
-          
-          itemTotal = amount + gstAmount;
-        }
-      } else if (typeof item === 'object' && item !== null) {
-        // If item has total property, use it
-        const storedTotal = parseFloat(item.total) || parseFloat(item.Total);
-        if (!isNaN(storedTotal)) {
-          itemTotal = storedTotal;
-        } else {
-          // Calculate total from amount and GST
-          amount = parseFloat(item.amount) || parseFloat(item.Amount) || 0;
-          const gstValue = parseFloat(item.gst) || parseFloat(item.GST) || parseFloat(item.tax) || 0;
-          
-          if (gstValue > 0 && gstValue <= 100) {
-            gstAmount = (amount * gstValue) / 100;
-          } else if (gstValue > 100) {
-            gstAmount = gstValue;
-          }
-          
-          itemTotal = amount + gstAmount;
-        }
+    let totalAmount = 0, totalGST = 0, totalIGST = 0;
+    
+    bill.bill_item.forEach(item => {
+      if (Array.isArray(item) && item.length >= 10) {
+        // Format: [item_name, hsn, qty, rate, amount, gst%, gst_amount, igst%, igst_amount, unit]
+        totalAmount += parseFloat(item[4]) || 0;
+        totalGST += parseFloat(item[6]) || 0;
+        totalIGST += parseFloat(item[8]) || 0;
       }
-      
-      return total + itemTotal;
-    }, 0);
-  };
+    });
 
-  // Calculate GST percentage from bill_items
-  const calculateGSTPercentageFromItems = (billItems) => {
-    if (!billItems || !Array.isArray(billItems)) {
-      return 0;
-    }
-    
-    // Get unique GST percentage from items (assuming all items have same GST)
-    let gstPercentage = 0;
-    
-    for (let index = 0; index < billItems.length; index++) {
-      const item = billItems[index];
-      
-      if (Array.isArray(item)) {
-        // Check if index 3 contains GST (could be amount or percentage)
-        if (item.length > 3) {
-          const gstValue = parseFloat(item[3]) || 0;
-          // Determine if it's a percentage (typically 0-100) 
-          if (gstValue > 0 && gstValue <= 100) {
-            gstPercentage = gstValue;
-            break; // Use first valid GST percentage
-          }
-        }
-      } else if (typeof item === 'object' && item !== null) {
-        // Check if item has GST (could be amount or percentage)
-        const gstValue = parseFloat(item.gst) || parseFloat(item.GST) || parseFloat(item.tax) || 0;
-        // Determine if it's a percentage (typically 0-100) 
-        if (gstValue > 0 && gstValue <= 100) {
-          gstPercentage = gstValue;
-          break; // Use first valid GST percentage
-        }
-      }
-    }
-    
-    return gstPercentage;
-  };
+    const grandTotal = totalAmount + totalGST + totalIGST;
 
-  // Calculate GST from bill_items - Enhanced version with better logging
-  const calculateGSTFromItems = (billItems) => {
-    if (!billItems || !Array.isArray(billItems)) {
-      console.log("GST: No bill items or not an array");
-      return 0;
-    }
-    
-    console.log("GST: Processing bill items:", billItems);
-    
-    const totalGST = billItems.reduce((total, item, index) => {
-      let gstAmount = 0;
-      let amount = 0;
-      
-      if (Array.isArray(item)) {
-        // Get amount from index 2
-        if (item.length > 2) {
-          amount = parseFloat(item[2]) || 0;
-        }
-        
-        // Check if index 3 contains GST (could be amount or percentage)
-        if (item.length > 3) {
-          const gstValue = parseFloat(item[3]) || 0;
-          console.log(`GST Item ${index}: Array format, amount=${amount}, gstValue=${gstValue}`);
-          
-          // Determine if it's a percentage (typically 0-100) or amount
-          if (gstValue > 0 && gstValue <= 100) {
-            // It's a percentage, calculate GST amount
-            gstAmount = (amount * gstValue) / 100;
-            console.log(`GST Item ${index}: Calculated as percentage (${gstValue}%) = ${gstAmount}`);
-          } else if (gstValue > 100) {
-            // It's already an amount (greater than 100 implies rupees)
-            gstAmount = gstValue;
-            console.log(`GST Item ${index}: Treated as fixed amount = ${gstAmount}`);
-          } else {
-            console.log(`GST Item ${index}: Invalid GST value (${gstValue})`);
-          }
-        }
-      } else if (typeof item === 'object' && item !== null) {
-        // Get amount from object
-        amount = parseFloat(item.amount) || parseFloat(item.Amount) || 0;
-        
-        // Check if item has GST (could be amount or percentage)
-        const gstValue = parseFloat(item.gst) || parseFloat(item.GST) || parseFloat(item.tax) || 0;
-        console.log(`GST Item ${index}: Object format, amount=${amount}, gstValue=${gstValue}`);
-        
-        // Determine if it's a percentage (typically 0-100) or amount
-        if (gstValue > 0 && gstValue <= 100) {
-          // It's a percentage, calculate GST amount
-          gstAmount = (amount * gstValue) / 100;
-          console.log(`GST Item ${index}: Calculated as percentage (${gstValue}%) = ${gstAmount}`);
-        } else if (gstValue > 100) {
-          // It's already an amount
-          gstAmount = gstValue;
-          console.log(`GST Item ${index}: Treated as fixed amount = ${gstAmount}`);
-        } else {
-          console.log(`GST Item ${index}: Invalid GST value (${gstValue})`);
-        }
-      }
-      
-      return total + gstAmount;
-    }, 0);
-    
-    console.log(`GST: Total calculated GST = ${totalGST}`);
-    return totalGST;
-  };
-
-  // Calculate amount from bill_items (sum of all amounts without GST)
-  const calculateAmountFromItems = (billItems) => {
-    if (!billItems || !Array.isArray(billItems)) return 0;
-    
-    return billItems.reduce((total, item) => {
-      let amount = 0;
-      
-      if (Array.isArray(item)) {
-        // Extract amount directly from array (index 2)
-        if (item.length > 2) {
-          amount = parseFloat(item[2]) || 0;
-        }
-      } else if (typeof item === 'object' && item !== null) {
-        // Extract amount directly from object
-        amount = parseFloat(item.amount) || parseFloat(item.Amount) || 0;
-      }
-      
-      return total + amount;
-    }, 0);
-  };
-
-  // Format bill items for display in table
-  const formatBillItems = (billItems) => {
-    if (!billItems || !Array.isArray(billItems) || billItems.length === 0) {
-      return '-';
-    }
-    
-    // If only one item, display it
-    if (billItems.length === 1) {
-      const item = billItems[0];
-      if (Array.isArray(item)) {
-        return `${item[0] || 'N/A'} - ${item[1] || 'N/A'}`;
-      } else if (typeof item === 'object' && item !== null) {
-        return `${item.category || item.Category || 'N/A'} - ${item.description || item.Description || 'N/A'}`;
-      }
-      return 'N/A';
-    }
-    
-    // If multiple items, show first one with count
-    const firstItem = billItems[0];
-    if (Array.isArray(firstItem)) {
-      return `${firstItem[0] || 'N/A'} - ${firstItem[1] || 'N/A'} (+${billItems.length - 1} more)`;
-    } else if (typeof firstItem === 'object' && firstItem !== null) {
-      return `${firstItem.category || firstItem.Category || 'N/A'} - ${firstItem.description || firstItem.Description || 'N/A'} (+${billItems.length - 1} more)`;
-    }
-    return 'N/A';
-  };
-
-  // Get GST display value (percentage or amount)
-  const getGSTDisplayValue = (item) => {
-    let gstValue = 0;
-    
-    if (Array.isArray(item)) {
-      if (item.length > 3) {
-        gstValue = parseFloat(item[3]) || 0;
-      }
-    } else if (typeof item === 'object' && item !== null) {
-      gstValue = parseFloat(item.gst) || parseFloat(item.GST) || parseFloat(item.tax) || 0;
-    }
-    
-    // Return as percentage if it's a percentage value
-    if (gstValue > 0 && gstValue <= 100) {
-      return `${gstValue}%`;
-    } else if (gstValue > 100) {
-      return formatCurrency(gstValue);
-    }
-    
-    return '0%';
+    return {
+      amount: totalAmount.toFixed(2),
+      gst: totalGST.toFixed(2),
+      igst: totalIGST.toFixed(2),
+      grand_total: grandTotal.toFixed(2)
+    };
   };
 
   return (
     <div className="dashboard-container">
-      <StaffLeftNav
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        isMobile={isMobile}
-        isTablet={isTablet}
-      />
+      <StaffLeftNav sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} isMobile={isMobile} isTablet={isTablet} />
       <div className="main-content-dash">
         <StaffHeader toggleSidebar={toggleSidebar} />
-         <Container fluid className="dashboard-body dashboard-main-container">
-            <div className="mb-3">
-              <Button 
-                variant="outline-secondary" 
-                onClick={() => navigate('/StaffDashBoard')}
-                className="me-2"
-              >
-                <i className="bi bi-arrow-left me-2"></i> Back to Dashboard
-              </Button>
-            </div>
-          <Row className="justify-content-center mt-4">
-            <Col xs={12} lg={12}>
-              <Card className="shadow-lg border-0 rounded-4 p-3 animate__animated animate__fadeIn" style={{ backgroundColor: "#f8f9fa" }}>
-                <Card.Body>
-                  <div className="text-center mb-4">
-                    <h3 style={{ color: "#2b6777", fontWeight: 700, marginBottom: "0.5rem" }}>
-                      <i className="bi bi-receipt" style={{ marginRight: "10px" }}></i>
-                      All Bills
-                    </h3>
-                    <p style={{ color: "#6c757d", fontSize: "14px" }}>View all bills and their payment status.</p>
-                  </div>
-                  {loading && (
-                    <div className="text-center"><Spinner animation="border" variant="primary" /></div>
-                  )}
-                  {error && (
-                    <Alert variant="danger">{error}</Alert>
-                  )}
-                  {!loading && !error && (
+        <Container fluid className="dashboard-body dashboard-main-container">
+          <Row className="mt-4">
+            <Col xs={12}>
+              <div className="mb-4">
+                <h3 style={{ color: "#2b6777", fontWeight: 700 }}>
+                  <i className="bi bi-file-earmark-pdf me-2"></i>All Invoices
+                </h3>
+              </div>
+
+              {error && <Alert variant="danger" onClose={() => setError("")} dismissible>{error}</Alert>}
+
+              {loading ? (
+                <div className="text-center">
+                  <Spinner animation="border" variant="primary" />
+                  <p className="mt-3">Loading invoices...</p>
+                </div>
+              ) : (
+                <>
+                  <Card className="mb-4">
+                    <Card.Body>
+                      <input
+                        type="text"
+                        placeholder="Search by Invoice Number, Address, or Payment Mode..."
+                        value={searchQuery}
+                        onChange={handleSearch}
+                        className="form-control"
+                        style={{ borderColor: "#52ab98" }}
+                      />
+                    </Card.Body>
+                  </Card>
+
+                  {paginatedBills.length === 0 ? (
+                    <Alert variant="info">No invoices found.</Alert>
+                  ) : (
                     <>
-                      {/* Search Control */}
-                      <div className="d-flex justify-content-start mb-3">
-                        <div className="d-flex align-items-center">
-                          <label className="me-2 fw-semibold" htmlFor="bill-search">Search:</label>
-                          <Form.Control
-                            type="text"
-                            id="bill-search"
-                            placeholder="Search all fields..."
-                            value={searchQuery}
-                            onChange={handleSearch}
-                            style={{ width: '300px' }}
-                          />
-                        </div>
-                      </div>
-                      <div className="table-responsive">
-                        <Table responsive bordered hover className="rounded-4 shadow-sm">
-                          <thead className="table-thead">
-                            <tr>
-                              <th>#</th>
-                              <th>Bill ID</th>
-                              <th>Payment ID</th>
-                              <th>Customer Name</th>
-                              <th>Bill Items</th>
+                      <div className="table-responsive rounded-4 shadow-sm" style={{ background: "#fff", padding: "0.5rem" }}>
+                        <Table className="align-middle mb-0" style={{ minWidth: 700 }}>
+                          <thead className="table-thead" style={{ background: "#f1f5f9" }}>
+                            <tr style={{ fontWeight: 700, color: "#2b6777", fontSize: 15 }}>
+                              <th>Invoice No</th>
+                              <th>Address</th>
+                              <th>Inv. Date</th>
+                              <th>Payment Mode</th>
                               <th>Amount</th>
-                              <th>GST</th>
-                              <th>Total Payment</th>
-                              <th>Status</th>
-                              <th>Date</th>
-                              <th>View</th>
+                              <th>GST/IGST</th>
+                              <th>Grand Total</th>
+                              <th>Action</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {paginatedBills.length === 0 ? (
-                              <tr>
-                                <td colSpan={12} className="text-center">No bills found.</td>
-                              </tr>
-                            ) : (
-                              paginatedBills.map((bill, idx) => {
-                                // Calculate GST percentage from bill_items
-                                const calculatedGSTPercentage = calculateGSTPercentageFromItems(bill.bill_items);
-                                
-                                // Calculate amount from bill_items if null
-                                const calculatedAmount = bill.amount !== null && bill.amount !== undefined ? 
-                                  parseFloat(bill.amount) : 
-                                  calculateAmountFromItems(bill.bill_items);
-                                
-                                // Calculate total from bill_items if null
-                                const calculatedTotal = bill.total_payment !== null && bill.total_payment !== undefined ? 
-                                  parseFloat(bill.total_payment) : 
-                                  calculateTotalFromItems(bill.bill_items);
-                                
-                                // Enhanced debug logging
-                                console.log(`=== Bill ${bill.bill_id} ===`);
-                                console.log(`Raw bill.gst:`, bill.gst);
-                                console.log(`Calculated GST percentage from items:`, calculatedGSTPercentage);
-                                console.log(`Final GST value to display:`, calculatedGSTPercentage);
-                                console.log(`Bill items:`, bill.bill_items);
-                                console.log(`========================`);
-                                
-                                return (
-                                  <tr key={bill.id || idx}>
-                                    <td>{(currentPage - 1) * billsPerPage + idx + 1}</td>
-                                    <td>{bill.bill_id}</td>
-                                    <td>{bill.payment_id || '-'}</td>
-                                    <td>{bill.customer_name}</td>
-                                    <td 
-                                      onClick={() => bill.bill_items && bill.bill_items.length > 0 && handleViewItems(bill)}
-                                      style={{ 
-                                        maxWidth: '200px', 
-                                        overflow: 'hidden', 
-                                        textOverflow: 'ellipsis', 
-                                        whiteSpace: 'nowrap',
-                                        cursor: bill.bill_items && bill.bill_items.length > 0 ? 'pointer' : 'default',
-                                        color: bill.bill_items && bill.bill_items.length > 0 ? '#2b6777' : 'inherit',
-                                        textDecoration: bill.bill_items && bill.bill_items.length > 0 ? 'underline' : 'none'
+                            {paginatedBills.map((bill, index) => {
+                              const totals = calculateTotals(bill);
+                              const invoiceNo = bill.invoice_no?.join("-") || "N/A";
+                              const address = bill.address_1?.[0] || "N/A";
+                              const invDate = bill.dated_date ? new Date(bill.dated_date).toLocaleDateString() : "N/A";
+                              const paymentMode = bill.mode_of_pay || "N/A";
+
+                              return (
+                                <tr key={index} style={{ borderBottom: "1px solid #e5e7eb" }}>
+                                  <td style={{ fontWeight: 600, color: "#2b6777" }}>{invoiceNo}</td>
+                                  <td>{address}</td>
+                                  <td>{invDate}</td>
+                                  <td>
+                                    <span style={{
+                                      padding: "4px 12px",
+                                      borderRadius: 6,
+                                      fontSize: 13,
+                                      fontWeight: 600,
+                                      backgroundColor: "#dbeafe",
+                                      color: "#0369a1"
+                                    }}>
+                                      {paymentMode}
+                                    </span>
+                                  </td>
+                                  <td style={{ fontWeight: 600 }}>₹{totals.amount}</td>
+                                  <td>₹{parseFloat(totals.gst) + parseFloat(totals.igst)}</td>
+                                  <td style={{ fontWeight: 700, color: "#2b6777" }}>₹{totals.grand_total}</td>
+                                  <td>
+                                    <Button
+                                      variant="primary"
+                                      size="sm"
+                                      onClick={() => handleView(bill)}
+                                      style={{
+                                        backgroundColor: "#2b6777",
+                                        borderColor: "#2b6777",
+                                        borderRadius: 6,
+                                        fontWeight: 600,
+                                        fontSize: 12
                                       }}
                                     >
-                                      {formatBillItems(bill.bill_items)}
-                                    </td>
-                                    <td>{formatCurrency(calculatedAmount)}</td>
-                                    <td style={{ 
-                                      backgroundColor: '#f0f8ff',
-                                      fontWeight: calculatedGSTPercentage > 0 ? '600' : 'normal',
-                                      color: calculatedGSTPercentage > 0 ? '' : '#6c757d'
-                                    }}>
-                                      {calculatedGSTPercentage > 0 ? `${calculatedGSTPercentage}%` : '0%'}
-                                      {calculatedGSTPercentage > 0 && (
-                                        <OverlayTrigger
-                                          placement="top"
-                                          overlay={<Tooltip id={`gst-tooltip-${idx}`}>GST calculated from {bill.bill_items ? bill.bill_items.length : 0} items</Tooltip>}
-                                        >
-                                          <i className="bi bi-info-circle ms-1" style={{ cursor: 'pointer' }} />
-                                        </OverlayTrigger>
-                                      )}
-                                    </td>
-                                    <td>{formatCurrency(calculatedTotal)}</td>
-                                    <td>
-                                      <span style={{ fontWeight: 600, color: bill.status === 'Paid' ? '#52ab98' : bill.status === 'Unpaid' ? '#e53935' : '#2b6777' }}>
-                                        {bill.status || 'Pending'}
-                                      </span>
-                                    </td>
-                                    <td>{formatDateTime(bill.bill_date_time)}</td>
-                                    <td>
-                                      <Button variant="outline-primary" size="sm" onClick={() => handleView(bill)}>
-                                        <i className="bi bi-eye"></i> View
-                                      </Button>
-                                    </td>
-                                  </tr>
-                                );
-                              })
-                            )}
+                                      View Details
+                                    </Button>
+                                  </td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </Table>
                       </div>
+
                       {/* Pagination */}
-                      {totalPages > 1 && (
-                        <div className="d-flex justify-content-center align-items-center mt-3">
-                          <nav>
-                            <ul className="pagination mb-0">
-                              <li className={`page-item${currentPage === 1 ? ' disabled' : ''}`}>
-                                <button className="page-link" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>&laquo;</button>
-                              </li>
-                              {Array.from({ length: totalPages }, (_, i) => (
-                                <li key={i + 1} className={`page-item${currentPage === i + 1 ? ' active' : ''}`}>
-                                  <button className="page-link" onClick={() => handlePageChange(i + 1)}>{i + 1}</button>
-                                </li>
-                              ))}
-                              <li className={`page-item${currentPage === totalPages ? ' disabled' : ''}`}>
-                                <button className="page-link" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>&raquo;</button>
-                              </li>
-                            </ul>
-                          </nav>
-                        </div>
-                      )}
+                      <div className="d-flex justify-content-center align-items-center mt-3 gap-2">
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          disabled={currentPage === 1}
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          style={{ minWidth: 80 }}
+                        >
+                          Previous
+                        </Button>
+                        <span style={{ fontWeight: 600, fontSize: 15 }}>
+                          Page {currentPage} of {totalPages || 1}
+                        </span>
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          disabled={currentPage === totalPages || totalPages === 0}
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          style={{ minWidth: 80 }}
+                        >
+                          Next
+                        </Button>
+                      </div>
                     </>
                   )}
-                  {/* Modal for bill details */}
-                  <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
-                    <Modal.Header closeButton style={{ backgroundColor: '#2b6777', color: 'white' }}>
-                      <Modal.Title>
-                        <i className="bi bi-receipt me-2"></i>
-                        Bill Details
-                      </Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                       {selectedBill && (
-                        <div>
-                          <Row>
-                            <Col md={6}>
-                              <p><strong>Bill ID:</strong> {selectedBill.bill_id}</p>
-                              <p><strong>Payment ID:</strong> {selectedBill.payment_id || '-'}</p>
-                              <p><strong>Customer Name:</strong> {selectedBill.customer_name}</p>
-                              <p><strong>Customer Mobile:</strong> {selectedBill.cust_mobile || '-'}</p>
-                            </Col>
-                            <Col md={6}>
-                              <p><strong>Amount:</strong> {formatCurrency(
-                                calculateAmountFromItems(selectedBill.bill_items)
-                              )}</p>
-                              <p style={{ display: 'flex', alignItems: 'center' }}>
-                                <strong>GST:</strong> 
-                                <span style={{ 
-                                  marginLeft: '8px',
-                                  backgroundColor: '#f0f8ff',
-                                  padding: '2px 8px',
-                                  borderRadius: '4px',
-                                  fontWeight: calculateGSTPercentageFromItems(selectedBill.bill_items) > 0 ? '600' : 'normal',
-                                  color: calculateGSTPercentageFromItems(selectedBill.bill_items) > 0 ? '#2b6777' : '#6c757d'
-                                }}>
-                                  {calculateGSTPercentageFromItems(selectedBill.bill_items) > 0 ? 
-                                    `${calculateGSTPercentageFromItems(selectedBill.bill_items)}%` : '0%'}
-                                </span>
-                                {calculateGSTPercentageFromItems(selectedBill.bill_items) > 0 && (
-                                  <OverlayTrigger
-                                    placement="top"
-                                    overlay={<Tooltip>GST calculated from bill items</Tooltip>}
-                                  >
-                                    <i className="bi bi-info-circle ms-2" style={{ cursor: 'pointer', color: '#2b6777' }} />
-                                  </OverlayTrigger>
-                                )}
-                              </p>
-                              <p><strong>Total Payment:</strong> {formatCurrency(
-                                calculateTotalFromItems(selectedBill.bill_items)
-                              )}</p>
-                              <p><strong>Status:</strong> <span style={{ fontWeight: 600, color: selectedBill.status === 'Paid' ? '#52ab98' : selectedBill.status === 'Unpaid' ? '#e53935' : '#2b6777' }}>{selectedBill.status || 'Pending'}</span></p>
-                            </Col>
-                          </Row>
-                          
-                          {/* Bill Items */}
-                          {selectedBill.bill_items && selectedBill.bill_items.length > 0 && (
-                            <Row className="mt-4">
-                              <Col md={12}>
-                                <h5 style={{ color: "#2b6777", fontWeight: 600, marginBottom: "1rem" }}>
-                                  <i className="bi bi-list-check me-2"></i>Bill Items
-                                </h5>
-                                <Table responsive bordered size="sm" className="mb-3">
-                                  <thead className="table-thead">
-                                    <tr>
-                                      <th>#</th>
-                                      <th>Category</th>
-                                      <th>Description</th>
-                                      <th>Amount</th>
-                                      <th>GST</th>
-                                      <th>Total</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                     {selectedBill.bill_items.map((item, index) => {
-                                      // Extract values based on item structure
-                                      let category = '-';
-                                      let description = '-';
-                                      let amount = 0;
-                                      let gst = 0;
-                                      let total = 0;
-                                      let gstDisplay = '0%';
-                                      
-                                      if (Array.isArray(item)) {
-                                        category = item[0] || '-';
-                                        description = item[1] || '-';
-                                        amount = parseFloat(item[2]) || 0;
-                                        const gstValue = parseFloat(item[3]) || 0;
-                                        
-                                        // Determine if GST is percentage or amount
-                                        if (gstValue > 0 && gstValue <= 100) {
-                                          gst = (amount * gstValue) / 100;
-                                          gstDisplay = `${gstValue}%`;
-                                        } else if (gstValue > 100) {
-                                          gst = gstValue;
-                                          gstDisplay = formatCurrency(gstValue);
-                                        }
-                                        
-                                        total = parseFloat(item[4]) || (amount + gst);
-                                      } else if (typeof item === 'object' && item !== null) {
-                                        category = item.category || item.Category || '-';
-                                        description = item.description || item.Description || '-';
-                                        amount = parseFloat(item.amount) || parseFloat(item.Amount) || 0;
-                                        const gstValue = parseFloat(item.gst) || parseFloat(item.GST) || 0;
-                                        
-                                        // Determine if GST is percentage or amount
-                                        if (gstValue > 0 && gstValue <= 100) {
-                                          gst = (amount * gstValue) / 100;
-                                          gstDisplay = `${gstValue}%`;
-                                        } else if (gstValue > 100) {
-                                          gst = gstValue;
-                                          gstDisplay = formatCurrency(gstValue);
-                                        }
-                                        
-                                        total = parseFloat(item.total) || parseFloat(item.Total) || (amount + gst);
-                                      }
-                                      
-                                      return (
-                                        <tr key={index}>
-                                          <td>{index + 1}</td>
-                                          <td>{category}</td>
-                                          <td>{description}</td>
-                                          <td>{formatCurrency(amount)}</td>
-                                          <td>
-                                            <span style={{ 
-                                              backgroundColor: '#f0f8ff',
-                                              padding: '2px 6px',
-                                              borderRadius: '4px',
-                                              fontSize: '0.9em'
-                                            }}>
-                                              {gstDisplay}
-                                            </span>
-                                          </td>
-                                          <td>{formatCurrency(total)}</td>
-                                        </tr>
-                                        
-                                      );
-                                    })}
-                                    <tr style={{ backgroundColor: '#f8f9fa', fontWeight: 600 }}>
-                                      <td colSpan={3} className="text-end">Subtotal:</td>
-                                      <td>{formatCurrency(
-                                        calculateAmountFromItems(selectedBill.bill_items)
-                                      )}</td>
-                                      <td>{calculateGSTPercentageFromItems(selectedBill.bill_items) > 0 ? `${calculateGSTPercentageFromItems(selectedBill.bill_items)}%` : '0%'}</td>
-                                      <td>{formatCurrency(
-                                        calculateTotalFromItems(selectedBill.bill_items)
-                                      )}</td>
-                                    </tr>
-                                  </tbody>
-                                </Table>
-                              </Col>
-                            </Row>
-                          )}
-
-                          <Row>
-                            <Col md={12}>
-                              <p><strong>Bill Date & Time:</strong> {formatDateTime(selectedBill.bill_date_time)}</p>
-                              {selectedBill.bill_pdf && (
-                                <div className="mt-3">
-                                  <Button 
-                                    variant="primary" 
-                                    href={
-                                      selectedBill.bill_pdf.startsWith("http")
-                                        ? selectedBill.bill_pdf
-                                        : `https://mahadevaaya.com/spindo/spindobackend${selectedBill.bill_pdf}`
-                                    }
-                                    target="_blank"
-                                  >
-                                    <i className="bi bi-file-earmark-pdf"></i> View Bill PDF
-                                  </Button>
-                                </div>
-                              )}
-                            </Col>
-                          </Row>
-                        </div>
-                      )}
-                    </Modal.Body>
-                    <Modal.Footer>
-                      <Button variant="secondary" onClick={handleCloseModal}>
-                        <i className="bi bi-x-circle me-2"></i>
-                        Close
-                      </Button>
-                    </Modal.Footer>
-                  </Modal>
-
-                  {/* Modal for bill items only */}
-                  <Modal show={showItemsModal} onHide={handleCloseItemsModal} centered size="lg">
-                    <Modal.Header closeButton style={{ backgroundColor: '#52ab98', color: 'white' }}>
-                      <Modal.Title>
-                        <i className="bi bi-list-check me-2"></i>
-                        Bill Items - {selectedBillItems?.bill_id}
-                      </Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                      {selectedBillItems && (
-                        <div>
-                          <Row className="mb-3">
-                            <Col md={12}>
-                              <p><strong>Customer Name:</strong> {selectedBillItems.customer_name}</p>
-                              <p><strong>Bill Date:</strong> {formatDateTime(selectedBillItems.bill_date_time)}</p>
-                            </Col>
-                          </Row>
-                          {selectedBillItems.bill_items && selectedBillItems.bill_items.length > 0 ? (
-                            <Table responsive bordered hover>
-                              <thead className="table-thead">
-                                <tr>
-                                  <th>#</th>
-                                  <th>Category</th>
-                                  <th>Description</th>
-                                  <th>Amount</th>
-                                  <th>GST</th>
-                                  <th>Total</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                 {selectedBillItems.bill_items.map((item, index) => {
-                                  // Extract values based on item structure
-                                  let category = '-';
-                                  let description = '-';
-                                  let amount = 0;
-                                  let gst = 0;
-                                  let total = 0;
-                                  let gstDisplay = '0%';
-                                  
-                                  if (Array.isArray(item)) {
-                                    category = item[0] || '-';
-                                    description = item[1] || '-';
-                                    amount = parseFloat(item[2]) || 0;
-                                    const gstValue = parseFloat(item[3]) || 0;
-                                    
-                                    // Determine if GST is percentage or amount
-                                    if (gstValue > 0 && gstValue <= 100) {
-                                      gst = (amount * gstValue) / 100;
-                                      gstDisplay = `${gstValue}%`;
-                                    } else if (gstValue > 100) {
-                                      gst = gstValue;
-                                      gstDisplay = formatCurrency(gstValue);
-                                    }
-                                    
-                                    total = parseFloat(item[4]) || (amount + gst);
-                                  } else if (typeof item === 'object' && item !== null) {
-                                    category = item.category || item.Category || '-';
-                                    description = item.description || item.Description || '-';
-                                    amount = parseFloat(item.amount) || parseFloat(item.Amount) || 0;
-                                    const gstValue = parseFloat(item.gst) || parseFloat(item.GST) || 0;
-                                    
-                                    // Determine if GST is percentage or amount
-                                    if (gstValue > 0 && gstValue <= 100) {
-                                      gst = (amount * gstValue) / 100;
-                                      gstDisplay = `${gstValue}%`;
-                                    } else if (gstValue > 100) {
-                                      gst = gstValue;
-                                      gstDisplay = formatCurrency(gstValue);
-                                    }
-                                    
-                                    total = parseFloat(item.total) || parseFloat(item.Total) || (amount + gst);
-                                  }
-                                  
-                                  return (
-                                    <tr key={index}>
-                                      <td>{index + 1}</td>
-                                      <td>{category}</td>
-                                      <td>{description}</td>
-                                      <td>{formatCurrency(amount)}</td>
-                                      <td>
-                                        <span style={{ 
-                                          backgroundColor: '#f0f8ff',
-                                          padding: '2px 6px',
-                                          borderRadius: '4px',
-                                          fontSize: '0.9em'
-                                        }}>
-                                          {gstDisplay}
-                                        </span>
-                                      </td>
-                                      <td style={{ fontWeight: 600 }}>{formatCurrency(total)}</td>
-                                    </tr>
-                                  );
-                                })}
-                                <tr style={{ backgroundColor: '#f8f9fa', fontWeight: 600 }}>
-                                  <td colSpan={3} className="text-end">Total:</td>
-                                  <td>{formatCurrency(
-                                    calculateAmountFromItems(selectedBillItems.bill_items)
-                                  )}</td>
-                                  <td>{calculateGSTPercentageFromItems(selectedBillItems.bill_items) > 0 ? `${calculateGSTPercentageFromItems(selectedBillItems.bill_items)}%` : '0%'}</td>
-                                  <td>{formatCurrency(
-                                    calculateTotalFromItems(selectedBillItems.bill_items)
-                                  )}</td>
-                                </tr>
-                              </tbody>
-                            </Table>
-                          ) : (
-                            <Alert variant="info">
-                              <i className="bi bi-info-circle me-2"></i>
-                              No bill items found for this bill.
-                            </Alert>
-                          )}
-                        </div>
-                      )}
-                    </Modal.Body>
-                    <Modal.Footer>
-                      <Button variant="secondary" onClick={handleCloseItemsModal}>
-                        <i className="bi bi-x-circle me-2"></i>
-                        Close
-                      </Button>
-                    </Modal.Footer>
-                  </Modal>
-                </Card.Body>
-              </Card>
+                </>
+              )}
             </Col>
           </Row>
+
+          {/* Result Modal */}
+          <Modal show={showResultModal} onHide={() => setShowResultModal(false)} centered>
+            <Modal.Header closeButton>
+              <Modal.Title>
+                {resultType === "success" ? (
+                  <span style={{ color: "#28a745" }}>
+                    <i className="bi bi-check-circle me-2"></i>Success
+                  </span>
+                ) : (
+                  <span style={{ color: "#dc3545" }}>
+                    <i className="bi bi-exclamation-circle me-2"></i>Error
+                  </span>
+                )}
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <div style={{ padding: "20px 0", textAlign: "center" }}>
+                {resultType === "success" ? (
+                  <div>
+                    <div style={{ fontSize: "48px", color: "#28a745", marginBottom: "15px" }}>
+                      <i className="bi bi-check-circle"></i>
+                    </div>
+                    <p style={{ fontSize: "16px", color: "#333" }}>
+                      {resultMessage}
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ fontSize: "48px", color: "#dc3545", marginBottom: "15px" }}>
+                      <i className="bi bi-exclamation-circle"></i>
+                    </div>
+                    <p style={{ fontSize: "16px", color: "#333" }}>
+                      {resultMessage}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant={resultType === "success" ? "success" : "danger"}
+                onClick={() => setShowResultModal(false)}
+              >
+                {resultType === "success" ? "Continue" : "Close"}
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
+          {/* Invoice Details Modal */}
+          <Modal show={showModal} onHide={handleCloseModal} size="xl" centered>
+            <Modal.Header closeButton>
+              <Modal.Title style={{ color: "#ffffff", fontWeight: 700 }}>Invoice Details</Modal.Title>
+            </Modal.Header>
+            <Modal.Body style={{ maxHeight: "70vh", overflowY: "auto" }}>
+              {loadingDetails ? (
+                <div className="text-center py-5">
+                  <Spinner animation="border" variant="primary" />
+                  <p className="mt-3">Loading invoice details...</p>
+                </div>
+              ) : (
+                selectedBill && (
+                  <div style={{ backgroundColor: "#fff", padding: "20px", border: "1px solid #ddd", borderRadius: "8px" }}>
+                    {/* Bill PDF View */}
+                    {billPdf && (
+                      <div className="mb-4" style={{ backgroundColor: "#f8f9fa", padding: "15px", borderRadius: "8px", border: "1px solid #dee2e6" }}>
+                        <h6 style={{ color: "#2b6777", fontWeight: 700, marginBottom: "10px" }}>
+                          <i className="bi bi-file-pdf me-2"></i>Bill PDF
+                        </h6>
+                        <iframe
+                          src={billPdf}
+                          title="Bill PDF"
+                          width="100%"
+                          height="300px"
+                          style={{ border: "1px solid #dee2e6", borderRadius: "4px" }}
+                        />
+                        <a href={billPdf} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-primary mt-2">
+                          <i className="bi bi-download me-1"></i>Download PDF
+                        </a>
+                      </div>
+                    )}
+
+                     {/* Seller Address & Invoice Info */}
+                    <Row className="mb-4">
+                      <Col md={6}>
+                        <Card style={{ backgroundColor: "#f0f9ff", border: "1px solid #2b6777" }}>
+                          <Card.Body>
+                            <h6 style={{ color: "#2b6777", fontWeight: 700, marginBottom: "10px" }}>
+                              <i className="bi bi-geo-alt me-2"></i>Seller Address
+                            </h6>
+                            <p style={{ fontSize: "13px", marginBottom: "5px" }}><strong>Name:</strong> {selectedBill.address_1?.[0] || "N/A"}</p>
+                            <p style={{ fontSize: "13px", marginBottom: "5px" }}><strong>Address:</strong> {Array.isArray(selectedBill.address_1?.[1]) ? selectedBill.address_1[1].join(", ") : selectedBill.address_1?.[1] || "N/A"}</p>
+                            <p style={{ fontSize: "13px", marginBottom: "5px" }}><strong>GSTIN:</strong> {selectedBill.address_1?.[2] || "N/A"}</p>
+                            <p style={{ fontSize: "13px", marginBottom: "5px" }}><strong>Phone:</strong> {Array.isArray(selectedBill.address_1?.[3]) ? selectedBill.address_1[3].join(", ") : selectedBill.address_1?.[3] || "N/A"}</p>
+                            <p style={{ fontSize: "13px" }}><strong>Email:</strong> {selectedBill.address_1?.[4] || "N/A"}</p>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                      <Col md={6}>
+                        <Card style={{ backgroundColor: "#f0f9ff", border: "1px solid #2b6777" }}>
+                          <Card.Body>
+                            <h6 style={{ color: "#2b6777", fontWeight: 700, marginBottom: "10px" }}>
+                              <i className="bi bi-file-text me-2"></i>Invoice Information
+                            </h6>
+                            <p style={{ fontSize: "13px", marginBottom: "5px" }}><strong>Invoice No:</strong> {selectedBill.invoice_no?.join("-") || "N/A"}</p>
+                            <p style={{ fontSize: "13px", marginBottom: "5px" }}><strong>Invoice Date:</strong> {selectedBill.dated_date ? new Date(selectedBill.dated_date).toLocaleDateString() : "N/A"}</p>
+                            <p style={{ fontSize: "13px" }}><strong>Payment Mode:</strong> {selectedBill.mode_of_pay || "N/A"}</p>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    </Row>
+                    
+                    {/* Ship To Address */}
+                    <Row className="mb-4">
+                      <Col md={6}>
+                        <Card style={{ backgroundColor: "#fff5e6", border: "1px solid #ffa500" }}>
+                          <Card.Body>
+                            <h6 style={{ color: "#ff8c00", fontWeight: 700, marginBottom: "10px" }}>
+                              <i className="bi bi-truck me-2"></i>Ship To Address
+                            </h6>
+                            <p style={{ fontSize: "13px", marginBottom: "5px" }}><strong>Name:</strong> {selectedBill.address_2?.[0] || "N/A"}</p>
+                            <p style={{ fontSize: "13px", marginBottom: "5px" }}><strong>Address:</strong> {Array.isArray(selectedBill.address_2?.[1]) ? selectedBill.address_2[1].join(", ") : selectedBill.address_2?.[1] || "N/A"}</p>
+                            <p style={{ fontSize: "13px", marginBottom: "5px" }}><strong>GSTIN:</strong> {selectedBill.address_2?.[2] || "N/A"}</p>
+                            <p style={{ fontSize: "13px", marginBottom: "5px" }}><strong>State:</strong> {selectedBill.address_2?.[3] || "N/A"}</p>
+                            <p style={{ fontSize: "13px" }}><strong>State Code:</strong> {selectedBill.address_2?.[4] || "N/A"}</p>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                      
+                      {/* Bill To Address */}
+                      <Col md={6}>
+                        <Card style={{ backgroundColor: "#e6f3ff", border: "1px solid #0369a1" }}>
+                          <Card.Body>
+                            <h6 style={{ color: "#0369a1", fontWeight: 700, marginBottom: "10px" }}>
+                              <i className="bi bi-building me-2"></i>Bill To Address
+                            </h6>
+                            <p style={{ fontSize: "13px", marginBottom: "5px" }}><strong>Name:</strong> {selectedBill.address_3?.[0] || "N/A"}</p>
+                            <p style={{ fontSize: "13px", marginBottom: "5px" }}><strong>Address:</strong> {Array.isArray(selectedBill.address_3?.[1]) ? selectedBill.address_3[1].join(", ") : selectedBill.address_3?.[1] || "N/A"}</p>
+                            <p style={{ fontSize: "13px", marginBottom: "5px" }}><strong>GSTIN:</strong> {selectedBill.address_3?.[2] || "N/A"}</p>
+                            <p style={{ fontSize: "13px", marginBottom: "5px" }}><strong>State:</strong> {selectedBill.address_3?.[3] || "N/A"}</p>
+                            <p style={{ fontSize: "13px" }}><strong>State Code:</strong> {selectedBill.address_3?.[4] || "N/A"}</p>
+                          </Card.Body>
+                        </Card>
+                       </Col>
+                     </Row>
+
+                    {/* Additional Details */}
+                    <Row className="mb-4">
+                      <Col md={6}>
+                        <Card style={{ backgroundColor: "#fff5e6", border: "1px solid #ffa500" }}>
+                          <Card.Body>
+                            <h6 style={{ color: "#ff8c00", fontWeight: 700, marginBottom: "10px" }}>
+                              <i className="bi bi-truck me-2"></i>Delivery Information
+                            </h6>
+                            <p style={{ fontSize: "13px", marginBottom: "5px" }}><strong>Delivery Note:</strong> {selectedBill.delv_note || "N/A"}</p>
+                            <p style={{ fontSize: "13px", marginBottom: "5px" }}><strong>Delivery Date:</strong> {selectedBill.del_note_date ? new Date(selectedBill.del_note_date).toLocaleDateString() : "N/A"}</p>
+                            <p style={{ fontSize: "13px" }}><strong>Dispatch Doc No:</strong> {selectedBill.dispatch_doc_no || "N/A"}</p>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                      <Col md={6}>
+                        <Card style={{ backgroundColor: "#e6f3ff", border: "1px solid #0369a1" }}>
+                          <Card.Body>
+                            <h6 style={{ color: "#0369a1", fontWeight: 700, marginBottom: "10px" }}>
+                              <i className="bi bi-receipt me-2"></i>Reference Information
+                            </h6>
+                            <p style={{ fontSize: "13px", marginBottom: "5px" }}><strong>Ref No Date:</strong> {selectedBill.ref_no_date ? new Date(selectedBill.ref_no_date).toLocaleDateString() : "N/A"}</p>
+                            <p style={{ fontSize: "13px", marginBottom: "5px" }}><strong>Buyer's Order No:</strong> {selectedBill.buyer_ord_no || "N/A"}</p>
+                            <p style={{ fontSize: "13px" }}><strong>Other Reference:</strong> {selectedBill.other_ref || "N/A"}</p>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    </Row>
+
+                    {/* Line Items */}
+                    <h6 style={{ color: "#2b6777", fontWeight: 700, marginTop: "20px", marginBottom: "15px" }}>
+                      <i className="bi bi-list-check me-2"></i>Line Items
+                    </h6>
+                    <div className="table-responsive mb-4">
+                      <Table bordered size="sm">
+                        <thead style={{ backgroundColor: "#e8f4f8" }}>
+                          <tr style={{ fontWeight: 700, color: "#2b6777" }}>
+                            <th>Item Name</th>
+                            <th>HSN</th>
+                            <th>Qty</th>
+                            <th>Rate</th>
+                            <th>Amount</th>
+                            <th>GST %</th>
+                            <th>GST Amt</th>
+                            <th>IGST %</th>
+                            <th>IGST Amt</th>
+                            <th>Unit</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedBill.bill_item && Array.isArray(selectedBill.bill_item) ? (
+                            selectedBill.bill_item.map((item, idx) => (
+                              <tr key={idx} style={{ fontSize: "13px" }}>
+                                <td>{Array.isArray(item) ? item[0] : item.item_name}</td>
+                                <td>{Array.isArray(item) ? item[1] : item.hsn}</td>
+                                <td>{Array.isArray(item) ? item[2] : item.qty}</td>
+                                <td>₹{Array.isArray(item) ? item[3] : item.rate}</td>
+                                <td>₹{Array.isArray(item) ? item[4] : item.amount}</td>
+                                <td>{Array.isArray(item) ? item[5] : item.gst_percentage}%</td>
+                                <td>₹{Array.isArray(item) ? item[6] : item.gst_amount}</td>
+                                <td>{Array.isArray(item) ? item[7] : item.igst_percentage}%</td>
+                                <td>₹{Array.isArray(item) ? item[8] : item.igst_amount}</td>
+                                <td>{Array.isArray(item) ? item[9] : item.unit}</td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr><td colSpan="10" className="text-center">No items</td></tr>
+                          )}
+                        </tbody>
+                      </Table>
+                    </div>
+
+                    {/* Totals */}
+                    {(() => {
+                      const totals = calculateTotals(selectedBill);
+                      return (
+                        <Row className="mb-4">
+                          <Col md={{ span: 6, offset: 6 }}>
+                            <Card style={{ backgroundColor: "#e8f4f8", border: "2px solid #2b6777" }}>
+                              <Card.Body>
+                                <Row className="mb-2">
+                                  <Col xs={8}><strong>Subtotal:</strong></Col>
+                                  <Col xs={4} className="text-end">₹{totals.amount}</Col>
+                                </Row>
+                                <Row className="mb-2">
+                                  <Col xs={8}><strong>SGST/CGST:</strong></Col>
+                                  <Col xs={4} className="text-end">₹{totals.gst}</Col>
+                                </Row>
+                                <Row className="mb-2">
+                                  <Col xs={8}><strong>IGST:</strong></Col>
+                                  <Col xs={4} className="text-end">₹{totals.igst}</Col>
+                                </Row>
+                                <Row style={{ borderTop: "2px solid #2b6777", paddingTop: "10px" }}>
+                                  <Col xs={8}><strong style={{ fontSize: "16px" }}>Grand Total:</strong></Col>
+                                  <Col xs={4} className="text-end" style={{ fontSize: "16px", fontWeight: "bold", color: "#2b6777" }}>₹{totals.grand_total}</Col>
+                                </Row>
+                              </Card.Body>
+                            </Card>
+                          </Col>
+                        </Row>
+                      );
+                    })()}
+
+                    {/* Bank Details */}
+                    {selectedBill.bank_detail && selectedBill.bank_detail.length > 0 && (
+                      <>
+                        <h6 style={{ color: "#2b6777", fontWeight: 700, marginTop: "20px", marginBottom: "15px" }}>
+                          <i className="bi bi-bank me-2"></i>Bank Details
+                        </h6>
+                        <div style={{ backgroundColor: "#f8f9fa", padding: "15px", borderRadius: "6px", marginBottom: "20px", border: "1px solid #dee2e6" }}>
+                          {selectedBill.bank_detail.map((detail, idx) => (
+                            <p key={idx} style={{ margin: "8px 0", fontSize: "13px" }}>{detail}</p>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {/* Amount in Words & Signature */}
+                    <Row>
+                      <Col md={6}>
+                        <Card style={{ backgroundColor: "#f0f9ff", border: "1px solid #2b6777" }}>
+                          <Card.Body>
+                            <h6 style={{ color: "#2b6777", fontWeight: 700, marginBottom: "10px" }}>
+                              <i className="bi bi-type me-2"></i>Amount in Words
+                            </h6>
+                            <p style={{ fontSize: "13px" }}>{selectedBill.amount_in_words || "N/A"}</p>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                      <Col md={6}>
+                        <Card style={{ backgroundColor: "#f0f9ff", border: "1px solid #2b6777" }}>
+                          <Card.Body>
+                            <h6 style={{ color: "#2b6777", fontWeight: 700, marginBottom: "10px" }}>
+                              <i className="bi bi-pen me-2"></i>Authorized Signatory
+                            </h6>
+                            <p style={{ fontSize: "13px" }}>{selectedBill.authorized_name || "N/A"}</p>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                     </Row>
+                    </div>
+                  )
+              )}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={handleCloseModal}>
+                Close
+              </Button>
+            </Modal.Footer>
+          </Modal>
         </Container>
       </div>
     </div>
