@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Button, Spinner, Alert } from "react-bootstrap";
 import "../../assets/css/admindashboard.css";
@@ -261,7 +260,7 @@ const VendorDashBoard = () => {
               <div className="mb-3">
                   <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Requests</h6>
                   <Row className="g-2 mb-2" style={{ margin: 0 }}>
-                    <Col xs={12} sm={6} md={6} lg={3}>
+                    <Col xs={3} sm={6} md={6} lg={3}>
                       <Link to="/VendorRequests" state={{ filter: 'Completed' }} style={{ textDecoration: 'none' }}>
                         <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                           <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -274,7 +273,7 @@ const VendorDashBoard = () => {
                         </Card>
                       </Link>
                     </Col>
-                    <Col xs={12} sm={6} md={6} lg={3}>
+                    <Col xs={3} sm={6} md={6} lg={3}>
                       <Link to="/VendorRequests" state={{ filter: 'Pending' }} style={{ textDecoration: 'none' }}>
                         <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                           <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -287,7 +286,7 @@ const VendorDashBoard = () => {
                         </Card>
                       </Link>
                     </Col>
-                    <Col xs={12} sm={6} md={6} lg={3}>
+                    <Col xs={3} sm={6} md={6} lg={3}>
                       <Link to="/VendorRequests" state={{ filter: 'Assigned' }} style={{ textDecoration: 'none' }}>
                         <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                           <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -300,7 +299,7 @@ const VendorDashBoard = () => {
                         </Card>
                       </Link>
                     </Col>
-                    <Col xs={12} sm={6} md={6} lg={3}>
+                    <Col xs={3} sm={6} md={6} lg={3}>
                       <Link to="/VendorRequests" state={{ filter: 'Cancelled' }} style={{ textDecoration: 'none' }}>
                         <Card className="stat-card text-center animate__animated animate__fadeIn border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                           <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -329,7 +328,7 @@ const VendorDashBoard = () => {
               <div className="mb-3">
                 <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Bills</h6>
                 <Row className="g-2 mb-2" style={{ margin: 0 }}>
-                  <Col xs={12} sm={6} md={4}>
+                  <Col xs={4} sm={6} md={4}>
                     <Link to="/VendorAllBills" state={{ filter: 'Paid' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -342,7 +341,7 @@ const VendorDashBoard = () => {
                       </Card>
                     </Link>
                   </Col>
-                  <Col xs={12} sm={6} md={4}>
+                  <Col xs={4} sm={6} md={4}>
                     <Link to="/VendorAllBills" state={{ filter: 'Unpaid' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -355,7 +354,7 @@ const VendorDashBoard = () => {
                       </Card>
                     </Link>
                   </Col>
-                  <Col xs={12} sm={6} md={4}>
+                  <Col xs={4} sm={6} md={4}>
                     <Link to="/VendorAllBills" style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -374,7 +373,7 @@ const VendorDashBoard = () => {
               <div>
                 <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Queries</h6>
                 <Row className="g-2" style={{ margin: 0 }}>
-                  <Col xs={12} sm={6} md={4}>
+                  <Col xs={4} sm={6} md={4}>
                     <Link to="/VendorAllQueries" state={{ filter: 'Approved' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -387,7 +386,7 @@ const VendorDashBoard = () => {
                       </Card>
                     </Link>
                   </Col>
-                  <Col xs={12} sm={6} md={4}>
+                  <Col xs={4} sm={6} md={4}>
                     <Link to="/VendorAllQueries" state={{ filter: 'Pending' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -400,7 +399,7 @@ const VendorDashBoard = () => {
                       </Card>
                     </Link>
                   </Col>
-                  <Col xs={12} sm={6} md={4}>
+                  <Col xs={4} sm={6} md={4}>
                     <Link to="/VendorAllQueries" state={{ filter: 'Rejected' }} style={{ textDecoration: 'none' }}>
                       <Card className="stat-card text-center border-0" style={{ cursor: 'pointer', minHeight: 95, padding: '10px 8px' }}>
                         <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1">
@@ -417,9 +416,6 @@ const VendorDashBoard = () => {
               </div>
             </Col>
           </Row>
-
-          {/* Quick Actions - Mobile & Tablet Only (below Profile) */}
-          {/* Removed: Quick Actions from below profile for mobile/tablet, now shown below profile for all devices */}
 
           {/* Recent Activity & Quick Actions */}
           <Row className="mt-2 g-2" style={{ margin: 0 }}>
@@ -454,7 +450,6 @@ const VendorDashBoard = () => {
                 </Card.Body>
               </Card>
             </Col>
-            {/* Removed duplicate Quick Actions card from desktop view */}
           </Row>
         </Container>
       </div>

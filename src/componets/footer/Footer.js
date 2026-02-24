@@ -132,28 +132,28 @@ const Footer = () => {
               <Nav.Link 
                 as="button" 
                 onClick={() => handleNavigation("/")} 
-                className="footer-nav-link p-0 mb-2 text-start"
+                className="footer-nav-link p-2 mb-2"
               >
                 Home
               </Nav.Link>
               <Nav.Link 
                 as="button" 
                 onClick={() => handleNavigation("/AboutUs")} 
-                className="footer-nav-link p-0 mb-2 text-start"
+                className="footer-nav-link p-2 mb-2"
               >
                 About Us
               </Nav.Link>
               <Nav.Link 
                 as="button" 
                 onClick={() => handleNavigation("/ServicesPage")} 
-                className="footer-nav-link p-0 mb-2 text-start"
+                className="footer-nav-link p-2 mb-2"
               >
                 Services
               </Nav.Link>
               <Nav.Link 
                 as="button" 
                 onClick={() => handleNavigation("/ContactUs")} 
-                className="footer-nav-link p-0 mb-2 text-start"
+                className="footer-nav-link p-2 mb-2"
               >
                 Contact
               </Nav.Link>
@@ -162,26 +162,26 @@ const Footer = () => {
           
           {/* Contact Info Column */}
           <Col lg={4} md={12} className="mb-4 mb-lg-0">
-            <h5 className="footer-heading mb-3">Contact Info</h5>
+            <h5 className=" mb-3">Contact Info</h5>
             <div className="footer-contact">
               {companyDetails?.phone && (
-                <p className="mb-2">
+                <p className="mb-3">
                   <i className="bi bi-telephone-fill me-2"></i>
-                  <Link to = {`tel:+91${companyDetails.phone}`} className="footer-contact-link">
+                  <Link to={`tel:+91${companyDetails.phone}`} className="footer-contact-link">
                     +91 {companyDetails.phone}
                   </Link>
                 </p>
               )}
               {companyDetails?.email && (
-                <p className="mb-2">
+                <p className="mb-3">
                   <i className="bi bi-envelope-fill me-2"></i>
-                  <Link to = {`mailto:${companyDetails.email}`} className="footer-contact-link">
+                  <Link to={`mailto:${companyDetails.email}`} className="footer-contact-link">
                     {companyDetails.email}
                   </Link>
                 </p>
               )}
               {companyDetails?.address && (
-                <p className="mb-2">
+                <p className="mb-3">
                   <i className="bi bi-geo-alt-fill me-2"></i>
                   {companyDetails.address}
                 </p>
