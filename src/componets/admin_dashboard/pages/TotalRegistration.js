@@ -151,6 +151,7 @@ const TotalRegistration = () => {
     is_active: true,
     can_aadharcard: null,
     staff_image: null,
+    password: "",
   });
 
   // ================= FETCH =================
@@ -231,6 +232,7 @@ const TotalRegistration = () => {
         data.append("email_id", formData.email_id);
         data.append("address", formData.address);
         data.append("is_active", formData.is_active ? 1 : 0);
+        data.append("password", formData.password);
 
         if (formData.can_aadharcard) {
           data.append("can_aadharcard", formData.can_aadharcard);
@@ -304,6 +306,7 @@ const TotalRegistration = () => {
       is_active: Number(staff.is_active) === 1, // Convert to number first, then check
       can_aadharcard: null, // Reset file input
       staff_image: null, // Reset file input
+      password: "",
     });
 
     setShowModal(true);
@@ -323,6 +326,7 @@ const TotalRegistration = () => {
       is_active: true,
       can_aadharcard: null,
       staff_image: null,
+      password: "",
     });
   };
 
@@ -669,6 +673,19 @@ const TotalRegistration = () => {
                       className="mb-3"
                       style={{ borderRadius: 8, fontSize: 15 }}
                     />
+
+                    {!editingId && (
+                      <Form.Control
+                        type="password"
+                        name="password"
+                        placeholder="Password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        className="mb-3"
+                        required
+                        style={{ borderRadius: 8, fontSize: 15 }}
+                      />
+                    )}
 
                     <Form.Check
                       type="checkbox"

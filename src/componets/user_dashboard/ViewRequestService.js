@@ -409,7 +409,7 @@ const ViewRequestService = () => {
                                           setCancelRequestId(req.request_id);
                                             if (Array.isArray(req.assignments)) {
                                               const options = req.assignments
-                                                .filter(a => Array.isArray(a) && a[1] && a[2] && (a[3]?.toLowerCase() !== "cancelled"))
+                                                .filter(a => Array.isArray(a) && a[1] && a[2] && (a[3]?.toLowerCase() === "assigned"))
                                                 .map(a => ({ vendorId: a[1], vendorName: a[2], services: a[0] }));
                                               setCancelVendorOptions(options);
                                             } else {

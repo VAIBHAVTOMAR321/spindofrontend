@@ -602,6 +602,7 @@ const AllQueries = ({ showCardOnly = false }) => {
                             <th>Vendor Name</th>
                             <th>Title</th>
                             <th>Description</th>
+                            <th>Remark</th>
                             <th>Image</th>
                             <th>Status</th>
                             <th>Created</th>
@@ -616,6 +617,7 @@ const AllQueries = ({ showCardOnly = false }) => {
                                 <td>{query.username || '--'}</td>
                                 <td>{query.title || '--'}</td>
                                 <td style={{ maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{query.issue || '--'}</td>
+                                <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{query.extra_remark || '--'}</td>
                                 <td>
                                   {query.issue_image ? (
                                     <Button
