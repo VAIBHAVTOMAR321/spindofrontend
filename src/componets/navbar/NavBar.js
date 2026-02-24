@@ -23,6 +23,8 @@ function NavBar() {
   const [error, setError] = useState(null);
   const [companyDetails, setCompanyDetails] = useState(null);
   const [logoLoading, setLogoLoading] = useState(true);
+  // Add state for controlling the navbar collapse
+  const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
 
   // Base URL for API
@@ -98,6 +100,8 @@ function NavBar() {
   const handleServiceSelect = (service) => {
     setSelectedService(service);
     console.log("Selected Service for Vendor List:", service);
+    // Close the mobile menu
+    setExpanded(false);
     // Navigate to vendor list page with the selected service
     navigate("/VendorList", {
       state: {
@@ -107,6 +111,12 @@ function NavBar() {
         },
       },
     });
+  };
+
+  // Function to handle navigation link clicks
+  const handleNavClick = () => {
+    // Close the mobile menu
+    setExpanded(false);
   };
 
   // --- Helper function to render social links correctly ---
@@ -178,9 +188,14 @@ function NavBar() {
       </div>
 
       {/* Main navigation */}
-      <Navbar expand="lg" className="bg-body-tertiary sticky-top">
+      <Navbar 
+        expand="lg" 
+        className="bg-body-tertiary sticky-top" 
+        expanded={expanded}
+        onToggle={(isExpanded) => setExpanded(isExpanded)}
+      >
         <Container>
-          <Navbar.Brand as={Link} to="/">
+          <Navbar.Brand as={Link} to="/" onClick={handleNavClick}>
             <div className="d-flex align-items-center">
               {logoLoading ? (
                 <div className="spinner-border spinner-border-sm me-2" role="status">
@@ -221,10 +236,10 @@ function NavBar() {
           <Navbar.Collapse id="basic-navbar-nav">
             {/* Left side navigation items */}
             <Nav className="me-auto">
-              <Nav.Link as={Link} to="/" className="custom-nav-link">
+              <Nav.Link as={Link} to="/" className="custom-nav-link" onClick={handleNavClick}>
                 HOME
               </Nav.Link>
-              <Nav.Link as={Link} to="/AboutUs" className="custom-nav-link">
+              <Nav.Link as={Link} to="/AboutUs" className="custom-nav-link" onClick={handleNavClick}>
                 ABOUT
               </Nav.Link>
 
@@ -249,26 +264,26 @@ function NavBar() {
                 )}
                 <NavDropdown.Divider />
               </NavDropdown>
-              <Nav.Link as={Link} to="/SolarInstalation" className="custom-nav-link">
+              <Nav.Link as={Link} to="/SolarInstalation" className="custom-nav-link" onClick={handleNavClick}>
                 Solar Instalation
               </Nav.Link>
-              <Nav.Link as={Link} to="/ContactUs" className="custom-nav-link">
+              <Nav.Link as={Link} to="/ContactUs" className="custom-nav-link" onClick={handleNavClick}>
                 Get in Touch
               </Nav.Link>
-              <Nav.Link as={Link} to="/PaymentQR" className="custom-nav-link">
+              <Nav.Link as={Link} to="/PaymentQR" className="custom-nav-link" onClick={handleNavClick}>
                 Payment
               </Nav.Link>
-              <Nav.Link as={Link} to="/Login" className="custom-nav-link">
+              <Nav.Link as={Link} to="/Login" className="custom-nav-link" onClick={handleNavClick}>
                 Book Services
               </Nav.Link>
             </Nav>
 
             {/* Right side - Only Register and Login buttons */}
             <Nav className="ms-auto">
-              <Link to="/Registration" className="btn btn-outline-primary me-2">
+              <Link to="/Registration" className="btn btn-outline-primary me-2" onClick={handleNavClick}>
                 Register
               </Link>
-              <Link to="/Login" className="btn btn-primary">
+              <Link to="/Login" className="btn btn-primary" onClick={handleNavClick}>
                 Login
               </Link>
             </Nav>
@@ -279,12 +294,13 @@ function NavBar() {
                 <Nav.Link
                   href={`mailto:${companyDetails.email}`}
                   className="custom-nav-link"
+                  onClick={handleNavClick}
                 >
                   <FaEnvelope /> Email
                 </Nav.Link>
               )}
               {companyDetails?.phone && (
-                <Nav.Link href={`tel:+91${companyDetails.phone}`} className="custom-nav-link">
+                <Nav.Link href={`tel:+91${companyDetails.phone}`} className="custom-nav-link" onClick={handleNavClick}>
                   <FaPhone /> Phone
                 </Nav.Link>
               )}
