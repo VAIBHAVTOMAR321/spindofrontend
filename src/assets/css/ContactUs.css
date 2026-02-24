@@ -3,7 +3,44 @@
     background-size: cover;
     background-position: center;
     position: relative;
-    height: 250px;
+     height: 200px;
+}
+.services-banner{
+    background-image: url("../../assets/images/searvices-banner-1.jpg");
+    background-size: cover;
+    background-position: center;
+    position: relative;
+     height: 200px;
+
+}
+.about-banner{
+    background-image: url("../../assets/images/about-banner-3.avif");
+    background-size: cover;
+    background-position: center;
+    position: relative;
+   height: 200px;
+
+}
+.get-in-banner {
+    background-image: url("../../assets/images/contact-banner.jpg");
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    height: 200px;
+}
+.qr-banner {
+    background-image: url("../../assets/images/QR-banner.png");
+    background-size: cover;
+    background-position: center;
+    position: relative;
+   height: 200px;
+}
+.solar-banner {
+    background-image: url("../../assets/images/solar-banner-4.jpg");
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    height: 200px;
 }
 
 .site-breadcrumb-wpr {

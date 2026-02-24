@@ -118,6 +118,12 @@ body {
   color: #5a5c69;
   margin-bottom: 0.5rem;
 }
+.company-name{
+  color: #0B488F !important;
+  font-weight: bold;
+  font-size: 14px !important;
+
+}
 .btn-book{
   background-color: #1b4a8f !important;
   color: white;

@@ -9,7 +9,7 @@ function PaymentQR() {
     <>
    
   
-        <div className="Contact-banner">
+        <div className="qr-banner">
           <div className="site-breadcrumb-wpr">
             <h2 className="breadcrumb-title">Payment QR</h2>
             <ul className="breadcrumb-menu clearfix">

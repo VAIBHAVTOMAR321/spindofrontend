@@ -111,7 +111,7 @@ function SolarInstallation() {
   return (
     <>
       {/* Contact Banner */}
-      <div className="Contact-banner">
+      <div className="solar-banner">
         <div className="site-breadcrumb-wpr">
           <h2 className="breadcrumb-title">Solar Instalation Services</h2>
           <ul className="breadcrumb-menu clearfix">

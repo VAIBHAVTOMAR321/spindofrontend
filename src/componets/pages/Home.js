@@ -129,9 +129,9 @@ function Home() {
                 <p className="home-text">
                   We are committed to delivering a consistently high-quality, standardized, and reliable service experience to our customers. To fulfil this commitment, we collaborate closely with our hand-picked service partners. We empower them with cutting-edge technology, comprehensive training, quality products, specialized tools, financial support, insurance coverage, and the strength of our brand. By doing so, we enable our partners to succeed and uphold our promise of excellence in service delivery.
                 </p>
-                <Link to="/ServicesPage">
+                {/* <Link to="/ServicesPage">
                   <Button className="cta-button mt-3">Learn More</Button>
-                </Link>
+                </Link> */}
               </Col>
             </Row>
           </div>

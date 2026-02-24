@@ -103,7 +103,7 @@ function ContactUs() {
   return (
     <>
       {/* Contact Banner */}
-      <div className="Contact-banner">
+      <div className="get-in-banner">
         <div className="site-breadcrumb-wpr">
           <h2 className="breadcrumb-title">Contact Us</h2>
           <ul className="breadcrumb-menu clearfix">

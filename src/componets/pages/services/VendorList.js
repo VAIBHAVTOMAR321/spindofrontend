@@ -156,7 +156,7 @@ function VendorList() {
 
   return (
     <>
-     <div className="Contact-banner">
+     <div className="services-banner">
         <div className="site-breadcrumb-wpr">
           <h2 className="breadcrumb-title">Vendors</h2>
           <ul className="breadcrumb-menu clearfix">

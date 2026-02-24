@@ -8,7 +8,7 @@ function AboutUs({ showBanner = true }) {
     <>
       {/* Only render the banner if showBanner is true */}
       {showBanner && (
-        <div className="Contact-banner">
+        <div className="about-banner">
           <div className="site-breadcrumb-wpr">
             <h2 className="breadcrumb-title">About Us</h2>
             <ul className="breadcrumb-menu clearfix">
