@@ -1592,7 +1592,7 @@ const AllBills = () => {
       {/* Invoice Details Modal */}
       <Modal show={showDetailsModal} onHide={handleCloseDetailsModal} size="xl" centered>
         <Modal.Header closeButton>
-          <Modal.Title style={{ color: "#2b6777", fontWeight: 700 }}>Invoice Details</Modal.Title>
+          <Modal.Title style={{ color: "#ffffff", fontWeight: 700 }}>Invoice Details</Modal.Title>
         </Modal.Header>
         <Modal.Body style={{ maxHeight: "70vh", overflowY: "auto" }}>
           {loadingDetails ? (
