@@ -26,7 +26,7 @@ import {
   FaIndustry
 } from "react-icons/fa";
 import axios from "axios";
-import "../../assets/css/admindashboard.css";
+import "../../assets/css/VendorLeftNav.css";
 import { Link, useNavigate } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 import {
@@ -138,7 +138,7 @@ const menuItems = [
     <>
       {/* Desktop Sidebar */}
       <div
-        className={`sidebar ${sidebarOpen ? "sidebar-open" : "sidebar-closed"}`}
+        className={`sidebar-vendor ${sidebarOpen ? "sidebar-open" : "sidebar-closed"}`}
       >
         {sidebarOpen && (
           <div className="sidebar-header">

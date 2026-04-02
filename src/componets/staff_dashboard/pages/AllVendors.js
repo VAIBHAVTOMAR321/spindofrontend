@@ -109,7 +109,7 @@ const AllVendors = () => {
           ) : (
             <div className="table-responsive">
               <Table striped bordered hover>
-                <thead className="table-thead" style={{ backgroundColor: '#2b6777', color: 'white' }}>
+                <thead className="table-thead-staff" style={{ backgroundColor: '#2b6777', color: 'white' }}>
                   <tr>
                     <th>#</th>
                     <th>Image</th>

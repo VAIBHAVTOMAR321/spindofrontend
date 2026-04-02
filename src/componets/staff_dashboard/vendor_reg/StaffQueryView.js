@@ -202,7 +202,7 @@ const StaffQueryView = () => {
                         </select>
                       </div>
                       <Table responsive bordered hover className="rounded-4 shadow-sm">
-                        <thead className="table-thead">
+                        <thead className="table-thead-staff">
                           <tr>
                             <th>#</th>
                             <th>Title</th>

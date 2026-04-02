@@ -18,7 +18,7 @@ import {
   FaCloudUploadAlt
 } from "react-icons/fa";
 import axios from "axios";
-import "../../assets/css/admindashboard.css";
+import "../../assets/css/StaffLeftNav.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -141,7 +141,7 @@ const menuItems = [
     <>
       {/* Desktop Sidebar */}
       <div
-        className={`sidebar ${sidebarOpen ? "sidebar-open" : "sidebar-closed"}`}
+        className={`sidebar-staff ${sidebarOpen ? "sidebar-open" : "sidebar-closed"}`}
       >
         {sidebarOpen && (
           <div className="sidebar-header">
@@ -193,7 +193,7 @@ const menuItems = [
               <Link
                 key={subIndex}
                 to={subItem.path}
-                className="submenu-item nav-link"
+                className="submenu-item-staff nav-link"
                 onClick={() => setSidebarOpen(false)}
               >
                 <span className="submenu-icon">{subItem.icon}</span>

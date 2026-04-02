@@ -1,14 +1,17 @@
 .table-thead tr th{
     font-size: 16px;
-    background-color: #1d85e9;
+    background-color: #09306b;
     color: #fff;
     font-weight: 500;
+}
+.table-responsive{
+    padding: 0px !important;
 }
 td{
     font-size: 10px;
 }
  .modal-header{
-    background-color: #1d85e9 !important;
+    background-color: #09306b !important;
     color: #fff;
 }
 .form-label{

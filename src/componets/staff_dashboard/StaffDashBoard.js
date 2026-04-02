@@ -351,7 +351,7 @@ const StaffDashBoard = () => {
           {/* Quick Stats Summary */}
           <Row className="mt-3 g-2" style={{ margin: 0 }}>
             <Col xs={12}>
-              <Card className="border-0 shadow-sm" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
+              <Card className="border-0 shadow-sm" style={{backgroundColor: '#9c5519', color: '#fff' }}>
                 <Card.Body className="p-3">
                   <Row className="text-center">
                     <Col xs={3} sm={6} md={3}>

@@ -353,7 +353,7 @@ const RegisteredUsers = ({ showCardOnly = false }) => {
                               </Modal.Footer>
                             </Modal>
               {/* Modern Table */}
-              <div className="table-responsive rounded-4 shadow-sm" style={{ background: '#fff', padding: '0.5rem 0.5rem 1rem 0.5rem' }} id="user-table-pdf">
+              <div className="table-responsive rounded-4 shadow-sm"  id="user-table-pdf">
                 <Table className="align-middle mb-0" style={{ minWidth: 700 }}>
                   <thead className="table-thead" style={{ background: '#f1f5f9' }}>
                     <tr style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>

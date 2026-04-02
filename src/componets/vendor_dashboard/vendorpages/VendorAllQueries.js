@@ -179,7 +179,7 @@ const VendorAllQueries = () => {
                         </Button>
                       </div>
                       <Table responsive bordered hover className="rounded-4 shadow-sm">
-                        <thead className="table-thead" style={{ background: "linear-gradient(90deg, #2b6777 0%, #52ab98 100%)", color: "#fff" }}>
+                        <thead className="table-thead-vendor" style={{ background: "linear-gradient(90deg, #2b6777 0%, #52ab98 100%)", color: "#fff" }}>
                           <tr>
                             <th>#</th>
                             <th>Title</th>

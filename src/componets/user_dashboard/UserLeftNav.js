@@ -28,7 +28,7 @@ import {
 } from "react-icons/fa";
 import axios from "axios";
 import UserProfile from "./UserProfile";
-import "../../assets/css/admindashboard.css";
+import "../../assets/css/UserLeftNav.css";
 import { Link } from "react-router-dom";
 import {
   FaInfoCircle,
@@ -92,7 +92,7 @@ const menuItems = [
       icon: <FaUserCircle />,
       label: "PROFILE",
       path: "/UserProfile",
-      active: true,
+     
     },
     
 
@@ -126,7 +126,7 @@ const menuItems = [
     <>
       {/* Desktop Sidebar */}
       <div
-        className={`sidebar ${sidebarOpen ? "sidebar-open" : "sidebar-closed"}`}
+        className={`user-Left ${sidebarOpen ? "sidebar-open" : "sidebar-closed"}`}
       >
         {sidebarOpen && (
           <div className="sidebar-header">

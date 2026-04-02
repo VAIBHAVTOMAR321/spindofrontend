@@ -470,7 +470,7 @@ const StaffServicesRequest = ({ showCardOnly = false }) => {
                       </Form>
                     </div>
                     <Table className="align-middle mb-0" style={{ minWidth: 700 }}>
-                       <thead className="table-thead">
+                       <thead className="table-thead-staff">
                           <tr style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
                             <th>Request ID</th>
                             <th>Username</th>

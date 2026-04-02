@@ -270,7 +270,7 @@ const StaffBill = () => {
                         {/* Address 1 */}
                         <Col md={4}>
                             <Card className="mb-4">
-                                <Card.Header>Seller Details (Address 1)</Card.Header>
+                                <Card.Header className="header-staff">Seller Details (Address 1)</Card.Header>
                                 <Card.Body>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Name</Form.Label>
@@ -301,7 +301,7 @@ const StaffBill = () => {
                         {/* Address 2 */}
                         <Col md={4}>
                             <Card className="mb-4">
-                                <Card.Header>Ship To Details (Address 2)</Card.Header>
+                                <Card.Header className="header-staff">Ship To Details (Address 2)</Card.Header>
                                 <Card.Body>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Name</Form.Label>
@@ -331,7 +331,7 @@ const StaffBill = () => {
                         {/* Address 3 */}
                         <Col md={4}>
                             <Card className="mb-4">
-                                <Card.Header>Bill To Details (Address 3)</Card.Header>
+                                <Card.Header className="header-staff">Bill To Details (Address 3)</Card.Header>
                                 <Card.Body>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Name</Form.Label>
@@ -361,7 +361,7 @@ const StaffBill = () => {
                     
                      {/* Invoice Details Section */}
                     <Card className="mb-4">
-                      <Card.Header>Invoice Details</Card.Header>
+                      <Card.Header className="header-staff">Invoice Details</Card.Header>
                       <Card.Body>
                         <Row>
                           <Col md={3}>
@@ -445,7 +445,7 @@ const StaffBill = () => {
 
                     {/* Bill Items Section */}
                     <Card className="mb-4">
-                      <Card.Header>Line Items</Card.Header>
+                      <Card.Header className="header-staff">Line Items</Card.Header>
                       <Card.Body>
                         <div className="table-responsive">
                           <Table bordered hover size="sm">
@@ -504,7 +504,7 @@ const StaffBill = () => {
                     <Row>
                         <Col md={6}>
                             <Card className="mb-4">
-                                <Card.Header>Bank Details</Card.Header>
+                                <Card.Header className="header-staff">Bank Details</Card.Header>
                                 <Card.Body>
                                     {["A/c Holder's Name", "Bank Name", "A/c No", "IFSC Code"].map((label, index) => (
                                     <Form.Group className="mb-3" key={index}>
@@ -517,7 +517,7 @@ const StaffBill = () => {
                         </Col>
                         <Col md={6}>
                              <Card className="mb-4">
-                                <Card.Header>Additional Information</Card.Header>
+                                <Card.Header className="header-staff">Additional Information</Card.Header>
                                 <Card.Body>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Amount in Words</Form.Label>

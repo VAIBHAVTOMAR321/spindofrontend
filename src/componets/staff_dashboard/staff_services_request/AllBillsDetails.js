@@ -211,7 +211,7 @@ const AllBillsDetails = () => {
                     <>
                       <div className="table-responsive rounded-4 shadow-sm" style={{ background: "#fff", padding: "0.5rem" }}>
                         <Table className="align-middle mb-0" style={{ minWidth: 700 }}>
-                          <thead className="table-thead" style={{ background: "#f1f5f9" }}>
+                          <thead className="table-thead-staff" style={{ background: "#f1f5f9" }}>
                             <tr style={{ fontWeight: 700, color: "#2b6777", fontSize: 15 }}>
                               <th>Invoice No</th>
                               <th>Address</th>

@@ -216,7 +216,7 @@ const StaffCompleteRequest = ({ showCardOnly = false }) => {
               {/* Modern Table for Assigned Requests */}
               <div className="table-responsive rounded-4 shadow-sm" style={{ background: '#fff', padding: '0.5rem 0.5rem 1rem 0.5rem' }}>
                 <Table className="align-middle mb-0" style={{ minWidth: 900 }}>
-                   <thead className="table-thead">
+                   <thead className="table-thead-staff">
                     <tr style={{ fontWeight: 700, color: '#6366f1', fontSize: 15 }}>
                       <th>Request ID</th>
                       <th>Username</th>

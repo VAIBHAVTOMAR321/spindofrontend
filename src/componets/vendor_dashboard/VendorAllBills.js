@@ -402,7 +402,7 @@ const VendorAllBills = ({ showCardOnly = false }) => {
                 id="vendor-bills-table-pdf"
               >
                 <Table className="align-middle mb-0" style={{ minWidth: 1000 }}>
-                  <thead className="table-thead" style={{ background: "#f1f5f9" }}>
+                  <thead className="table-thead-vendor" style={{ background: "#f1f5f9" }}>
                     <tr
                       style={{
                         fontWeight: 700,
