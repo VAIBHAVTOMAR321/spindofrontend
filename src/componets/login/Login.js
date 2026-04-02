@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext'; // Import the useAuth hook
 
 import { Container } from 'react-bootstrap';
 import "../../assets/css/login.css";
+import VendorRegistrationModal from './VendorRegistrationModal';
 
 const Login = () => {
   const { login, intendedDestination, clearDestination } = useAuth(); // Use the auth context
@@ -15,6 +16,9 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Vendor Registration Modal state
+  const [showVendorModal, setShowVendorModal] = useState(false);
 
   // State for password visibility
   const [showPassword, setShowPassword] = useState(false);
@@ -189,21 +193,21 @@ const Login = () => {
         {/* Display error message if it exists */}
         {error && <div className="error-message">{error}</div>}
         
-        {/* Role Selection Tabs - Only Vendor and User */}
+        {/* Role Selection Tabs - Only User and Vendor */}
         <div className="role-tabs">
-          <button 
-            className={`role-tab ${role === 'vendor' ? 'active' : ''}`}
-            onClick={() => setRole('vendor')}
-          >
-            <i className="fas fa-store"></i>
-            <span>VENDOR</span>
-          </button>
           <button 
             className={`role-tab ${role === 'customer' ? 'active' : ''}`}
             onClick={() => setRole('customer')}
           >
             <i className="fas fa-user"></i>
             <span>USER</span>
+          </button>
+          <button 
+            className={`role-tab ${role === 'vendor' ? 'active' : ''}`}
+            onClick={() => setRole('vendor')}
+          >
+            <i className="fas fa-store"></i>
+            <span>VENDOR</span>
           </button>
         </div>
         
@@ -314,7 +318,13 @@ const Login = () => {
             <button
               type="button"
               className="register-now-link"
-              onClick={() => navigate('/Registration')}
+              onClick={() => {
+                if (role === 'vendor') {
+                  setShowVendorModal(true);
+                } else {
+                  navigate('/Registration');
+                }
+              }}
               disabled={isLoading}
             >
               Register Now
@@ -323,7 +333,16 @@ const Login = () => {
         </form>
       </div>
     </div>
-  </Container>
+    </Container>
+    {/* Vendor Registration Modal */}
+    <VendorRegistrationModal
+      show={showVendorModal}
+      onHide={() => setShowVendorModal(false)}
+      onLoginRedirect={() => {
+        setRole('vendor');
+        setEmail(emailOrPhone);
+      }}
+    />
   </Container>
   );
 };

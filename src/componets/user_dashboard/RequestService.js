@@ -3,7 +3,6 @@ import { Container, Card, Form, Button, Row, Col, Spinner, Alert, InputGroup, Dr
 import { useNavigate } from "react-router-dom";
 import UserLeftNav from "../user_dashboard/UserLeftNav";
 import UserHeader from "../user_dashboard/UserHeader";
-import Footer from "../footer/Footer";
 import { useAuth } from "../context/AuthContext";
 import "../../assets/css/admindashboard.css";
 import "../../assets/css/service-multiselect.css";
@@ -227,8 +226,8 @@ const RequestService = () => {
         setSuccess("Service request submitted successfully!");
         setForm((prev) => ({ ...prev, request_for_services: [], schedule_date: "", schedule_time: "", description: "" }));
         setTimeout(() => {
-          if (formTopRef.current) formTopRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-        }, 100);
+          navigate('/ViewRequestService');
+        }, 1500);
       } else {
         setError(data.message || "Failed to submit request.");
         setTimeout(() => {
@@ -421,7 +420,7 @@ const RequestService = () => {
                             })}
                           </div>
                           <Dropdown>
-                            <Dropdown.Toggle variant="outline-primary" id="dropdown-basic" size="sm">
+                            <Dropdown.Toggle variant="outline-primary" id="dropdown-basic" size="lg" style={{ fontSize: 16, fontWeight: 600, padding: '10px 20px' }}>
                               {serviceOptions.length === 0 ? "Loading..." : "Add Service"}
                             </Dropdown.Toggle>
                             <Dropdown.Menu style={{ maxHeight: 250, overflowY: 'auto' }}>
@@ -473,7 +472,6 @@ const RequestService = () => {
             </Col>
           </Row>
         </Container>
-        <Footer />
       </div>
     </div>
   );

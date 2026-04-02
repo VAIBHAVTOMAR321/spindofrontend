@@ -4,7 +4,7 @@
           display: flex;
           justify-content: center;
           align-items: center;
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          font-family: 'Arial', sans-serif;
         }
         .login-header h1{
             color: #fff;
@@ -226,6 +226,37 @@
           opacity: 0.6;
         }
         
+        .register-now-section {
+          padding: 0 25px 20px 25px;
+          text-align: center;
+          font-size: 14px;
+          color: #6c757d;
+        }
+        
+        .register-now-link {
+          background: none;
+          border: none;
+          color: #0077B5;
+          text-decoration: none;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 600;
+          padding: 0;
+          transition: color 0.3s ease;
+          margin-left: 5px;
+        }
+        
+        .register-now-link:hover {
+          color: #152054;
+          text-decoration: underline;
+        }
+        
+        .register-now-link:disabled {
+          color: #6c757d;
+          cursor: not-allowed;
+          opacity: 0.6;
+        }
+        
         .loading-spinner {
           display: flex;
           align-items: center;
@@ -287,5 +318,17 @@
 }
         @keyframes spin {
           to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive styles for register now section */
+        @media (max-width: 576px) {
+          .register-now-section {
+            padding: 0 15px 15px 15px;
+            font-size: 13px;
+          }
+          
+          .register-now-link {
+            font-size: 13px;
+          }
         }
       

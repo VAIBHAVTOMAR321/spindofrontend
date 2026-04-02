@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Container, Card, Table, Spinner, Alert, Row, Col, Badge, Form, Button, Modal } from "react-bootstrap";
 import UserLeftNav from "../user_dashboard/UserLeftNav";
 import UserHeader from "../user_dashboard/UserHeader";
-import Footer from "../footer/Footer";
 import { useAuth } from "../context/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../../assets/css/admindashboard.css";
@@ -22,8 +21,20 @@ const ViewRequestService = () => {
     const [cancelVendors, setCancelVendors] = useState([]);
     const [cancelVendorOptions, setCancelVendorOptions] = useState([]);
     const [cancelLoading, setCancelLoading] = useState(false);
-    const [cancelError, setCancelError] = useState("");
-    const [cancelSuccess, setCancelSuccess] = useState("");
+  const [cancelError, setCancelError] = useState("");
+  const [cancelSuccess, setCancelSuccess] = useState("");
+
+  // Edit modal state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({});
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState("");
+  const [editSuccess, setEditSuccess] = useState("");
+
+  // Current time for countdown
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const intervalRef = useRef(null);
+
   const { user, tokens } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -186,6 +197,116 @@ const ViewRequestService = () => {
       });
   }, [user]);
 
+  // Countdown timer - update every second
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
+
+  // Check if a request is editable (within 5 minutes of created_at)
+  const isEditable = (createdAt) => {
+    if (!createdAt) return false;
+    const created = new Date(createdAt);
+    const now = currentTime;
+    const diffMs = now - created;
+    const diffMinutes = diffMs / (1000 * 60);
+    return diffMinutes < 5;
+  };
+
+  // Get remaining time in seconds for a request
+  const getRemainingSeconds = (createdAt) => {
+    if (!createdAt) return 0;
+    const created = new Date(createdAt);
+    const deadline = new Date(created.getTime() + 5 * 60 * 1000);
+    const remaining = Math.max(0, Math.floor((deadline - currentTime) / 1000));
+    return remaining;
+  };
+
+  // Format seconds as MM:SS
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Check if any request is still editable
+  const anyEditable = requests.some(r => isEditable(r.created_at));
+
+  // Get the request with the most remaining time
+  const getBestCountdown = () => {
+    let best = 0;
+    let bestReq = null;
+    requests.forEach(r => {
+      if (r.created_at) {
+        const remaining = getRemainingSeconds(r.created_at);
+        if (remaining > best) {
+          best = remaining;
+          bestReq = r;
+        }
+      }
+    });
+    return { remaining: best, req: bestReq };
+  };
+
+  // Open edit modal for a request
+  const handleEditOpen = (req) => {
+    setEditForm({
+      request_id: req.request_id || "",
+      username: req.username || "",
+      contact_number: req.contact_number || "",
+      email: req.email || "",
+      address: req.address || "",
+      schedule_date: req.schedule_date || "",
+      schedule_time: req.schedule_time || "",
+      alternate_contact_number: req.alternate_contact_number || ""
+    });
+    setEditError("");
+    setEditSuccess("");
+    setShowEditModal(true);
+  };
+
+  // Handle edit form change
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Submit edit
+  const handleEditSubmit = async () => {
+    setEditLoading(true);
+    setEditError("");
+    setEditSuccess("");
+    try {
+      const res = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/update-service-request/", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(tokens?.access ? { Authorization: `Bearer ${tokens.access}` } : {})
+        },
+        body: JSON.stringify(editForm)
+      });
+      const data = await res.json();
+      if (data.status) {
+        setEditSuccess("Service request updated successfully!");
+        // Refresh data
+        setTimeout(() => {
+          setShowEditModal(false);
+          setEditSuccess("");
+          window.location.reload();
+        }, 1200);
+      } else {
+        setEditError(data.message || "Failed to update service request.");
+      }
+    } catch (err) {
+      setEditError("Error updating service request.");
+    }
+    setEditLoading(false);
+  };
+
   return (
     <div className="dashboard-container">
       <UserLeftNav sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} isMobile={isMobile} isTablet={isTablet} />
@@ -206,6 +327,28 @@ const ViewRequestService = () => {
               <Card className="animate__animated animate__fadeIn">
                 <Card.Body>
                   <h3 className="mb-4 text-center" style={{ color: '#2b6777', fontWeight: 700, letterSpacing: 1 }}>My Service Requests</h3>
+                  {/* Edit countdown / contact banner */}
+                  {!loading && !error && (
+                    anyEditable ? (
+                      (() => {
+                        const { remaining, req: bestReq } = getBestCountdown();
+                        return (
+                          <Alert variant="info" className="text-center" style={{ borderRadius: 8, fontWeight: 600, fontSize: 15 }}>
+                            <i className="bi bi-pencil-square me-2"></i>
+                            You can edit your service requests for up to 5 minutes after creation.
+                            {bestReq && <span> Time remaining: <span style={{ color: '#dc2626', fontWeight: 700, fontSize: 18 }}>{formatTime(remaining)}</span></span>}
+                          </Alert>
+                        );
+                      })()
+                    ) : (
+                      requests.length > 0 && (
+                        <Alert variant="warning" className="text-center" style={{ borderRadius: 8, fontWeight: 600, fontSize: 15 }}>
+                          <i className="bi bi-telephone me-2"></i>
+                          For any changes in service request contact at <a href="tel:+919456346582" style={{ fontWeight: 700, color: '#b45309' }}>+91 9456346582</a>
+                        </Alert>
+                      )
+                    )
+                  )}
                   {loading && <div className="text-center"><Spinner animation="border" variant="primary" /></div>}
                   {error && <Alert variant="danger">{error}</Alert>}
                   {!loading && !error && (
@@ -318,23 +461,25 @@ const ViewRequestService = () => {
                             <th style={{ borderRight: '1px solid #fff' }}>Assignments</th>
                             <th style={{ borderRight: '1px solid #fff' }}>Schedule</th>
                             <th style={{ borderRight: '1px solid #fff' }}>Description</th>
-                            <th>Status</th>
+                            <th style={{ borderRight: '1px solid #fff' }}>Status</th>
+                            <th>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
                           {paginatedRequests.length === 0 ? (
-                            <tr><td colSpan={10}>No service requests found.</td></tr>
+                            <tr><td colSpan={12}>No service requests found.</td></tr>
                           ) : (
                             paginatedRequests.map((req, idx) => (
-                              <tr key={req.id}>
-                                <td>{(currentPage - 1) * entriesPerPage + idx + 1}</td>
-                                <td>{req.request_id}</td>
-                                <td>{req.username}</td>
-                                <td>{req.email}</td>
-                                <td>{req.contact_number}</td>
-                                <td>{req.alternate_contact_number || '-'}</td>
-                                <td>{req.address}</td>
+                              <tr key={req.id} style={{ backgroundColor: isEditable(req.created_at) ? '#fff8e1' : '#f1f5f9' }}>
+                                <td style={{ backgroundColor: isEditable(req.created_at) ? '#fff8e1' : '#f1f5f9' }}>{(currentPage - 1) * entriesPerPage + idx + 1}</td>
+                                <td style={{ backgroundColor: isEditable(req.created_at) ? '#fff8e1' : '#f1f5f9' }}>{req.request_id}</td>
+                                <td style={{ backgroundColor: isEditable(req.created_at) ? '#fff8e1' : '#f1f5f9' }}>{req.username}</td>
+                                <td style={{ backgroundColor: isEditable(req.created_at) ? '#fff8e1' : '#f1f5f9' }}>{req.email}</td>
+                                <td style={{ backgroundColor: isEditable(req.created_at) ? '#fff8e1' : '#f1f5f9' }}>{req.contact_number}</td>
+                                <td style={{ backgroundColor: isEditable(req.created_at) ? '#fff8e1' : '#f1f5f9' }}>{req.alternate_contact_number || '-'}</td>
+                                <td style={{ backgroundColor: isEditable(req.created_at) ? '#fff8e1' : '#f1f5f9' }}>{req.address}</td>
                                 {/* Assignments column: show vendor-service pairs with status */}
+                                <td style={{ backgroundColor: isEditable(req.created_at) ? '#fff8e1' : '#f1f5f9' }}>
                                 {Array.isArray(req.assignments) && req.assignments.length > 0 ? (
                                   <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
                                     {req.assignments.map((assignment, idx) => {
@@ -389,12 +534,13 @@ const ViewRequestService = () => {
                                 ) : (
                                   <div style={{ color: '#64748b', fontSize: 13, padding: '4px 6px', backgroundColor: '#f9fafb', borderRadius: 4, display: 'inline-block', maxWidth: '100%', wordBreak: 'break-word' }}>Not Assigned</div>
                                 )}
-                                <td>
+                                </td>
+                                <td style={{ backgroundColor: isEditable(req.created_at) ? '#fff8e1' : '#f1f5f9' }}>
                                   {req.schedule_date} <br />
                                   <span style={{ fontSize: 12 }}>{req.schedule_time}</span>
                                 </td>
-                                <td style={{ maxWidth: 200, whiteSpace: 'pre-line', wordBreak: 'break-word' }}>{req.description}</td>
-                                <td>
+                                <td style={{ maxWidth: 200, whiteSpace: 'pre-line', wordBreak: 'break-word', backgroundColor: isEditable(req.created_at) ? '#fff8e1' : '#f1f5f9' }}>{req.description}</td>
+                                <td style={{ backgroundColor: isEditable(req.created_at) ? '#fff8e1' : '#f1f5f9' }}>
                                   {req.status?.toLowerCase() === "cancelled" ? (
                                     <Badge bg="secondary" style={{ fontSize: 14, textTransform: 'capitalize' }}>Cancelled</Badge>
                                   ) : req.status?.toLowerCase() === "completed" ? (
@@ -423,6 +569,20 @@ const ViewRequestService = () => {
                                       <option value={req.status}>{req.status}</option>
                                       <option value="cancelled">Cancelled</option>
                                     </Form.Select>
+                                  )}
+                                </td>
+                                <td style={{ backgroundColor: isEditable(req.created_at) ? '#fff8e1' : '#f1f5f9' }}>
+                                  {(req.status?.toLowerCase() === "pending" || req.status?.toLowerCase() === "assigned") && isEditable(req.created_at) ? (
+                                    <Button
+                                      variant="outline-primary"
+                                      size="sm"
+                                      onClick={() => handleEditOpen(req)}
+                                      style={{ borderRadius: 6, fontWeight: 600 }}
+                                    >
+                                      <i className="bi bi-pencil me-1"></i>Edit
+                                    </Button>
+                                  ) : (
+                                    <span style={{ color: '#94a3b8', fontSize: 12 }}>-</span>
                                   )}
                                 </td>
                                     {/* Cancel Modal */}
@@ -532,6 +692,74 @@ const ViewRequestService = () => {
                           </Button>
                         </div>
                       )}
+                      {/* Edit Modal */}
+                      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="lg" centered>
+                        <Modal.Header closeButton>
+                          <Modal.Title>Edit Service Request</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                          {editError && <Alert variant="danger">{editError}</Alert>}
+                          {editSuccess && <Alert variant="success">{editSuccess}</Alert>}
+                          <Form>
+                            <Row>
+                              <Col md={6}>
+                                <Form.Group className="mb-3">
+                                  <Form.Label>Request ID</Form.Label>
+                                  <Form.Control type="text" value={editForm.request_id || ""} disabled />
+                                </Form.Group>
+                              </Col>
+                              <Col md={6}>
+                                <Form.Group className="mb-3">
+                                  <Form.Label>Full Name</Form.Label>
+                                  <Form.Control type="text" name="username" value={editForm.username || ""} onChange={handleEditChange} />
+                                </Form.Group>
+                              </Col>
+                              <Col md={6}>
+                                <Form.Group className="mb-3">
+                                  <Form.Label>Contact Number</Form.Label>
+                                  <Form.Control type="text" name="contact_number" value={editForm.contact_number || ""} onChange={handleEditChange} />
+                                </Form.Group>
+                              </Col>
+                              <Col md={6}>
+                                <Form.Group className="mb-3">
+                                  <Form.Label>Alternate Contact Number</Form.Label>
+                                  <Form.Control type="text" name="alternate_contact_number" value={editForm.alternate_contact_number || ""} onChange={handleEditChange} />
+                                </Form.Group>
+                              </Col>
+                              <Col md={6}>
+                                <Form.Group className="mb-3">
+                                  <Form.Label>Email</Form.Label>
+                                  <Form.Control type="email" name="email" value={editForm.email || ""} onChange={handleEditChange} />
+                                </Form.Group>
+                              </Col>
+                              <Col md={3}>
+                                <Form.Group className="mb-3">
+                                  <Form.Label>Schedule Date</Form.Label>
+                                  <Form.Control type="date" name="schedule_date" value={editForm.schedule_date || ""} onChange={handleEditChange} />
+                                </Form.Group>
+                              </Col>
+                              <Col md={3}>
+                                <Form.Group className="mb-3">
+                                  <Form.Label>Schedule Time</Form.Label>
+                                  <Form.Control type="time" name="schedule_time" value={(editForm.schedule_time || "").substring(0, 5)} onChange={e => setEditForm(prev => ({ ...prev, schedule_time: e.target.value + ":00" }))} />
+                                </Form.Group>
+                              </Col>
+                              <Col md={12}>
+                                <Form.Group className="mb-3">
+                                  <Form.Label>Address</Form.Label>
+                                  <Form.Control as="textarea" name="address" value={editForm.address || ""} onChange={handleEditChange} rows={3} />
+                                </Form.Group>
+                              </Col>
+                            </Row>
+                          </Form>
+                        </Modal.Body>
+                        <Modal.Footer>
+                          <Button variant="secondary" onClick={() => setShowEditModal(false)} disabled={editLoading}>Close</Button>
+                          <Button variant="primary" disabled={editLoading} onClick={handleEditSubmit}>
+                            {editLoading ? <><Spinner size="sm" animation="border" className="me-1" /> Saving...</> : "Save Changes"}
+                          </Button>
+                        </Modal.Footer>
+                      </Modal>
                     </>
                   )}
                 </Card.Body>
