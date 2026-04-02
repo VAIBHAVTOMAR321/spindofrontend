@@ -231,7 +231,7 @@
 /* Sidebar Styles */
 .sidebar {
     width: 260px;
-    background-color: #1d85e9;
+    background-color: #09306b;
     color: white;
     transition: all 0.3s ease;
     position: fixed;
@@ -320,7 +320,7 @@
 
 .sidebar .nav-item {
     color: rgba(255, 255, 255, 0.8);
-    font-size: 16px;
+    font-size: 13px;
     padding: 0.75rem 1.5rem;
     display: flex;
     align-items: center;
@@ -335,7 +335,7 @@
 }
 .sidebar .nav-item:hover {
     color: white;
-    background: #1a5332;
+    background: #3863a2;
 }
 
 .sidebar .nav-item.active {
