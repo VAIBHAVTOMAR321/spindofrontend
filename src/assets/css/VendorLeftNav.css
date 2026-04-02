@@ -861,34 +861,34 @@ border: none !important;
 }
 
 /* Mobile Sidebar */
-.mobile-sidebar {
-     background-color: #2ECC71 !important;
+.mobile-sidebar-staff {
+     background-color: #9c5519 !important;
 }
 
-.mobile-sidebar .nav-item {
+.mobile-sidebar-staff .nav-item {
     color: white;
     padding: 1rem;
 }
 
-.mobile-sidebar .nav-item:hover {
+.mobile-sidebar-staff .nav-item:hover {
     background: #10341f;
 }
 
-.mobile-sidebar .nav-item.active {
+.mobile-sidebar-staff .nav-item.active {
     background: rgba(255, 255, 255, 0.2);
 }
 
-.mobile-sidebar .submenu-container {
+.mobile-sidebar-staff .submenu-container {
     background: rgba(0, 0, 0, 0.1);
     padding-left: 2rem;
 }
 
-.mobile-sidebar .submenu-item {
+.mobile-sidebar-staff .submenu-item {
     color: rgba(255, 255, 255, 0.7);
     padding: 0.5rem 1rem;
 }
 
-.mobile-sidebar .submenu-item:hover {
+.mobile-sidebar-staff .submenu-item:hover {
     color: white;
     background: rgba(255, 255, 255, 0.05);
 }

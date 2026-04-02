@@ -222,7 +222,7 @@ const menuItems = [
   <Offcanvas
   show={(isMobile || isTablet) && sidebarOpen}
   onHide={() => setSidebarOpen(false)}
-  className="mobile-sidebar"
+  className="mobile-sidebar-staff"
   placement="start"
   backdrop={true}
   scroll={false}
