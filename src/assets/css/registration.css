@@ -18,8 +18,8 @@
     font-weight: 600;
 }
 .spi-control{
-    font-size: 10px;
-    height: 40px;
+    font-size: 14px;
+     /* height: 40px; */
 }
 .register-btn {
   background-color: #212529 ;

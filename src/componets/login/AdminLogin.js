@@ -1,17 +1,15 @@
-// src/componets/pages/Login.js
-import UserProfile from "../user_dashboard/UserProfile";
+// src/componets/login/AdminLogin.js
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // Import the useAuth hook
-
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { Container } from 'react-bootstrap';
 import "../../assets/css/login.css";
 
-const Login = () => {
-  const { login, intendedDestination, clearDestination } = useAuth(); // Use the auth context
-  const [role, setRole] = useState('customer'); // Default role is 'customer'
-  const [emailOrPhone, setEmailOrPhone] = useState('');
-  const [email, setEmail] = useState('');
+const AdminLogin = () => {
+  const { login, intendedDestination, clearDestination } = useAuth();
+  const [role, setRole] = useState('admin'); // Default role is 'admin'
+  const [adminId, setAdminId] = useState('');
+  const [staffAdminId, setStaffAdminId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -20,7 +18,6 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
-  const location = useLocation();
 
   // Function to toggle password visibility
   const togglePasswordVisibility = () => {
@@ -29,7 +26,7 @@ const Login = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError(''); // Clear previous errors
+    setError('');
     setIsLoading(true);
 
     try {
@@ -37,21 +34,19 @@ const Login = () => {
       let endpoint = "https://mahadevaaya.com/spindo/spindobackend/api/login/";
 
       // Prepare request body based on role
-      if (role === 'customer') {
+      if (role === 'staffadmin') {
         requestBody = {
-          mobile_number: emailOrPhone,
+          mobile_number: staffAdminId,
           password: password,
-          role: 'customer'
+          role: 'staffadmin'
         };
-      } else if (role === 'vendor') {
+      } else if (role === 'admin') {
         requestBody = {
-          mobile_number: email,
+          mobile_number: adminId,
           password: password,
-          role: 'vendor'
+          role: 'admin'
         };
       }
-
-      // ...removed console.log...
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -62,14 +57,11 @@ const Login = () => {
       });
 
       const data = await response.json();
-      // ...removed console.log...
 
       // Check if the response was successful
       if (!response.ok) {
-        // Handle field-specific errors (e.g., { errors: { mobile_number: ["Invalid mobile number"] } })
         let errorMsg = data.message || `Request failed with status ${response.status}`;
         if (data.errors && typeof data.errors === 'object') {
-          // Map specific error for mobile_number
           errorMsg = Object.entries(data.errors)
             .map(([field, msgs]) => {
               if (
@@ -94,12 +86,14 @@ const Login = () => {
         // Map the selected role to the API role format
         let expectedApiRole;
         switch(role) {
-          case 'vendor':
-            expectedApiRole = 'vendor';
+          case 'staffadmin':
+            expectedApiRole = 'staffadmin';
             break;
-          case 'customer':
+          case 'admin':
+            expectedApiRole = 'admin';
+            break;
           default:
-            expectedApiRole = 'customer';
+            expectedApiRole = 'admin';
             break;
         }
 
@@ -123,22 +117,11 @@ const Login = () => {
           redirectTo = "/AdminDashBoard";
         } else if (data.data.role === 'staffadmin') {
           redirectTo = "/StaffDashBoard";
-        } else if (data.data.role === 'vendor') {
-          redirectTo = "/VendorDashBoard";
-        } else if (data.data.role === 'customer') {
-          // For customers, check if there's an intended destination (e.g., from /Services)
-          if (intendedDestination) {
-            redirectTo = intendedDestination;
-            clearDestination(); // Clear the intended destination after use
-          } else {
-            redirectTo = "/UserDashBoard";
-          }
-        } 
+        }
 
         // Redirect the user to their role-specific page or dashboard
         navigate(redirectTo, { replace: true });
       } else {
-        // Handle field-specific errors for non-200 responses as well
         let errorMsg = data.message || "Login failed. Please check your credentials.";
         if (data.errors && typeof data.errors === 'object') {
           errorMsg = Object.entries(data.errors)
@@ -157,7 +140,6 @@ const Login = () => {
         throw new Error(errorMsg);
       }
     } catch (err) {
-      // ...removed console.error...
       setError(err.message || "An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
@@ -167,12 +149,12 @@ const Login = () => {
   // Function to get the appropriate title based on selected role
   const getLoginTitle = () => {
     switch(role) {
-      case 'vendor':
-        return 'Vendor Login';
-      case 'customer':
-        return 'User Login';
+      case 'admin':
+        return 'Admin Login';
+      case 'staffadmin':
+        return 'Staff Admin Login';
       default:
-        return 'User Login';
+        return 'Admin Login';
     }
   };
 
@@ -189,35 +171,35 @@ const Login = () => {
         {/* Display error message if it exists */}
         {error && <div className="error-message">{error}</div>}
         
-        {/* Role Selection Tabs - Only Vendor and User */}
+        {/* Role Selection Tabs - Only Admin and Staff Admin */}
         <div className="role-tabs">
           <button 
-            className={`role-tab ${role === 'vendor' ? 'active' : ''}`}
-            onClick={() => setRole('vendor')}
+            className={`role-tab ${role === 'admin' ? 'active' : ''}`}
+            onClick={() => setRole('admin')}
           >
-            <i className="fas fa-store"></i>
-            <span>VENDOR</span>
+            <i className="fas fa-user-cog"></i>
+            <span>Admin</span>
           </button>
           <button 
-            className={`role-tab ${role === 'customer' ? 'active' : ''}`}
-            onClick={() => setRole('customer')}
+            className={`role-tab ${role === 'staffadmin' ? 'active' : ''}`}
+            onClick={() => setRole('staffadmin')}
           >
-            <i className="fas fa-user"></i>
-            <span>USER</span>
+            <i className="fas fa-user-shield"></i>
+            <span>Staff Admin</span>
           </button>
         </div>
         
         <form onSubmit={handleSubmit} className="login-form">
-          {/* Customer Login Fields */}
-          {role === 'customer' && (
+          {/* Staff Admin Login Fields */}
+          {role === 'staffadmin' && (
             <>
               <div className="form-group">
-                <label htmlFor="emailOrPhone">Mobile Number</label>
+                <label htmlFor="staffAdminId">Mobile Number</label>
                 <input
                   type="text"
-                  id="emailOrPhone"
-                  value={emailOrPhone}
-                  onChange={(e) => setEmailOrPhone(e.target.value)}
+                  id="staffAdminId"
+                  value={staffAdminId} 
+                  onChange={(e) => setStaffAdminId(e.target.value)}
                   required
                   placeholder="Mobile Number"
                   disabled={isLoading}
@@ -247,17 +229,17 @@ const Login = () => {
               </div>
             </>
           )}
-          
-          {/* Vendor Login Fields */}
-          {role === 'vendor' && (
+
+          {/* Admin Login Fields */}
+          {role === 'admin' && (
             <>
               <div className="form-group">
-                <label htmlFor="email">Mobile Number</label>
+                <label htmlFor="adminId">Mobile Number</label>
                 <input
                   type="text"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="adminId"
+                  value={adminId} 
+                  onChange={(e) => setAdminId(e.target.value)}
                   required
                   placeholder="Mobile Number"
                   disabled={isLoading}
@@ -309,17 +291,6 @@ const Login = () => {
               Forgot Password?
             </button>
           </div>
-          <div className="text-center register-now-section">
-            <span>Don't have an account? </span>
-            <button
-              type="button"
-              className="register-now-link"
-              onClick={() => navigate('/Registration')}
-              disabled={isLoading}
-            >
-              Register Now
-            </button>
-          </div>
         </form>
       </div>
     </div>
@@ -328,4 +299,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default AdminLogin;

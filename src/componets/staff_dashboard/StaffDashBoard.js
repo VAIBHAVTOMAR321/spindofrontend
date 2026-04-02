@@ -197,9 +197,9 @@ const StaffDashBoard = () => {
                         )}
                       </div>
                       <h6 className="fw-bold mb-1 text-center" style={{ fontSize: 'clamp(13px, 2vw, 15px)' }}>Welcome, {profile.can_name || profile.username || "Staff"}!</h6>
-                      <div className="text-muted mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>{profile.email}</div>
-                      <div className="mb-0" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}><b>Mobile:</b> {profile.mobile_number}</div>
-                      <div className="mb-2" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>
+                      <div className="text-muted mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 14px)' }}>{profile.email}</div>
+                      <div className="mb-0" style={{ fontSize: 'clamp(10px, 1.8vw, 14px)' }}><b>Mobile:</b> {profile.mobile_number}</div>
+                      <div className="mb-2" style={{ fontSize: 'clamp(10px, 1.8vw, 14px)' }}>
                         <b>Location:</b> {profile.address || (profile.state && profile.district && profile.block ? `${profile.state}, ${profile.district}, ${profile.block}` : profile.state || profile.district || profile.block || 'N/A')}
                       </div>
                       <Link to="/StaffProfile">
@@ -221,7 +221,7 @@ const StaffDashBoard = () => {
                {/* Vendors Section */}
               <div className="mb-3">
                 <div className="d-flex justify-content-between align-items-center mb-2">
-                  <h6 className="fw-bold" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Users Management</h6>
+                  <h6 className="fw-bold" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 18px)' }}>Users Management</h6>
                  
                 </div>
                 <Row className="g-2 mb-2" style={{ margin: 0 }}>
@@ -232,8 +232,8 @@ const StaffDashBoard = () => {
                           <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#28a745', width: 28, height: 28, borderRadius: '50%' }}>
                             <i className="bi bi-shop" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Total Vendors</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{vendorCount}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 16px)' }}>Total Vendors</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 20px)', color: '#1a73e8' }}>{vendorCount}</div>
                         </Card.Body>
                       </Card>
                     </Link>
@@ -245,8 +245,8 @@ const StaffDashBoard = () => {
                           <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#fff3cd', color: '#ff9800', width: 28, height: 28, borderRadius: '50%' }}>
                             <i className="bi bi-people" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Total Customers</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{customerCount}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 16px)' }}>Total Customers</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 20px)', color: '#1a73e8' }}>{customerCount}</div>
                         </Card.Body>
                       </Card>
                     </Link>
@@ -256,7 +256,7 @@ const StaffDashBoard = () => {
 
               {/* Requests Section */}
               <div className="mb-3">
-                <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Service Requests</h6>
+                <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 18px)' }}>Service Requests</h6>
                 <Row className="g-2 mb-2" style={{ margin: 0 }}>
                   <Col xs={4} sm={6} md={6} lg={4}>
                     <Link to="/StaffServicesRequest" style={{ textDecoration: 'none' }}>
@@ -265,8 +265,8 @@ const StaffDashBoard = () => {
                           <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#fff3cd', color: '#ff9800', width: 28, height: 28, borderRadius: '50%' }}>
                             <i className="bi bi-list-task" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Total Requests</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{totalRequests}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 16px)' }}>Total Requests</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 20px)', color: '#1a73e8' }}>{totalRequests}</div>
                         </Card.Body>
                       </Card>
                     </Link>
@@ -278,8 +278,8 @@ const StaffDashBoard = () => {
                           <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#c7d2fe', color: '#3730a3', width: 28, height: 28, borderRadius: '50%' }}>
                             <i className="bi bi-hourglass-split" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Pending</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{pendingRequests}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 16px)' }}>Pending</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 20px)', color: '#1a73e8' }}>{pendingRequests}</div>
                         </Card.Body>
                       </Card>
                     </Link>
@@ -291,8 +291,8 @@ const StaffDashBoard = () => {
                           <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#28a745', width: 28, height: 28, borderRadius: '50%' }}>
                             <i className="bi bi-check-circle" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Completed</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{completedRequests}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 16px)' }}>Completed</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 20px)', color: '#1a73e8' }}>{completedRequests}</div>
                         </Card.Body>
                       </Card>
                     </Link>
@@ -302,7 +302,7 @@ const StaffDashBoard = () => {
 
               {/* Queries Section */}
               <div>
-                <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Staff Queries</h6>
+                <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 18px)' }}>Staff Queries</h6>
                 <Row className="g-2" style={{ margin: 0 }}>
                    <Col xs={4} sm={6} md={4}>
                     <Link to="/StaffQueryView" state={{ filter: 'Accepted' }} style={{ textDecoration: 'none' }}>
@@ -311,8 +311,8 @@ const StaffDashBoard = () => {
                           <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#28a745', width: 28, height: 28, borderRadius: '50%' }}>
                             <i className="bi bi-check-circle" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Accepted</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{acceptedStaffQueries}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 16px)' }}>Accepted</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 20px)', color: '#1a73e8' }}>{acceptedStaffQueries}</div>
                         </Card.Body>
                       </Card>
                     </Link>
@@ -324,8 +324,8 @@ const StaffDashBoard = () => {
                           <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#fff3cd', color: '#ff9800', width: 28, height: 28, borderRadius: '50%' }}>
                             <i className="bi bi-hourglass-split" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Pending</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{pendingStaffQueries}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 16px)' }}>Pending</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 20px)', color: '#1a73e8' }}>{pendingStaffQueries}</div>
                         </Card.Body>
                       </Card>
                     </Link>
@@ -337,8 +337,8 @@ const StaffDashBoard = () => {
                           <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#ffe3e3', color: '#e53935', width: 28, height: 28, borderRadius: '50%' }}>
                             <i className="bi bi-x-circle" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Rejected</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{rejectedStaffQueries}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 16px)' }}>Rejected</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 20px)', color: '#1a73e8' }}>{rejectedStaffQueries}</div>
                         </Card.Body>
                       </Card>
                     </Link>

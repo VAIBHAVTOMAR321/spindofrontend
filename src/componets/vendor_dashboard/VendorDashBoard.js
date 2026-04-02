@@ -215,10 +215,10 @@ const VendorDashBoard = () => {
                           }
                         })()}
                       </div>
-                      <h6 className="fw-bold mb-1 text-center" style={{ fontSize: 'clamp(13px, 2vw, 15px)' }}>Welcome, {profile.username || "Vendor"}!</h6>
-                      <div className="text-muted mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>{profile.email}</div>
-                      <div className="mb-0" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}><b>Mobile:</b> {profile.mobile_number}</div>
-                      <div className="mb-2" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}><b>Location:</b> {profile.state}, {profile.district}, {profile.block}</div>
+                      <h6 className="fw-bold mb-1 text-center" style={{ fontSize: 'clamp(13px, 2vw, 16px)' }}>Welcome, {profile.username || "Vendor"}!</h6>
+                      <div className="text-muted mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 14px)' }}>{profile.email}</div>
+                      <div className="mb-0" style={{ fontSize: 'clamp(10px, 1.8vw, 14px)' }}><b>Mobile:</b> {profile.mobile_number}</div>
+                      <div className="mb-2" style={{ fontSize: 'clamp(10px, 1.8vw, 14px)' }}><b>Location:</b> {profile.state}, {profile.district}, {profile.block}</div>
                       <Link to="/VendorProfile">
                         <Button variant="outline-primary" size="sm" className="mt-1" style={{ fontSize: 'clamp(11px, 2vw, 13px)' }}>View Profile</Button>
                       </Link>
@@ -258,7 +258,7 @@ const VendorDashBoard = () => {
             <Col xs={12} sm={12} md={6} lg={8}>
               {/* Requests Section */}
               <div className="mb-3">
-                  <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Requests</h6>
+                  <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 20px)' }}>Requests</h6>
                   <Row className="g-2 mb-2" style={{ margin: 0 }}>
                     <Col xs={3} sm={6} md={6} lg={3}>
                       <Link to="/VendorRequests" state={{ filter: 'Completed' }} style={{ textDecoration: 'none' }}>
@@ -267,8 +267,8 @@ const VendorDashBoard = () => {
                             <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#28a745', width: 28, height: 28, borderRadius: '50%' }}>
                               <i className="bi bi-check-circle" style={{ fontSize: 14 }}></i>
                             </div>
-                            <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Completed</div>
-                            <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{completedRequestCount}</div>
+                            <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 18px)' }}>Completed</div>
+                            <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 24px)', color: '#1a73e8' }}>{completedRequestCount}</div>
                           </Card.Body>
                         </Card>
                       </Link>
@@ -280,8 +280,8 @@ const VendorDashBoard = () => {
                             <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#fff3cd', color: '#ff9800', width: 28, height: 28, borderRadius: '50%' }}>
                               <i className="bi bi-hourglass-split" style={{ fontSize: 14 }}></i>
                             </div>
-                            <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Pending</div>
-                            <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{pendingRequestCount}</div>
+                            <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 18px)' }}>Pending</div>
+                            <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 24px)', color: '#1a73e8' }}>{pendingRequestCount}</div>
                           </Card.Body>
                         </Card>
                       </Link>
@@ -293,8 +293,8 @@ const VendorDashBoard = () => {
                             <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#c7d2fe', color: '#3730a3', width: 28, height: 28, borderRadius: '50%' }}>
                               <i className="bi bi-person-check" style={{ fontSize: 14 }}></i>
                             </div>
-                            <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Assigned</div>
-                            <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{assignedRequestCount}</div>
+                            <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 18px)' }}>Assigned</div>
+                            <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 24px)', color: '#1a73e8' }}>{assignedRequestCount}</div>
                           </Card.Body>
                         </Card>
                       </Link>
@@ -306,8 +306,8 @@ const VendorDashBoard = () => {
                             <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#ffe3e3', color: '#e53935', width: 28, height: 28, borderRadius: '50%' }}>
                               <i className="bi bi-x-circle" style={{ fontSize: 14 }}></i>
                             </div>
-                            <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Cancelled</div>
-                            <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{cancelledRequestCount}</div>
+                            <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 18px)' }}>Cancelled</div>
+                            <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 24px)', color: '#1a73e8' }}>{cancelledRequestCount}</div>
                           </Card.Body>
                         </Card>
                       </Link>
@@ -326,7 +326,7 @@ const VendorDashBoard = () => {
                 </div>
               {/* Bills Section */}
               <div className="mb-3">
-                <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Bills</h6>
+                <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 20px)' }}>Bills</h6>
                 <Row className="g-2 mb-2" style={{ margin: 0 }}>
                   <Col xs={4} sm={6} md={4}>
                     <Link to="/VendorAllBills" state={{ filter: 'Paid' }} style={{ textDecoration: 'none' }}>
@@ -335,8 +335,8 @@ const VendorDashBoard = () => {
                           <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#28a745', width: 28, height: 28, borderRadius: '50%' }}>
                             <i className="bi bi-currency-rupee" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Paid</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{paidBillCount}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 18px)' }}>Paid</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 24px)', color: '#1a73e8' }}>{paidBillCount}</div>
                         </Card.Body>
                       </Card>
                     </Link>
@@ -348,8 +348,8 @@ const VendorDashBoard = () => {
                           <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#ffe3e3', color: '#e53935', width: 28, height: 28, borderRadius: '50%' }}>
                             <i className="bi bi-currency-rupee" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Unpaid</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{unpaidBillCount}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 18px)' }}>Unpaid</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 24px)', color: '#1a73e8' }}>{unpaidBillCount}</div>
                         </Card.Body>
                       </Card>
                     </Link>
@@ -361,8 +361,8 @@ const VendorDashBoard = () => {
                           <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#fff3cd', color: '#ff9800', width: 28, height: 28, borderRadius: '50%' }}>
                             <i className="bi bi-currency-rupee" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Total Bills</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{billCount}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 18px)' }}>Total Bills</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 24px)', color: '#1a73e8' }}>{billCount}</div>
                         </Card.Body>
                       </Card>
                     </Link>
@@ -371,7 +371,7 @@ const VendorDashBoard = () => {
               </div>
               {/* Queries Section */}
               <div>
-                <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 16px)' }}>Queries</h6>
+                <h6 className="fw-bold mb-2" style={{ color: '#2b6777', letterSpacing: 0.5, fontSize: 'clamp(13px, 2.5vw, 20px)' }}>Queries</h6>
                 <Row className="g-2" style={{ margin: 0 }}>
                   <Col xs={4} sm={6} md={4}>
                     <Link to="/VendorAllQueries" state={{ filter: 'Approved' }} style={{ textDecoration: 'none' }}>
@@ -380,8 +380,8 @@ const VendorDashBoard = () => {
                           <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#e3fcec', color: '#28a745', width: 28, height: 28, borderRadius: '50%' }}>
                             <i className="bi bi-check-circle" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Approved</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{approvedQueryCount}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 18px)' }}>Approved</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 24px)', color: '#1a73e8' }}>{approvedQueryCount}</div>
                         </Card.Body>
                       </Card>
                     </Link>
@@ -393,8 +393,8 @@ const VendorDashBoard = () => {
                           <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#fff3cd', color: '#ff9800', width: 28, height: 28, borderRadius: '50%' }}>
                             <i className="bi bi-hourglass-split" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Pending</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{pendingQueryCount}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 18px)' }}>Pending</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 24px)', color: '#1a73e8' }}>{pendingQueryCount}</div>
                         </Card.Body>
                       </Card>
                     </Link>
@@ -406,8 +406,8 @@ const VendorDashBoard = () => {
                           <div className="stat-icon mb-1 d-flex align-items-center justify-content-center" style={{ background: '#ffe3e3', color: '#e53935', width: 28, height: 28, borderRadius: '50%' }}>
                             <i className="bi bi-x-circle" style={{ fontSize: 14 }}></i>
                           </div>
-                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 12px)' }}>Rejected</div>
-                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', color: '#1a73e8' }}>{rejectedQueryCount}</div>
+                          <div className="stat-title fw-semibold mb-1" style={{ fontSize: 'clamp(10px, 1.8vw, 18px)' }}>Rejected</div>
+                          <div className="stat-value fw-bold" style={{ fontSize: 'clamp(14px, 2.5vw, 24px)', color: '#1a73e8' }}>{rejectedQueryCount}</div>
                         </Card.Body>
                       </Card>
                     </Link>

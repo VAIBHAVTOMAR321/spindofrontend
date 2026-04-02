@@ -1,5 +1,5 @@
 .table-thead tr th{
-    font-size: 12px;
+    font-size: 16px;
     background-color: #1d85e9;
     color: #fff;
     font-weight: 500;
@@ -12,6 +12,7 @@ td{
     color: #fff;
 }
 .form-label{
+    font-size: 16px;
     color: #000;
     font-weight: 600;
     

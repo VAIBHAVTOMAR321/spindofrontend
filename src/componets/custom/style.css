@@ -74,7 +74,7 @@ body {
   color: #fff !important;
 }
 .contact-img h1{
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 700;
   margin-bottom: 1rem;
   color: #1b4a8f;
@@ -114,7 +114,7 @@ body {
   text-align: center;
 }
 .contact-img ul li{
-  font-size: 12px;
+  font-size: 16px;
   color: #5a5c69;
   margin-bottom: 0.5rem;
 }
@@ -137,17 +137,16 @@ body {
   transition: all 0.3s ease;
 }
 .registration-page h2{
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 600;
   color: #1b4a8f;
-  margin-bottom: 20px;
   text-align: center;
 }
 .reg-fully{
   font-size: 12px;
 }
 .registration-page p{
-  font-size: 12px;
+  font-size: 16px;
 }
 .api-star{
   color: red;

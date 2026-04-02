@@ -397,7 +397,7 @@ function Registration() {
   return (
     <div className="registration-page">
       <Container className='box-container'>
-        <h2 className="text-center mb-4">Create Account</h2>
+        <h2 className="text-center ">Create Account</h2>
         <p className="text-center text-muted mb-4">Join us today by creating a new account</p>
         
         {serverResponse && !registrationSuccess && !serverResponse.success && (
@@ -566,7 +566,7 @@ function Registration() {
             
 <Col md={3} lg={3} sm={12}> 
             <Form.Group className="mb-3" controlId="formPassword">
-              <Form.Label className='spi-label'>Password <span className='api-star'>*</span></Form.Label>
+              <Form.Label className='spi-label'>Create Password <span className='api-star'>*</span></Form.Label>
               <InputGroup>
                 <Form.Control
                   type={showPassword ? "text" : "password"}
