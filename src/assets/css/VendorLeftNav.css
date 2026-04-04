@@ -340,7 +340,7 @@
     overflow-y: auto !important;
 }
 .sidebar-vendor .nav-item:hover {
-    color: white;
+    color: white !important;
     background: rgba(255, 255, 255, 0.2);
 }
 

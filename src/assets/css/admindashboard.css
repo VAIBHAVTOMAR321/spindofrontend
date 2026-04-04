@@ -334,7 +334,7 @@
     overflow-y: auto !important;
 }
 .sidebar .nav-item:hover {
-    color: white;
+    color: white !important;
     background: #3863a2;
 }
 
@@ -419,7 +419,8 @@
 }
 
 .submenu-container-admin .submenu-item-admin:hover {
-    background: #0a4d12;
+    background:#204375;
+    color: #fff !important;
 }
 
 .sidebar-footer {

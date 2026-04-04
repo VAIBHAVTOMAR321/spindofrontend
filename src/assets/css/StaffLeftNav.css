@@ -334,7 +334,7 @@
     overflow-y: auto !important;
 }
 .sidebar-staff .nav-item:hover {
-    color: white;
+    color: white !important;
     background: rgba(255, 255, 255, 0.2) !important;
 }
 .submenu-container-staff :hover {
