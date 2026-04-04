@@ -194,7 +194,7 @@ function NavBar() {
         expanded={expanded}
         onToggle={(isExpanded) => setExpanded(isExpanded)}
       >
-        <Container>
+        <Container className="p-2">
           <Navbar.Brand as={Link} to="/" onClick={handleNavClick}>
             <div className="d-flex align-items-center">
               {logoLoading ? (
