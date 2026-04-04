@@ -231,7 +231,7 @@
 /* Sidebar Styles */
 .user-Left {
     width: 260px;
-    background-color: hsl(240, 85%, 23%);
+    background-color: hsl(240deg 48.17% 70.51%);;
     color: white;
     transition: all 0.3s ease;
     position: fixed;
@@ -335,7 +335,7 @@
 }
 .user-Left .nav-item:hover {
     color: white !important;
-    background: #3863a2;
+    background: rgba(255, 255, 255, 0.2);;
 }
 
 .user-Left .nav-item.active {
@@ -374,7 +374,7 @@
 }
 
 .submenu-container-user {
-    background: hsl(240, 85%, 30%) !important;
+    background: hsl(240, 28%, 43%) !important;
     padding-left: 2rem;
     line-height: 16px;
 }
@@ -404,8 +404,9 @@
 }
 
 .submenu-container-user .submenu-item-user:hover {
-    background: hsl(240, 85%, 20%);
+    background: rgba(255, 255, 255, 0.2);
     color: #fff;
+   
 }
 
 .user-Left .br-text-sub {
@@ -876,7 +877,7 @@ border: none !important;
 
 /* Mobile Sidebar */
 .mobile-sidebar-user {
-     background-color: hsl(240, 85%, 23%) !important;
+     background-color: hsl(240deg 48.17% 70.51%) !important;
 }
 
 .mobile-sidebar-user .nav-item {
