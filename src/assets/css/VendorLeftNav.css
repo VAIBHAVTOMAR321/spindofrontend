@@ -341,7 +341,7 @@
 }
 .sidebar-vendor .nav-item:hover {
     color: white;
-    background: #3863a2;
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .sidebar-vendor .nav-item.active {
@@ -379,8 +379,8 @@
     font-size: 0.8rem;
 }
 
-.submenu-container .nav-item {
-    background: #e0d607 !important;
+.submenu-container-vendor .nav-item {
+    background: #8a0cc1 !important;
     padding-left: 2rem;
     line-height: 16px;
 }
@@ -394,6 +394,27 @@
     transition: all 0.3s ease;
 }
 
+.submenu-item-vendor {
+    color: rgba(255, 255, 255, 0.7);
+    padding: 0.5rem 1.5rem;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.submenu-container-vendor .submenu-item:hover {
+    background: #2c5aa0;
+    color: #fff;
+}
+
+.submenu-container-vendor .submenu-item-vendor:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+.submenu-container-vendor.collapse.show{
+    background: #8a0cc1 !important;
+}
 .sidebar-vendor .br-text-sub {
     margin-left: 12px !important;
     line-height: 18px;
@@ -737,9 +758,11 @@ border: none !important;
         margin-top: 1rem;
     }
 
-    .submenu-container {
-        padding-left: 1rem;
-    }
+.submenu-container-vendor {
+    background: #8a0cc1 !important;
+    padding-left: 2rem;
+    line-height: 16px;
+}
 }
 
 /* Tablet Styles */
@@ -861,36 +884,36 @@ border: none !important;
 }
 
 /* Mobile Sidebar */
-.mobile-sidebar-staff {
-     background-color: #9c5519 !important;
+.mobile-sidebar-vendor {
+     background-color: #a709d3 !important;
 }
 
-.mobile-sidebar-staff .nav-item {
+.mobile-sidebar-vendor .nav-item {
     color: white;
     padding: 1rem;
 }
 
-.mobile-sidebar-staff .nav-item:hover {
+.mobile-sidebar-vendor .nav-item:hover {
     background: #10341f;
 }
 
-.mobile-sidebar-staff .nav-item.active {
+.mobile-sidebar-vendor .nav-item.active {
     background: rgba(255, 255, 255, 0.2);
 }
 
-.mobile-sidebar-staff .submenu-container {
+.mobile-sidebar-vendor .submenu-container {
     background: rgba(0, 0, 0, 0.1);
     padding-left: 2rem;
 }
 
-.mobile-sidebar-staff .submenu-item {
+.mobile-sidebar-vendor .submenu-item {
     color: rgba(255, 255, 255, 0.7);
     padding: 0.5rem 1rem;
 }
 
-.mobile-sidebar-staff .submenu-item:hover {
+.mobile-sidebar-vendor .submenu-item:hover {
     color: white;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.2);
 }
 
 /* ==================== NEW ENHANCED DASHBOARD STYLES ==================== */

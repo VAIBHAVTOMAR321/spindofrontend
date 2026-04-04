@@ -173,12 +173,12 @@ const menuItems = [
       {/* Submenu */}
       {item.submenu && (
         <Collapse in={openSubmenu === index}>
-          <div className="submenu-container">
+          <div className="submenu-container-user">
             {item.submenu.map((subItem, subIndex) => (
               <Link
                 key={subIndex}
                 to={subItem.path}
-                className="submenu-item nav-link"
+                className="submenu-item-user nav-link"
                 onClick={() => setSidebarOpen(false)}
               >
                 <span className="submenu-icon">{subItem.icon}</span>
@@ -214,7 +214,7 @@ const menuItems = [
   <Offcanvas
   show={(isMobile || isTablet) && sidebarOpen}
   onHide={() => setSidebarOpen(false)}
-  className="mobile-sidebar"
+  className="mobile-sidebar-user"
   placement="start"
   backdrop={true}
   scroll={false}
@@ -252,7 +252,7 @@ const menuItems = [
 
           {item.submenu && (
             <Collapse in={openSubmenu === index}>
-              <div className="submenu-container">
+              <div className="submenu-container-user">
                 {item.submenu.map((subItem, subIndex) => (
                   <Link
                     key={subIndex}

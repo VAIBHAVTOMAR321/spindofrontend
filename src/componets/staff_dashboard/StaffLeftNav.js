@@ -129,10 +129,9 @@ const menuItems = [
     icon: <FaUserCircle />, // Staff Profile
     label: "Staff Profile",
     path: "/StaffProfile",
-    active: true,
+   
   },
 
-    
   ];
 
   //  Auto-close sidebar when switching to mobile or tablet
@@ -188,7 +187,7 @@ const menuItems = [
       {/* Submenu */}
       {item.submenu && (
         <Collapse in={openSubmenu === index}>
-          <div className="submenu-container">
+          <div className="submenu-container-staff">
             {item.submenu.map((subItem, subIndex) => (
               <Link
                 key={subIndex}
@@ -225,7 +224,7 @@ const menuItems = [
   <Offcanvas
   show={(isMobile || isTablet) && sidebarOpen}
   onHide={() => setSidebarOpen(false)}
-  className="mobile-sidebar-vendor"
+  className="mobile-sidebar-staff"
   placement="start"
   backdrop={true}
   scroll={false}
@@ -263,7 +262,7 @@ const menuItems = [
 
           {item.submenu && (
             <Collapse in={openSubmenu === index}>
-              <div className="submenu-container">
+              <div className="submenu-container-staff">
                 {item.submenu.map((subItem, subIndex) => (
                   <Link
                     key={subIndex}

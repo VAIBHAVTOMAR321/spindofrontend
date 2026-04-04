@@ -167,12 +167,12 @@ const menuItems = [
       {/* Submenu */}
       {item.submenu && (
         <Collapse in={openSubmenu === index}>
-          <div className="submenu-container">
+          <div className="submenu-container-admin">
             {item.submenu.map((subItem, subIndex) => (
               <Link
                 key={subIndex}
                 to={subItem.path}
-                className="submenu-item nav-link"
+                className="submenu-item-admin nav-link"
                 onClick={() => setSidebarOpen(false)}
               >
                 <span className="submenu-icon">{subItem.icon}</span>
@@ -245,12 +245,12 @@ const menuItems = [
 
           {item.submenu && (
             <Collapse in={openSubmenu === index}>
-              <div className="submenu-container">
+              <div className="submenu-container-admin">
                 {item.submenu.map((subItem, subIndex) => (
                   <Link
                     key={subIndex}
                     to={subItem.path}
-                    className="submenu-item nav-link"
+                    className="submenu-item-admin nav-link"
                     onClick={() => setSidebarOpen(false)}
                   >
                     <span className="nav-text">{subItem.label}</span>

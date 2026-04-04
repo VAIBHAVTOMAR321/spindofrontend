@@ -335,9 +335,13 @@
 }
 .sidebar-staff .nav-item:hover {
     color: white;
-    background: #3863a2;
+    background: rgba(255, 255, 255, 0.2) !important;
 }
-
+.submenu-container-staff :hover {
+    color: white;
+    
+    background: rgba(255, 255, 255, 0.2) !important;
+}
 .sidebar-staff .nav-item.active {
     color: white;
     background: rgba(255, 255, 255, 0.2);
@@ -373,13 +377,28 @@
     font-size: 0.8rem;
 }
 
-.submenu-container .nav-item {
-    background: #e0d607 !important;
+.submenu-container-staff {
+    background: #d6833e !important;
+    padding-left: 2rem;
+    line-height: 16px;
+}
+
+.submenu-container-staff .nav-item {
+    background: #9c5519 !important;
     padding-left: 2rem;
     line-height: 16px;
 }
 
 .submenu-item {
+    color: rgba(255, 255, 255, 0.7);
+    padding: 0.5rem 1.5rem;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.submenu-item-staff {
     color: rgba(255, 255, 255, 0.7);
     padding: 0.5rem 1.5rem;
     display: flex;
@@ -395,9 +414,9 @@
     color: #fff;
 }
 .submenu-item-staff
-.submenu-item-staff:hover {
+.submenu-container-staff .submenu-item-staff:hover {
     color: #fff;
-    background: rgb(100, 146, 25);
+    background: #7a3a0a;
 }
 
 .sidebar-footer {
@@ -860,34 +879,34 @@ border: none !important;
 }
 
 /* Mobile Sidebar */
-.mobile-sidebar-vendor {
+.mobile-sidebar-staff {
      background-color: #9c5519 !important;
 }
 
-.mobile-sidebar-vendor .nav-item {
+.mobile-sidebar-staff .nav-item {
     color: white;
     padding: 1rem;
 }
 
-.mobile-sidebar-vendor .nav-item:hover {
+.mobile-sidebar-staff .nav-item:hover {
     background: #10341f;
 }
 
-.mobile-sidebar-vendor .nav-item.active {
+.mobile-sidebar-staff .nav-item.active {
     background: rgba(255, 255, 255, 0.2);
 }
 
-.mobile-sidebar-vendor .submenu-container {
-    background: rgba(0, 0, 0, 0.1);
+.mobile-sidebar-staff .submenu-container-staff {
+    background: #9c5519 !important;
     padding-left: 2rem;
 }
 
-.mobile-sidebar-vendor .submenu-item {
+.mobile-sidebar-staff .submenu-item {
     color: rgba(255, 255, 255, 0.7);
     padding: 0.5rem 1rem;
 }
 
-.mobile-sidebar-vendor .submenu-item:hover {
+.mobile-sidebar-staff .submenu-item:hover {
     color: white;
     background: rgba(255, 255, 255, 0.05);
 }
